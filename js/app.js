@@ -1235,7 +1235,7 @@ const APP = (() => {
         init, navigate, handleLogin, updatePreview, togglePassword,
         switchTab, searchTable, showElementBio, speak,
         selectDifficulty, startGame, customizeAvatar,
-        renderSidebar, renderBottomNav, renderMarket, renderPeriodicLab, showDailyChest,
+        renderSidebar, renderBottomNav, renderMarket, renderPeriodicLab, showBigElementCard, showDailyChest,
         toggleTheme, toggleAudio
     };
 })();
