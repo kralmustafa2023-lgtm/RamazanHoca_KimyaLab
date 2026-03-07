@@ -11,7 +11,7 @@
     #sidebar { display: none !important; }
     body.has-sidebar #main-content { margin-left: 0; }
     .bottom-nav { display: flex !important; }
-    #main-content { padding-bottom: 70px; }
+    #main-content { padding-bottom: 100px !important; }
 
     /* Login */
     .login-screen { flex-direction: column; }
