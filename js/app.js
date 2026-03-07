@@ -252,12 +252,15 @@ const APP = (() => {
                 </div>
                 
                 <div class="sidebar-user">
-                    <div class="user-avatar" style="font-size:24px; overflow:hidden;">
-                        ${data.activeAvatar ? (data.activeAvatar.includes('<img') ? data.activeAvatar : data.activeAvatar.split(' ').pop()) : level.icon}
+                    <div class="user-avatar" style="overflow:hidden; display:flex; align-items:center; justify-content:center; background:white;">
+                        ${data.activeAvatar ? 
+                            (data.activeAvatar.includes('<img') ? data.activeAvatar : `<span style="font-size:24px;">${data.activeAvatar.split(' ').pop()}</span>`) : 
+                            `<img src="images/logo.png" style="width:100%; height:100%; object-fit:contain;">`
+                        }
                     </div>
                     <div class="user-info">
                         <span class="user-name">${AUTH.getDisplayName(username)}</span>
-                        <span class="user-level">${data.activeAvatar && !data.activeAvatar.includes('<img') ? data.activeAvatar : level.name}</span>
+                        <span class="user-level" style="color:${level.color}">${level.name}</span>
                     </div>
                 </div>
 
@@ -396,12 +399,15 @@ const APP = (() => {
                         <h2>Hoş geldin ${displayName}! 🧪</h2>
                         <p class="topbar-subtitle">Ramazan Hoca'nın Öğrencisi - ${data.coins || 0} Altın Ganimeti 🪙</p>
                     </div>
-                    <div class="topbar-badge" style="background: var(--bg-card); border: 2px solid ${level.color || 'var(--teal)'};">
-                        <span class="level-icon" style="font-size:24px; display:flex; align-items:center;">
-                            ${data.activeAvatar ? (data.activeAvatar.includes('<img') ? data.activeAvatar : data.activeAvatar.split(' ').pop()) : level.icon}
-                        </span>
-                        <span class="level-name" style="margin-left:8px;">${data.activeAvatar && !data.activeAvatar.includes('<img') ? data.activeAvatar : level.name}</span>
-                        <span class="total-points" style="margin-left:12px; padding-left:12px; border-left:1px solid rgba(0,0,0,0.1); font-weight:800;">${data.totalPoints} ⭐</span>
+                    <div class="topbar-badge" style="background: var(--bg-card); border: 2px solid ${level.color || 'var(--teal)'}; padding: 6px 15px;">
+                        <div class="level-icon" style="width:32px; height:32px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:white; border: 1px solid rgba(0,0,0,0.05);">
+                            ${data.activeAvatar ? 
+                                (data.activeAvatar.includes('<img') ? data.activeAvatar : `<span style="font-size:18px;">${data.activeAvatar.split(' ').pop()}</span>`) : 
+                                `<img src="images/logo.png" style="width:80%; height:80%; object-fit:contain;">`
+                            }
+                        </div>
+                        <span class="level-name" style="margin-left:10px; font-weight:700; color:var(--text-primary);">${level.name}</span>
+                        <span class="total-points" style="margin-left:12px; padding-left:12px; border-left:2px solid rgba(0,0,0,0.05); font-weight:800; color:var(--orange);">${data.totalPoints} ⭐</span>
                     </div>
                 </div>
 
