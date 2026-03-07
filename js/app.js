@@ -63,11 +63,39 @@ const APP = (() => {
         const coins = Storage.openDailyChest(username);
         if (coins) {
             if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
+            if (typeof Animations !== 'undefined') Animations.confetti();
             alert(`🎉 Günlük Harika Sandığını Açtın!\n\nTam ${coins} Kimya Altını Kazandın!`);
             currentScreen = null; // force re-render
             navigate('dashboard');
         } else {
             alert('❌ Bugünkü sandığını zaten açtın. Yarına tekrar gel!');
+        }
+    }
+
+    // ============ CUSTOM AVATAR ============
+    function customizeAvatar() {
+        const username = AUTH.getCurrentUser();
+        const data = Storage.getData(username);
+        if ((data.coins || 0) < 2000) {
+            if (typeof AUDIO !== 'undefined') AUDIO.playWrong();
+            alert(`Bu özellik 2000 altın gerektiriyor. Sende ${(data.coins || 0)} altın var.`);
+            return;
+        }
+
+        const url = prompt("🖼️ Profil resmin için internette bulduğun bir resmin URL'sini (bağlantısını) yapıştır:\nÖrnek: https://i.imgur.com/Gorsel.jpg");
+        if (url && url.trim() !== '') {
+            data.coins -= 2000;
+            const imgTag = `<img src="${url.trim()}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;border:2px solid gold;"> `;
+            if (!data.ownedAvatars) data.ownedAvatars = [];
+            data.ownedAvatars.push(imgTag);
+            data.activeAvatar = imgTag;
+            Storage.saveData(username, data);
+            
+            if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
+            if (typeof Animations !== 'undefined') Animations.confetti();
+            alert('✅ Süper! Harika bir profil resmin oldu.');
+            renderSidebar();
+            navigate('badges'); // refresh page
         }
     }
 
@@ -250,11 +278,7 @@ const APP = (() => {
                         <span class="nav-text" style="color:var(--purple);font-weight:600;">P. Tablo Lab.</span>
                     </a>
                     
-                    <div class="nav-section-title">KARİYER & MARKET</div>
-                    <a class="nav-item ${currentScreen === 'market' ? 'active' : ''}" style="border: 2px solid gold; background: rgba(255, 215, 0, 0.1);" onclick="APP.navigate('market')">
-                        <span class="nav-icon">🛒</span>
-                        <span class="nav-text" style="color:#B8860B;font-weight:bold;">Kara Market</span>
-                    </a>
+                    <div class="nav-section-title">İSTATİSTİKLER</div>
                     <a class="nav-item ${currentScreen === 'statistics' ? 'active' : ''}" onclick="APP.navigate('statistics')">
                         <span class="nav-icon">📊</span>
                         <span class="nav-text">İstatistikler</span>
@@ -947,6 +971,13 @@ const APP = (() => {
                     <h2 class="screen-title">🏆 Rozetler</h2>
                     <p class="screen-subtitle">${data.badges.length} / ${BADGES.length} rozet kazanıldı</p>
                 </div>
+                
+                <div style="text-align:center; margin-bottom: 20px;">
+                    <button class="btn btn-warning btn-lg" onclick="APP.customizeAvatar()" style="box-shadow: 0 4px 15px rgba(255,160,0,0.4); border: 2px solid #FFC107;">
+                        🪙 ${data.coins || 0} Altın İle Özel Fotoğraf Koy (2000 Altın)
+                    </button>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">*2000 Altın karşılığında internetten/galerinden bir resim URL'si koyabilirsin.</p>
+                </div>
 
                 <div class="badges-grid">
                     ${BADGES.map(badge => {
@@ -1039,7 +1070,15 @@ const APP = (() => {
         const container = document.getElementById('main-content');
         
         let elements = [];
-        if (typeof TABLES !== 'undefined' && TABLES.ilk20) elements = [...TABLES.ilk20.items];
+        if (typeof TABLES !== 'undefined') {
+            Object.values(TABLES).forEach(table => {
+                elements = elements.concat(table.items);
+            });
+        }
+        
+        // Remove duplicates if any
+        const uniqueElements = Array.from(new Set(elements.map(a => a.symbol)))
+            .map(symbol => elements.find(a => a.symbol === symbol));
         
         container.innerHTML = `
             <div class="lab-screen" style="padding:20px;">
@@ -1047,16 +1086,16 @@ const APP = (() => {
                     <div style="position:absolute; top:0;left:0; right:0;bottom:0; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2240%22 stroke=%22rgba(255,255,255,0.1)%22 stroke-width=%221%22 fill=%22none%22/><circle cx=%2250%22 cy=%2250%22 r=%2220%22 stroke=%22rgba(255,255,255,0.2)%22 stroke-width=%222%22 fill=%22none%22/></svg>') center center / cover; opacity: 0.5; animation: spin 20s linear infinite;"></div>
                     <div style="position:relative; z-index:2;">
                         <h2 style="font-size:32px;">🔬 İnteraktif Element Laboratuvarı</h2>
-                        <p>Atomların sırlarını hologram kartlarla keşfet.</p>
+                        <p>Tüm elementlerin detaylarını holografik olarak görüntüle.</p>
                     </div>
                 </div>
 
                 <div class="periodic-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:15px; margin-top:30px;">
-                    ${elements.map(el => `
+                    ${uniqueElements.map(el => `
                         <div class="lab-card" style="background:var(--bg-card); cursor:pointer; padding:20px 10px; border-radius:15px; box-shadow:var(--shadow-sm); text-align:center; transition:var(--transition);"
                              onmouseover="this.style.transform='scale(1.05) translateY(-5px)'; this.style.boxShadow='var(--shadow-glow-teal)';"
                              onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)';"
-                             onclick="APP.speak('${el.name}. Atom Numarası: ${el.number}')">
+                             onclick="APP.showBigElementCard('${el.symbol.replace(/'/g, "\\'")}')">
                             <div style="font-size:12px; color:var(--text-muted); text-align:left;">${el.number || ''}</div>
                             <div style="font-size:36px; font-weight:800; color:var(--teal); margin: 10px 0;">${el.symbol}</div>
                             <div style="font-size:14px; font-weight:600; color:var(--text-primary);">${el.name}</div>
@@ -1070,6 +1109,51 @@ const APP = (() => {
         // Add 3d perspective effect to cards
         const cards = container.querySelectorAll('.lab-card');
         Animations.staggeredEntrance(Array.from(cards), 50);
+    }
+    
+    function showBigElementCard(symbol) {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        
+        let el = null;
+        Object.values(TABLES).forEach(table => {
+            const found = table.items.find(i => i.symbol === symbol);
+            if (found) el = found;
+        });
+        
+        if (!el) return;
+        
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0'; overlay.style.left = '0'; overlay.style.right = '0'; overlay.style.bottom = '0';
+        overlay.style.backgroundColor = 'rgba(0,0,0,0.85)';
+        overlay.style.zIndex = '9999';
+        overlay.style.display = 'flex';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        overlay.style.backdropFilter = 'blur(10px)';
+        
+        overlay.innerHTML = `
+            <div style="background: var(--bg-card); max-width: 90%; width: 450px; border-radius: 24px; padding: 40px; box-shadow: var(--shadow-glow-teal), 0 20px 50px rgba(0,0,0,0.5); text-align:center; position:relative; animation: float 3s ease-in-out infinite;">
+                <button onclick="this.parentElement.parentElement.remove()" style="position:absolute; top: 15px; right: 20px; font-size: 24px; background:none; border:none; cursor:pointer; color:var(--text-muted);">✖</button>
+                
+                <h3 style="color:var(--text-muted); font-size: 16px; margin-bottom: 10px; text-transform:uppercase;">${el.number ? 'Atom No: ' + el.number : 'Kök / İyon'}</h3>
+                
+                <div style="font-size: 90px; font-weight: 800; color:var(--teal); line-height:1; margin-bottom: 5px; text-shadow: 0 4px 15px rgba(0,191,165,0.3);">${el.symbol}</div>
+                <div style="font-size: 32px; font-weight: 600; color:var(--text-primary); margin-bottom: 25px;">${el.name}</div>
+                
+                <div style="display:flex; justify-content:center; gap: 10px; margin-bottom: 30px; flex-wrap:wrap;">
+                    ${el.charge ? `<span style="background: rgba(124,77,255,0.1); color: var(--purple); padding: 8px 16px; border-radius: 20px; font-weight:bold;">Yük: ${el.charge}</span>` : ''}
+                    ${el.charges ? `<span style="background: rgba(255,64,129,0.1); color: var(--pink); padding: 8px 16px; border-radius: 20px; font-weight:bold;">Yükler: ${el.charges.join(', ')}</span>` : ''}
+                </div>
+                
+                <button class="btn btn-primary" onclick="APP.speak('${el.name} elementi.')" style="width:100%; font-size:18px; padding: 15px;">
+                    🔊 Sesli Dinle
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        Animations.staggeredEntrance([overlay.children[0]], 0);
     }
 
     function toggleTheme() {
@@ -1091,7 +1175,7 @@ const APP = (() => {
     return {
         init, navigate, handleLogin, updatePreview, togglePassword,
         switchTab, searchTable, showElementBio, speak,
-        selectDifficulty, startGame,
+        selectDifficulty, startGame, customizeAvatar,
         renderSidebar, renderBottomNav, renderMarket, renderPeriodicLab, showDailyChest,
         toggleTheme, toggleAudio
     };
