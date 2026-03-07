@@ -22,6 +22,12 @@ const AUTH = (() => {
         });
     }
 
+    // Special Test/Demo User
+    users.push({
+        username: "test",
+        password: "DEMO123"
+    });
+
     function login(username, password, displayName) {
         const user = users.find(u => u.username === username && u.password === password);
         if (user) {
