@@ -323,6 +323,10 @@ const APP = (() => {
                 <span class="bottom-nav-icon">🏠</span>
                 <span class="bottom-nav-text">Ana Sayfa</span>
             </a>
+            <a class="bottom-nav-item ${currentScreen === 'periodicLab' ? 'active' : ''}" onclick="APP.navigate('periodicLab')" style="${currentScreen === 'periodicLab' ? 'color:var(--purple);' : ''}">
+                <span class="bottom-nav-icon">🔬</span>
+                <span class="bottom-nav-text">P. Tablo</span>
+            </a>
             <a class="bottom-nav-item ${currentScreen === 'modeSelect' ? 'active' : ''}" onclick="APP.navigate('modeSelect')">
                 <span class="bottom-nav-icon">🎮</span>
                 <span class="bottom-nav-text">Oyna</span>
@@ -331,20 +335,16 @@ const APP = (() => {
                 <span class="bottom-nav-icon">📖</span>
                 <span class="bottom-nav-text">Tablolar</span>
             </a>
-            <a class="bottom-nav-item ${currentScreen === 'statistics' ? 'active' : ''}" onclick="APP.navigate('statistics')">
-                <span class="bottom-nav-icon">📊</span>
-                <span class="bottom-nav-text">İstatistik</span>
-            </a>
-            <a class="bottom-nav-item ${currentScreen === 'badges' ? 'active' : ''}" onclick="APP.navigate('badges')">
-                <span class="bottom-nav-icon">🏆</span>
-                <span class="bottom-nav-text">Rozetler</span>
+            <a class="bottom-nav-item" onclick="APP.toggleTheme()">
+                <span class="bottom-nav-icon">🌓</span>
+                <span class="bottom-nav-text">Tema</span>
             </a>
         `;
 
         if (currentScreen === 'login') {
             bottomNav.style.display = 'none';
         } else {
-            bottomNav.style.display = '';
+            bottomNav.style.display = 'flex';
         }
     }
 
