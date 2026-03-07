@@ -20,7 +20,7 @@
     .login-title { font-size: 22px; }
 
     /* Dashboard */
-    .dashboard-screen { padding: 16px; }
+    .dashboard-screen { padding: 16px 16px 150px 16px !important; }
     .dashboard-topbar { flex-direction: column; align-items: flex-start; }
     .topbar-greeting h2 { font-size: 20px; }
     .mode-cards-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
