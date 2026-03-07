@@ -10,6 +10,11 @@ const APP = (() => {
     let selectedTable = null;
 
     function init() {
+        const savedTheme = localStorage.getItem('kimyalab_theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+
         if (AUTH.isLoggedIn()) {
             navigate('dashboard');
         } else {
@@ -18,6 +23,8 @@ const APP = (() => {
     }
 
     function navigate(screen, data) {
+        if (typeof AUDIO !== 'undefined' && screen !== currentScreen) AUDIO.playClick();
+        
         const container = document.getElementById('main-content');
         const sidebar = document.getElementById('sidebar');
         
@@ -240,6 +247,10 @@ const APP = (() => {
                             <div class="level-fill-mini" style="width: ${getLevelProgress(data.totalPoints)}%"></div>
                         </div>
                         <span class="level-points-mini">${data.totalPoints} puan</span>
+                    </div>
+                    <div class="settings-row" style="display:flex;gap:10px;margin-top:15px;margin-bottom:15px;">
+                        <button class="btn btn-primary" style="flex:1;padding:8px;font-size:12px;" onclick="APP.toggleTheme()">🌓 Tema</button>
+                        <button class="btn btn-primary" style="flex:1;padding:8px;font-size:12px;" onclick="APP.toggleAudio()" id="btn-audio-sidebar">🔊 Ses ${typeof AUDIO !== 'undefined' && AUDIO.isEnabled() ? 'AÇIK' : 'KAPALI'}</button>
                     </div>
                     <a class="nav-item nav-logout" onclick="AUTH.logout()">
                         <span class="nav-icon">🚪</span>
@@ -910,11 +921,28 @@ const APP = (() => {
         Animations.staggeredEntrance(Array.from(cards), 100);
     }
 
+    function toggleTheme() {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('kimyalab_theme', next);
+    }
+
+    function toggleAudio() {
+        if (typeof AUDIO !== 'undefined') {
+            const isEnabled = AUDIO.toggleSound();
+            const btn = document.getElementById('btn-audio-sidebar');
+            if (btn) btn.innerHTML = `🔊 Ses ${isEnabled ? 'AÇIK' : 'KAPALI'}`;
+        }
+    }
+
     return {
         init, navigate, handleLogin, updatePreview, togglePassword,
         switchTab, searchTable, showElementBio, speak,
         selectDifficulty, startGame,
-        renderSidebar, renderBottomNav
+        renderSidebar, renderBottomNav,
+        toggleTheme, toggleAudio
     };
 })();
 

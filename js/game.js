@@ -127,6 +127,7 @@ const Game = (() => {
     }
 
     function flipCurrentCard() {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
         const card = document.getElementById('flashcard');
         if (card) {
             card.classList.toggle('flipped');
@@ -136,6 +137,7 @@ const Game = (() => {
 
     function flashcardAnswer(knew) {
         if (knew) {
+            if (typeof AUDIO !== 'undefined') AUDIO.playCorrect();
             score++;
             combo++;
             if (combo > maxCombo) maxCombo = combo;
@@ -144,6 +146,7 @@ const Game = (() => {
             }
             Animations.correctWave(document.querySelector('.flashcard-container'));
         } else {
+            if (typeof AUDIO !== 'undefined') AUDIO.playWrong();
             combo = 0;
             wrongAnswers.push({
                 question: currentQuestions[currentIndex].front,
@@ -266,6 +269,7 @@ const Game = (() => {
         clearQuizTimer();
 
         if (answer === q.correct) {
+            if (typeof AUDIO !== 'undefined') AUDIO.playCorrect();
             score++;
             combo++;
             if (combo > maxCombo) maxCombo = combo;
@@ -278,6 +282,7 @@ const Game = (() => {
 
             Animations.scorePop(buttonEl, 10);
         } else {
+            if (typeof AUDIO !== 'undefined') AUDIO.playWrong();
             combo = 0;
             buttonEl.classList.add('option-wrong');
             Animations.wrongAnswer(buttonEl);
@@ -490,6 +495,12 @@ const Game = (() => {
         currentQuestions._total = total;
 
         if (combo >= 3) Animations.comboEffect(combo);
+        
+        if (typeof AUDIO !== 'undefined') {
+            if (correct === total) AUDIO.playSuccess();
+            else if (correct >= total/2) AUDIO.playCorrect();
+            else AUDIO.playWrong();
+        }
 
         // Show finish after delay
         setTimeout(() => {
@@ -589,6 +600,7 @@ const Game = (() => {
     let selectedRight = null;
 
     function selectMatch(element) {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
         const side = element.dataset.side;
         const id = parseInt(element.dataset.id);
 
@@ -609,6 +621,7 @@ const Game = (() => {
         if (selectedLeft !== null && selectedRight !== null) {
             if (selectedLeft === selectedRight) {
                 // Correct match!
+                if (typeof AUDIO !== 'undefined') AUDIO.playCorrect();
                 score++;
                 combo++;
                 if (combo > maxCombo) maxCombo = combo;
@@ -642,6 +655,7 @@ const Game = (() => {
                 }
             } else {
                 // Wrong match
+                if (typeof AUDIO !== 'undefined') AUDIO.playWrong();
                 combo = 0;
                 const leftEl = document.querySelector(`.matching-left [data-id="${selectedLeft}"]`);
                 const rightEl = document.querySelector(`.matching-right [data-id="${selectedRight}"]`);
@@ -727,9 +741,11 @@ const Game = (() => {
         if (percentage === 100) {
             emoji = '🏆';
             messagePool = RESULT_MESSAGES.perfect;
+            if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
         } else if (percentage >= 70) {
             emoji = '🎉';
             messagePool = RESULT_MESSAGES.great;
+            if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
         } else if (percentage >= 50) {
             emoji = '💪';
             messagePool = RESULT_MESSAGES.good;
