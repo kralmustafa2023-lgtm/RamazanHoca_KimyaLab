@@ -51,8 +51,24 @@ const APP = (() => {
                 case 'tableSelect': renderTableSelect(data); break;
                 case 'statistics': renderStatistics(); break;
                 case 'badges': renderBadges(); break;
+                case 'market': renderMarket(); break;
+                case 'periodicLab': renderPeriodicLab(); break;
             }
         });
+    }
+
+    // ============ PREMIUM ALERTS ============
+    function showDailyChest() {
+        const username = AUTH.getCurrentUser();
+        const coins = Storage.openDailyChest(username);
+        if (coins) {
+            if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
+            alert(`🎉 Günlük Harika Sandığını Açtın!\n\nTam ${coins} Kimya Altını Kazandın!`);
+            currentScreen = null; // force re-render
+            navigate('dashboard');
+        } else {
+            alert('❌ Bugünkü sandığını zaten açtın. Yarına tekrar gel!');
+        }
     }
 
     // ============ LOGIN SCREEN ============
@@ -208,10 +224,10 @@ const APP = (() => {
                 </div>
                 
                 <div class="sidebar-user">
-                    <div class="user-avatar">${level.icon}</div>
+                    <div class="user-avatar" style="font-size:32px;">${(data.activeAvatar || level.icon).split(' ')[0]}</div>
                     <div class="user-info">
                         <span class="user-name">${AUTH.getDisplayName(username)}</span>
-                        <span class="user-level">${level.name}</span>
+                        <span class="user-level">${data.activeAvatar || level.name}</span>
                     </div>
                 </div>
 
@@ -229,8 +245,16 @@ const APP = (() => {
                         <span class="nav-icon">📖</span>
                         <span class="nav-text">Tablolar</span>
                     </a>
+                    <a class="nav-item ${currentScreen === 'periodicLab' ? 'active' : ''}" style="border: 1px solid var(--purple); background: rgba(124, 77, 255, 0.05);" onclick="APP.navigate('periodicLab')">
+                        <span class="nav-icon">🔬</span>
+                        <span class="nav-text" style="color:var(--purple);font-weight:600;">P. Tablo Lab.</span>
+                    </a>
                     
-                    <div class="nav-section-title">İSTATİSTİKLER</div>
+                    <div class="nav-section-title">KARİYER & MARKET</div>
+                    <a class="nav-item ${currentScreen === 'market' ? 'active' : ''}" style="border: 2px solid gold; background: rgba(255, 215, 0, 0.1);" onclick="APP.navigate('market')">
+                        <span class="nav-icon">🛒</span>
+                        <span class="nav-text" style="color:#B8860B;font-weight:bold;">Kara Market</span>
+                    </a>
                     <a class="nav-item ${currentScreen === 'statistics' ? 'active' : ''}" onclick="APP.navigate('statistics')">
                         <span class="nav-icon">📊</span>
                         <span class="nav-text">İstatistikler</span>
@@ -246,7 +270,7 @@ const APP = (() => {
                         <div class="level-bar-mini">
                             <div class="level-fill-mini" style="width: ${getLevelProgress(data.totalPoints)}%"></div>
                         </div>
-                        <span class="level-points-mini">${data.totalPoints} puan</span>
+                        <span class="level-points-mini">${data.totalPoints} puan - <b style="color:gold;">${data.coins || 0} Altın</b></span>
                     </div>
                     <div class="settings-row" style="display:flex;gap:10px;margin-top:15px;margin-bottom:15px;">
                         <button class="btn btn-primary" style="flex:1;padding:8px;font-size:12px;" onclick="APP.toggleTheme()">🌓 Tema</button>
@@ -313,25 +337,48 @@ const APP = (() => {
         const motiv = MOTIVATIONAL_MESSAGES[Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length)];
         const motivText = motiv.text.replace('{name}', displayName);
 
-        // Daily goal
         const today = new Date().toDateString();
         const dailyCards = data.dailyGoalDate === today ? data.dailyCardsFlipped : 0;
         const dailyGoal = 10;
         const dailyProgress = Math.min(100, Math.round((dailyCards / dailyGoal) * 100));
+
+        // Hata Karnesi
+        const worstElement = Storage.getMostMissedElement(username);
+        let warningHtml = '';
+        if (worstElement && worstElement.count >= 2) {
+            warningHtml = `
+            <div class="dash-card error-report-card" style="background: linear-gradient(135deg, #FFE5E5, #FFCDD2); border-left: 5px solid #F44336; margin-bottom: 20px;">
+                <h3 class="card-title" style="color: #D32F2F;">🚨 Akıllı Hata Karnesi</h3>
+                <p class="goal-text" style="color: #B71C1C;"><strong>DİKKAT:</strong> Son zamanlarda <b>${worstElement.correct}</b> elementini sürekli <b>'${worstElement.userAnswer}'</b> olarak hatırlıyorsun (${worstElement.count} hata).</p>
+                <div style="margin-top: 10px; font-size: 13px; color: #D32F2F;">Ramazan Hoca Diyor ki: <i>Hemen açıp bu elementin tablosunu tekrar etmelisin!</i></div>
+            </div>`;
+        }
+
+        // Chest Card
+        const chestAvailable = data.dailyChestDate !== today;
+        const chestHtml = chestAvailable ? `
+            <div class="dash-card chest-card" onclick="APP.showDailyChest()" style="cursor:pointer; background: linear-gradient(135deg, #FFF8E1, #FFECB3); border: 2px dashed #FFCA28; text-align:center; animation: breathing 2s infinite;">
+                <h3 class="card-title" style="color:#F57F17; font-size: 24px;">🎁 Sandığın Geldi!</h3>
+                <p class="goal-text" style="color:#E65100;">Günlük Altınlarını Almak İçin Dokun!</p>
+            </div>
+        ` : '';
 
         container.innerHTML = `
             <div class="dashboard-screen">
                 <div class="dashboard-topbar">
                     <div class="topbar-greeting">
                         <h2>Hoş geldin ${displayName}! 🧪</h2>
-                        <p class="topbar-subtitle">Ramazan Hoca'nın öğrencisi ${displayName}</p>
+                        <p class="topbar-subtitle">Ramazan Hoca'nın Öğrencisi - ${data.coins || 0} Altın Ganimeti 🪙</p>
                     </div>
                     <div class="topbar-badge">
-                        <span class="level-icon">${level.icon}</span>
-                        <span class="level-name">${level.name}</span>
+                        <span class="level-icon" style="font-size:24px;">${(data.activeAvatar || level.icon).split(' ')[0]}</span>
+                        <span class="level-name">${data.activeAvatar || level.name}</span>
                         <span class="total-points">${data.totalPoints} ⭐</span>
                     </div>
                 </div>
+
+                ${warningHtml}
+                ${chestHtml}
 
                 <div class="dashboard-grid">
                     <!-- Motivation Card -->
@@ -921,6 +968,110 @@ const APP = (() => {
         Animations.staggeredEntrance(Array.from(cards), 100);
     }
 
+    // ============ MARKET (Premium) ============
+    function renderMarket() {
+        const container = document.getElementById('main-content');
+        const username = AUTH.getCurrentUser();
+        const data = Storage.getData(username);
+        const coins = data.coins || 0;
+
+        const avatars = [
+            { id: 'Prof. Dr. 👨‍🔬', name: 'Prof. Dr. Avatar', price: 500, type: 'avatar' },
+            { id: 'Deha 🧠', name: 'Kimya Dehası', price: 1000, type: 'avatar' },
+            { id: 'Kral 👑', name: 'Okul Birincisi', price: 5000, type: 'avatar' }
+        ];
+
+        window.buyMarketItem = (type, id, price) => {
+            if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+            if (Storage.buyItem(username, type, id, price)) {
+                if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
+                alert(`Tebrikler! [${id}] satın alındı ve kuşanıldı!`);
+                renderMarket(); // reload
+                renderSidebar(); // update avatar right away
+            } else {
+                if (typeof AUDIO !== 'undefined') AUDIO.playWrong();
+                alert('Yetersiz altın! Daha çok soru çözmelisin.');
+            }
+        };
+
+        window.equipMarketItem = (type, id) => {
+            if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+            Storage.equipItem(username, type, id);
+            renderMarket();
+            renderSidebar();
+        };
+
+        container.innerHTML = `
+            <div class="market-screen" style="padding:20px;">
+                <div class="screen-header" style="text-align:center; padding: 40px; background: radial-gradient(circle, #2C3E50 0%, #000000 100%); color: gold; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <h2 style="font-size:36px; margin-bottom:10px;">🛒 Gizli Kara Market</h2>
+                    <p style="font-size:18px;">Kimya Altınlarını harcayarak profilini özelleştir!</p>
+                    <div style="font-size:40px; margin-top:20px; font-weight:bold; text-shadow: 0 0 20px gold;">
+                        ${coins} 🪙
+                    </div>
+                </div>
+
+                <h3 style="margin-top:30px; font-size:24px;">👨‍🔬 Efsanevi Avatarlar</h3>
+                <div class="market-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-top:20px;">
+                    ${avatars.map(item => {
+                        const owned = data.ownedAvatars && data.ownedAvatars.includes(item.id);
+                        const active = data.activeAvatar === item.id;
+                        return `
+                        <div class="dash-card" style="text-align:center; border: ${active ? '3px solid #00BFA5' : '1px solid #ddd'}">
+                            <div style="font-size:60px; margin-bottom:10px;">${item.id.split(' ')[0] || item.id}</div>
+                            <h4>${item.name}</h4>
+                            ${owned ? 
+                                `<button class="btn ${active ? 'btn-correct' : 'btn-primary'}" style="margin-top:10px; width:100%;" onclick="buyMarketItem('${item.type}', '${item.id}', 0); equipMarketItem('${item.type}', '${item.id}')">${active ? 'Kuşanıldı ✅' : 'Kullan'}</button>` 
+                                : `<button class="btn btn-warning" style="margin-top:10px; width:100%;" onclick="buyMarketItem('${item.type}', '${item.id}', ${item.price})">Satın Al (${item.price} 🪙)</button>`
+                            }
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+
+        Animations.staggeredEntrance(Array.from(container.querySelectorAll('.dash-card')), 100);
+    }
+
+    // ============ PERIODIC LAB ============
+    function renderPeriodicLab() {
+        const container = document.getElementById('main-content');
+        
+        let elements = [];
+        if (typeof TABLES !== 'undefined' && TABLES.ilk20) elements = [...TABLES.ilk20.items];
+        
+        container.innerHTML = `
+            <div class="lab-screen" style="padding:20px;">
+                <div class="screen-header" style="position:relative; z-index:1; padding: 30px; border-radius: 20px; background: linear-gradient(135deg, #1A2980 0%, #26D0CE 100%); color:white; overflow:hidden;">
+                    <div style="position:absolute; top:0;left:0; right:0;bottom:0; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2240%22 stroke=%22rgba(255,255,255,0.1)%22 stroke-width=%221%22 fill=%22none%22/><circle cx=%2250%22 cy=%2250%22 r=%2220%22 stroke=%22rgba(255,255,255,0.2)%22 stroke-width=%222%22 fill=%22none%22/></svg>') center center / cover; opacity: 0.5; animation: spin 20s linear infinite;"></div>
+                    <div style="position:relative; z-index:2;">
+                        <h2 style="font-size:32px;">🔬 İnteraktif Element Laboratuvarı</h2>
+                        <p>Atomların sırlarını hologram kartlarla keşfet.</p>
+                    </div>
+                </div>
+
+                <div class="periodic-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:15px; margin-top:30px;">
+                    ${elements.map(el => `
+                        <div class="lab-card" style="background:var(--bg-card); cursor:pointer; padding:20px 10px; border-radius:15px; box-shadow:var(--shadow-sm); text-align:center; transition:var(--transition);"
+                             onmouseover="this.style.transform='scale(1.05) translateY(-5px)'; this.style.boxShadow='var(--shadow-glow-teal)';"
+                             onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)';"
+                             onclick="APP.speak('${el.name}. Atom Numarası: ${el.number}')">
+                            <div style="font-size:12px; color:var(--text-muted); text-align:left;">${el.number || ''}</div>
+                            <div style="font-size:36px; font-weight:800; color:var(--teal); margin: 10px 0;">${el.symbol}</div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-primary);">${el.name}</div>
+                            ${el.charge ? `<div style="font-size:12px; margin-top:5px; color:var(--purple); background:rgba(124,77,255,0.1); display:inline-block; padding:2px 6px; border-radius:4px;">${el.charge}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        // Add 3d perspective effect to cards
+        const cards = container.querySelectorAll('.lab-card');
+        Animations.staggeredEntrance(Array.from(cards), 50);
+    }
+
     function toggleTheme() {
         if (typeof AUDIO !== 'undefined') AUDIO.playClick();
         const current = document.documentElement.getAttribute('data-theme');
@@ -941,7 +1092,7 @@ const APP = (() => {
         init, navigate, handleLogin, updatePreview, togglePassword,
         switchTab, searchTable, showElementBio, speak,
         selectDifficulty, startGame,
-        renderSidebar, renderBottomNav,
+        renderSidebar, renderBottomNav, renderMarket, renderPeriodicLab, showDailyChest,
         toggleTheme, toggleAudio
     };
 })();

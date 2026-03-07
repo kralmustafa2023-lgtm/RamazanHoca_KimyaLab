@@ -38,6 +38,7 @@ const AUDIO = (() => {
     function playClick() {
         init();
         playTone(600, 'sine', 0.1, 0.1);
+        if (enabled && navigator.vibrate) navigator.vibrate(10);
     }
 
     function playCorrect() {
@@ -45,12 +46,14 @@ const AUDIO = (() => {
         playTone(440, 'sine', 0.1, 0.2);
         setTimeout(() => playTone(554, 'sine', 0.1, 0.2), 100);
         setTimeout(() => playTone(659, 'sine', 0.2, 0.2), 200);
+        if (enabled && navigator.vibrate) navigator.vibrate([20, 50, 20]);
     }
 
     function playWrong() {
         init();
         playTone(300, 'sawtooth', 0.1, 0.15);
         setTimeout(() => playTone(250, 'sawtooth', 0.2, 0.15), 100);
+        if (enabled && navigator.vibrate) navigator.vibrate([50, 50, 50]);
     }
 
     function playSuccess() {
@@ -59,6 +62,7 @@ const AUDIO = (() => {
         setTimeout(() => playTone(329.63, 'square', 0.15, 0.1), 150);
         setTimeout(() => playTone(392.00, 'square', 0.15, 0.1), 300);
         setTimeout(() => playTone(523.25, 'square', 0.3, 0.15), 450);
+        if (enabled && navigator.vibrate) navigator.vibrate([30, 50, 30, 50, 100]);
     }
 
     function toggleSound() {

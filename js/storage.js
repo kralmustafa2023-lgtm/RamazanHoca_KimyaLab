@@ -39,7 +39,13 @@ const Storage = (() => {
             tablesCompleted: 0,
             dailyCardsFlipped: 0,
             dailyGoalDate: null,
-            sessionStartTime: null
+            sessionStartTime: null,
+            coins: 0,
+            dailyChestDate: null,
+            ownedAvatars: ['Çaylak'],
+            activeAvatar: 'Çaylak',
+            ownedThemes: ['light', 'dark'],
+            activeTheme: 'light'
         };
     }
 
@@ -154,9 +160,12 @@ const Storage = (() => {
             });
         }
 
-        // Points calculation
+        // Points and Coins calculation
         const pointsEarned = Math.round(score * 10 * (1 + combo * 0.1));
+        const coinsEarned = Math.round(pointsEarned / 2); // 1 coin per 2 points
+        
         data.totalPoints += pointsEarned;
+        data.coins = (data.coins || 0) + coinsEarned;
         data.level = getLevel(data.totalPoints).name;
 
         // Check badges
@@ -192,7 +201,7 @@ const Storage = (() => {
         }
 
         saveData(username, data);
-        return { data, pointsEarned, newBadges };
+        return { data, pointsEarned, coinsEarned, newBadges };
     }
 
     function updateTableProgress(username, table, percentage) {
@@ -273,10 +282,50 @@ const Storage = (() => {
         return `${hours} saat ${remainMins} dk`;
     }
 
+    function openDailyChest(username) {
+        const data = getData(username);
+        const today = new Date().toDateString();
+        if (data.dailyChestDate === today) return null; // Zaten açılmış
+        
+        data.dailyChestDate = today;
+        const reward = Math.floor(Math.random() * 400) + 100; // 100 ile 500 arası altın
+        data.coins = (data.coins || 0) + reward;
+        saveData(username, data);
+        return reward;
+    }
+
+    function buyItem(username, type, itemId, price) {
+        const data = getData(username);
+        if ((data.coins || 0) < price) return false;
+        
+        data.coins -= price;
+        if (type === 'avatar') {
+            if (!data.ownedAvatars) data.ownedAvatars = ['Çaylak'];
+            data.ownedAvatars.push(itemId);
+            data.activeAvatar = itemId;
+        } else if (type === 'theme') {
+            if (!data.ownedThemes) data.ownedThemes = ['light', 'dark'];
+            data.ownedThemes.push(itemId);
+            data.activeTheme = itemId;
+        }
+        saveData(username, data);
+        return true;
+    }
+
+    function equipItem(username, type, itemId) {
+        const data = getData(username);
+        if (type === 'avatar' && data.ownedAvatars && data.ownedAvatars.includes(itemId)) {
+            data.activeAvatar = itemId;
+        } else if (type === 'theme' && data.ownedThemes && data.ownedThemes.includes(itemId)) {
+            data.activeTheme = itemId;
+        }
+        saveData(username, data);
+    }
+
     return {
         initUser, getData, saveData, addPoints, updateGameStats,
         updateTableProgress, updateDailyGoal, addStudyTime,
         getOverallAccuracy, getMostMissedElement, getWeeklyComparison,
-        formatStudyTime
+        formatStudyTime, openDailyChest, buyItem, equipItem
     };
 })();

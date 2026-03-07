@@ -159,15 +159,22 @@ const Animations = (() => {
         });
     }
 
-    // Page transition
+    // Page transition (Ultra Premium with View Transitions API)
     function pageTransition(container, callback) {
-        container.classList.add('page-exit');
-        setTimeout(() => {
-            callback();
-            container.classList.remove('page-exit');
-            container.classList.add('page-enter');
-            setTimeout(() => container.classList.remove('page-enter'), 500);
-        }, 300);
+        if (document.startViewTransition) {
+            document.startViewTransition(() => {
+                callback();
+            });
+        } else {
+            // Fallback for older browsers
+            container.classList.add('page-exit');
+            setTimeout(() => {
+                callback();
+                container.classList.remove('page-exit');
+                container.classList.add('page-enter');
+                setTimeout(() => container.classList.remove('page-enter'), 500);
+            }, 300);
+        }
     }
 
     // Circular progress animation
