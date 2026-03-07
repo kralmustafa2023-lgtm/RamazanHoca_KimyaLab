@@ -252,10 +252,12 @@ const APP = (() => {
                 </div>
                 
                 <div class="sidebar-user">
-                    <div class="user-avatar" style="font-size:32px;">${(data.activeAvatar || level.icon).split(' ')[0]}</div>
+                    <div class="user-avatar" style="font-size:24px; overflow:hidden;">
+                        ${data.activeAvatar ? (data.activeAvatar.includes('<img') ? data.activeAvatar : data.activeAvatar.split(' ').pop()) : level.icon}
+                    </div>
                     <div class="user-info">
                         <span class="user-name">${AUTH.getDisplayName(username)}</span>
-                        <span class="user-level">${data.activeAvatar || level.name}</span>
+                        <span class="user-level">${data.activeAvatar && !data.activeAvatar.includes('<img') ? data.activeAvatar : level.name}</span>
                     </div>
                 </div>
 
@@ -394,10 +396,12 @@ const APP = (() => {
                         <h2>Hoş geldin ${displayName}! 🧪</h2>
                         <p class="topbar-subtitle">Ramazan Hoca'nın Öğrencisi - ${data.coins || 0} Altın Ganimeti 🪙</p>
                     </div>
-                    <div class="topbar-badge">
-                        <span class="level-icon" style="font-size:24px;">${(data.activeAvatar || level.icon).split(' ')[0]}</span>
-                        <span class="level-name">${data.activeAvatar || level.name}</span>
-                        <span class="total-points">${data.totalPoints} ⭐</span>
+                    <div class="topbar-badge" style="background: var(--bg-card); border: 2px solid ${level.color || 'var(--teal)'};">
+                        <span class="level-icon" style="font-size:24px; display:flex; align-items:center;">
+                            ${data.activeAvatar ? (data.activeAvatar.includes('<img') ? data.activeAvatar : data.activeAvatar.split(' ').pop()) : level.icon}
+                        </span>
+                        <span class="level-name" style="margin-left:8px;">${data.activeAvatar && !data.activeAvatar.includes('<img') ? data.activeAvatar : level.name}</span>
+                        <span class="total-points" style="margin-left:12px; padding-left:12px; border-left:1px solid rgba(0,0,0,0.1); font-weight:800;">${data.totalPoints} ⭐</span>
                     </div>
                 </div>
 

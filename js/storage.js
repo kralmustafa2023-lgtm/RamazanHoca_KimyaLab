@@ -42,8 +42,8 @@ const Storage = (() => {
             sessionStartTime: null,
             coins: 0,
             dailyChestDate: null,
-            ownedAvatars: ['Çaylak'],
-            activeAvatar: 'Çaylak',
+            ownedAvatars: [],
+            activeAvatar: null,
             ownedThemes: ['light', 'dark'],
             activeTheme: 'light'
         };

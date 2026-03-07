@@ -634,10 +634,10 @@ const BADGES = [
 // ============================================
 
 const LEVELS = [
-    { name: "Çaylak", icon: "⚗️", minPoints: 0, maxPoints: 100 },
-    { name: "Kimyager", icon: "🔬", minPoints: 101, maxPoints: 300 },
-    { name: "Usta", icon: "🧪", minPoints: 301, maxPoints: 600 },
-    { name: "Profesör", icon: "👨‍🔬", minPoints: 601, maxPoints: Infinity }
+    { name: "Çaylak", icon: "⚗️", minPoints: 0, maxPoints: 100, color: "#9E9E9E" },
+    { name: "Kimyager", icon: "🔬", minPoints: 101, maxPoints: 300, color: "#00BFA5" },
+    { name: "Usta", icon: "🧪", minPoints: 301, maxPoints: 600, color: "#7C4DFF" },
+    { name: "Profesör", icon: "👨‍🔬", minPoints: 601, maxPoints: Infinity, color: "#FFD600" }
 ];
 
 function getLevel(points) {
