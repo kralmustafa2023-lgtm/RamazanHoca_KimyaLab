@@ -252,10 +252,10 @@ const APP = (() => {
                 </div>
                 
                 <div class="sidebar-user">
-                    <div class="user-avatar" style="overflow:hidden; display:flex; align-items:center; justify-content:center; background:white;">
-                        ${data.activeAvatar ? 
-                            (data.activeAvatar.includes('<img') ? data.activeAvatar : `<span style="font-size:24px;">${data.activeAvatar.split(' ').pop()}</span>`) : 
-                            `<img src="images/logo.png" style="width:100%; height:100%; object-fit:contain;">`
+                    <div class="user-avatar" style="overflow:hidden; display:flex; align-items:center; justify-content:center; background:white; border: 2px solid var(--white); box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                        ${data.activeAvatar && data.activeAvatar.includes('<img') ? 
+                            data.activeAvatar : 
+                            `<img src="images/logo.png" style="width:100%; height:100%; object-fit:contain; padding:4px;">`
                         }
                     </div>
                     <div class="user-info">
@@ -399,15 +399,21 @@ const APP = (() => {
                         <h2>Hoş geldin ${displayName}! 🧪</h2>
                         <p class="topbar-subtitle">Ramazan Hoca'nın Öğrencisi - ${data.coins || 0} Altın Ganimeti 🪙</p>
                     </div>
-                    <div class="topbar-badge" style="background: var(--bg-card); border: 2px solid ${level.color || 'var(--teal)'}; padding: 6px 15px;">
-                        <div class="level-icon" style="width:32px; height:32px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:white; border: 1px solid rgba(0,0,0,0.05);">
-                            ${data.activeAvatar ? 
-                                (data.activeAvatar.includes('<img') ? data.activeAvatar : `<span style="font-size:18px;">${data.activeAvatar.split(' ').pop()}</span>`) : 
-                                `<img src="images/logo.png" style="width:80%; height:80%; object-fit:contain;">`
+                    <div class="topbar-badge" style="background: var(--bg-card); border: 2.5px solid ${level.color || 'var(--teal)'}; padding: 8px 20px; border-radius: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; align-items: center;">
+                        <div class="level-icon" style="width:40px; height:40px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:white; position: relative; left: -10px; border: 2px solid white; box-shadow: 4px 0 10px rgba(0,0,0,0.1);">
+                            ${data.activeAvatar && data.activeAvatar.includes('<img') ? 
+                                data.activeAvatar : 
+                                `<img src="images/logo.png" style="width:85%; height:85%; object-fit:contain;">`
                             }
                         </div>
-                        <span class="level-name" style="margin-left:10px; font-weight:700; color:var(--text-primary);">${level.name}</span>
-                        <span class="total-points" style="margin-left:12px; padding-left:12px; border-left:2px solid rgba(0,0,0,0.05); font-weight:800; color:var(--orange);">${data.totalPoints} ⭐</span>
+                        <div style="display:flex; flex-direction:column; align-items:flex-start; margin-left: 5px;">
+                            <span class="level-name" style="font-weight:800; color:var(--text-primary); font-size:16px;">${level.name}</span>
+                            <span class="total-points" style="font-weight:700; color:var(--orange); font-size:13px;">${data.totalPoints} ⭐</span>
+                        </div>
+                        <div style="margin-left: 20px; padding-left: 15px; border-left: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column;">
+                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Ganimet</span>
+                            <span style="font-weight: 800; color: #FFC107; font-size: 15px;">${data.coins || 0} 🪙</span>
+                        </div>
                     </div>
                 </div>
 
