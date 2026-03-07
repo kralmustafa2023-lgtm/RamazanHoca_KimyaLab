@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ramazan Hoca'nın Kimya Sınıfı - Kimya elementlerini öğrenmenin en eğlenceli yolu. Flashcard, quiz, eşleştirme ve tablo doldurma modlarıyla kimya çalış.">
+    <title>Ramazan Hoca'nın KimyaLab ⚗️</title>
+    
+    <!-- Fonts - will be cached after first load -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css?v=7">
+    <link rel="stylesheet" href="css/animations.css?v=7">
+    <link rel="stylesheet" href="css/responsive.css?v=7">
+
+    <!-- Favicon -->
+    <link rel="icon" href="images/logo.png" type="image/png">
+
+    <style>
+        /* Inline critical: loading screen */
+        .loading-screen {
+            position: fixed; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #F0F4F8, #E8EDF5);
+            z-index: 10000;
+            transition: opacity 0.5s ease;
+        }
+        .loading-screen.hidden { opacity: 0; pointer-events: none; }
+        .loading-logo { animation: floating 2s ease-in-out infinite; }
+        .loading-logo img {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            object-fit: contain;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+        .loading-text {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px; font-weight: 700;
+            margin-top: 16px;
+            background: linear-gradient(135deg, #00BFA5, #7C4DFF);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .loading-dots { margin-top: 12px; display: flex; gap: 6px; }
+        .loading-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #00BFA5;
+            animation: loadDot 1.4s ease-in-out infinite;
+        }
+        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes loadDot {
+            0%, 80%, 100% { transform: scale(0.4); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-logo"><img src="images/logo.png" alt="NSBL"></div>
+        <div class="loading-text">Ramazan Hoca'nın KimyaLab</div>
+        <div class="loading-dots">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+        </div>
+    </div>
+
+    <!-- SVG Defs for progress ring gradient -->
+    <svg style="position:absolute;width:0;height:0">
+        <defs>
+            <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#00BFA5"/>
+                <stop offset="100%" style="stop-color:#7C4DFF"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- App Container -->
+    <div class="app-container">
+        <aside id="sidebar"></aside>
+        <main id="main-content"></main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js?v=7"></script>
+    <script src="js/storage.js?v=7"></script>
+    <script src="js/auth.js?v=7"></script>
+    <script src="js/animations.js?v=7"></script>
+    <script src="js/game.js?v=7"></script>
+    <script src="js/app.js?v=7"></script>
+
+    <script>
+        // Hide loading screen or show extraction warning
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                var loader = document.getElementById('loading-screen');
+                
+                // If APP is not defined, files are missing (due to WhatsApp ZIP preview)
+                if (typeof APP === 'undefined') {
+                    if (loader) {
+                        loader.innerHTML = '<div style="background:white;padding:30px;border-radius:20px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.15);max-width:85%;margin:auto;"><h2 style="color:#F44336;margin-bottom:15px;font-family:sans-serif;font-size:24px;">⚠️ DİKKAT!</h2><p style="color:#333;font-family:sans-serif;font-weight:600;font-size:16px;line-height:1.5;">Uygulama açılamadı çünkü dosyalar (logo, tasarım) birleştirilemedi.</p><p style="color:#555;font-family:sans-serif;font-size:14px;margin-top:15px;line-height:1.6;">Lütfen indirdiğiniz <b>ZIP (veya RAR) dosyasının İÇİNDEKİLERİ BİR KLASÖRE ÇIKARTIP</b> ondan sonra girmeyi deneyin.<br><br>WhatsApp veya Dosya Yöneticisinden doğrudan <i>index.html</i> dosyasına tıklanarak zip içinden açıldığında uygulama çalışamaz.</p></div>';
+                        loader.style.background = '#F0F4F8';
+                    }
+                    return;
+                }
+
+                if (loader) {
+                    loader.classList.add('hidden');
+                    setTimeout(function() { loader.remove(); }, 500);
+                }
+            }, 800);
+        });
+    </script>
+</body>
+</html>

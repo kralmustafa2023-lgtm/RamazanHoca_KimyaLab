@@ -1,0 +1,140 @@
+/* ============================================
+   ANIMATIONS.CSS — All Animation Keyframes
+   ============================================ */
+
+/* Confetti */
+.confetti-particle {
+    position: fixed; top: -10px; z-index: 9999;
+    pointer-events: none;
+    animation: confettiFall 2.5s ease-in forwards;
+}
+@keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg) scale(0.3); opacity: 0; }
+}
+
+/* Shake */
+.shake-animation, .wrong-shake {
+    animation: shakeAnim 0.5s ease;
+}
+@keyframes shakeAnim {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-10px); }
+    40% { transform: translateX(10px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+}
+
+/* Correct wave */
+.correct-wave {
+    animation: correctPulse 0.6s ease;
+}
+@keyframes correctPulse {
+    0% { box-shadow: 0 0 0 0 rgba(76,175,80,0.4); }
+    50% { box-shadow: 0 0 0 15px rgba(76,175,80,0); }
+    100% { box-shadow: 0 0 0 0 rgba(76,175,80,0); }
+}
+
+/* Combo overlay */
+.combo-overlay {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9998; pointer-events: none;
+    animation: comboIn 0.5s ease;
+}
+.combo-content {
+    display: flex; flex-direction: column; align-items: center;
+    animation: comboScale 1.5s ease;
+}
+.combo-emoji { font-size: 64px; }
+.combo-text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 36px; font-weight: 900;
+    background: linear-gradient(135deg, #FF6D00, #FFD600);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+}
+.combo-count {
+    font-size: 24px; font-weight: 800; color: #FF6D00;
+}
+.combo-normal .combo-text {
+    background: linear-gradient(135deg, #FF6D00, #FF9800);
+    -webkit-background-clip: text; background-clip: text;
+}
+.combo-super .combo-text {
+    background: linear-gradient(135deg, #7C4DFF, #E040FB);
+    -webkit-background-clip: text; background-clip: text;
+}
+.combo-legendary .combo-text {
+    background: linear-gradient(135deg, #FFD600, #FF6D00);
+    -webkit-background-clip: text; background-clip: text;
+    font-size: 44px;
+}
+@keyframes comboIn {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+}
+@keyframes comboScale {
+    0% { transform: scale(0.3); opacity: 0; }
+    30% { transform: scale(1.2); opacity: 1; }
+    50% { transform: scale(1); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: scale(1.1); }
+}
+.combo-exit { animation: fadeOut 0.5s ease forwards; }
+
+/* Badge earned */
+.badge-overlay {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
+}
+.badge-earned-card {
+    background: white; border-radius: 24px;
+    padding: 40px; text-align: center;
+    position: relative; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: slideUp 0.5s ease;
+}
+.badge-earned-glow {
+    position: absolute; inset: -50%; 
+    background: conic-gradient(from 0deg, #00BFA5, #7C4DFF, #FF4081, #FFD600, #00BFA5);
+    animation: glowRotate 3s linear infinite;
+    opacity: 0.15;
+}
+@keyframes glowRotate { to { transform: rotate(360deg); } }
+.badge-earned-icon { font-size: 64px; position: relative; z-index: 1; }
+.badge-earned-title {
+    font-size: 24px; font-weight: 800; margin-top: 12px;
+    color: #00BFA5; position: relative; z-index: 1;
+}
+.badge-earned-name {
+    font-size: 18px; font-weight: 600; margin-top: 4px;
+    position: relative; z-index: 1;
+}
+.badge-earned-desc {
+    font-size: 14px; color: #666; margin-top: 8px;
+    position: relative; z-index: 1;
+}
+.badge-exit { animation: fadeOut 0.5s ease forwards; }
+
+/* Pulse glow */
+.pulse-glow {
+    animation: pulseGlow 2s ease infinite;
+}
+@keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 5px rgba(0,191,165,0.3); }
+    50% { box-shadow: 0 0 25px rgba(0,191,165,0.6); }
+}
+
+/* Float */
+.floating {
+    animation: floating 3s ease-in-out infinite;
+}
+@keyframes floating {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}

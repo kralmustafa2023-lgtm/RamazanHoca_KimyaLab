@@ -1,0 +1,87 @@
+/* ============================================
+   RESPONSIVE.CSS — Mobile & Tablet
+   ============================================ */
+
+@media (max-width: 1024px) {
+    :root { --sidebar-width: 220px; }
+}
+
+@media (max-width: 768px) {
+    /* Hide sidebar, show bottom nav */
+    #sidebar { display: none !important; }
+    body.has-sidebar #main-content { margin-left: 0; }
+    .bottom-nav { display: flex !important; }
+    #main-content { padding-bottom: 70px; }
+
+    /* Login */
+    .login-screen { flex-direction: column; }
+    .login-right { display: none; }
+    .login-left { padding: 24px; }
+    .login-title { font-size: 22px; }
+
+    /* Dashboard */
+    .dashboard-screen { padding: 16px; }
+    .dashboard-topbar { flex-direction: column; align-items: flex-start; }
+    .topbar-greeting h2 { font-size: 20px; }
+    .mode-cards-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .quick-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .badges-preview-grid { grid-template-columns: repeat(2, 1fr); }
+    .dash-nav-buttons { flex-direction: column; }
+
+    /* Difficulty */
+    .difficulty-grid { grid-template-columns: 1fr; gap: 12px; }
+
+    /* Mode Select */
+    .mode-select-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .table-select-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+    /* Game */
+    .game-screen { padding: 12px; }
+    .flashcard-text { font-size: 28px; }
+    .flashcard { min-height: 240px; }
+    .flashcard-actions { gap: 10px; }
+
+    /* Quiz */
+    .question-text { font-size: 17px; }
+    .quiz-option { padding: 12px 14px; }
+
+    /* Matching */
+    .matching-container { flex-direction: column; align-items: center; }
+    .matching-lines { display: none; }
+    .matching-column { max-width: 100%; width: 100%; }
+
+    /* Stats */
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .mode-stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+    /* Badges */
+    .badges-grid { grid-template-columns: repeat(2, 1fr); }
+
+    /* Results */
+    .results-stats { flex-direction: column; align-items: center; }
+    .results-stat { width: 200px; }
+
+    /* Tables */
+    .tables-screen { padding: 16px; }
+    .tabs-container { gap: 6px; }
+    .tab-btn { padding: 8px 14px; font-size: 12px; }
+    .table-row { padding: 10px 12px; gap: 8px; }
+    .row-symbol { min-width: 60px; font-size: 14px; padding: 4px 8px; }
+}
+
+@media (max-width: 480px) {
+    .mode-cards-grid { grid-template-columns: 1fr; }
+    .mode-select-grid { grid-template-columns: 1fr; }
+    .table-select-grid { grid-template-columns: 1fr; }
+    .badges-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .mode-stats-grid { grid-template-columns: 1fr; }
+    .quick-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .badges-preview-grid { grid-template-columns: repeat(4, 1fr); }
+    
+    .flashcard-text { font-size: 24px; }
+    .combo-text { font-size: 24px; }
+    .combo-emoji { font-size: 48px; }
+    .results-emoji { font-size: 56px; }
+    .results-title { font-size: 22px; }
+}
