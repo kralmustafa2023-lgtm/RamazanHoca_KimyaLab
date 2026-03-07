@@ -1149,11 +1149,11 @@ const APP = (() => {
         overlay.innerHTML = `
             <div class="big-element-card" style="
                 background: var(--bg-card); 
-                max-width: 550px; 
+                max-width: 420px; 
                 width: 100%; 
-                border-radius: 40px; 
+                border-radius: 32px; 
                 padding: 0; 
-                box-shadow: 0 0 80px ${cardColor}33, 0 30px 100px rgba(0,0,0,0.8); 
+                box-shadow: 0 0 60px ${cardColor}33, 0 30px 100px rgba(0,0,0,0.8); 
                 text-align:center; 
                 position:relative; 
                 overflow:hidden; 
@@ -1165,40 +1165,40 @@ const APP = (() => {
                 flex-direction: column;
             ">
                 <!-- Top Colorful Header Section -->
-                <div style="background: linear-gradient(135deg, ${cardColor} 0%, #1a1a1a 100%); padding: 50px 20px; position: relative;">
+                <div style="background: linear-gradient(135deg, ${cardColor} 0%, #1a1a1a 100%); padding: 30px 20px; position: relative;">
                     <div style="position:absolute; top:0; left:0; right:0; bottom:0; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2240%22 stroke=%22rgba(255,255,255,0.1)%22 stroke-width=%220.5%22 fill=%22none%22/></svg>') center center / cover; opacity: 0.3;"></div>
                     
-                    <button onclick="this.closest('.big-element-card').parentElement.remove()" style="position:absolute; top: 20px; right: 25px; font-size: 32px; background:rgba(0,0,0,0.2); border:none; cursor:pointer; color:white; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:10; transition:all 0.3s ease;" onmouseover="this.style.background='rgba(0,0,0,0.4)'; this.style.transform='rotate(90deg)';" onmouseout="this.style.background='rgba(0,0,0,0.2)'; this.style.transform='rotate(0deg)';">✕</button>
+                    <button onclick="this.closest('.big-element-card').parentElement.remove()" style="position:absolute; top: 15px; right: 15px; font-size: 24px; background:rgba(0,0,0,0.2); border:none; cursor:pointer; color:white; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:10; transition:all 0.3s ease;">✕</button>
 
-                    <div style="display:inline-block; background:rgba(255,255,255,0.2); backdrop-filter:blur(5px); color:white; padding:6px 16px; border-radius:20px; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:2px; margin-bottom:20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display:inline-block; background:rgba(255,255,255,0.2); backdrop-filter:blur(5px); color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                         ${el.number ? 'Element No: ' + el.number : 'Özel Kimyasal Yapı'}
                     </div>
                     
-                    <div style="font-size: 130px; font-weight: 900; color: white; line-height:0.85; margin: 10px 0; text-shadow: 0 10px 30px rgba(0,0,0,0.3); letter-spacing:-5px;">${el.symbol}</div>
-                    <h2 style="font-size: 42px; font-weight: 800; color:white; margin-top: 15px; text-shadow: 0 4px 15px rgba(0,0,0,0.2);">${el.name}</h2>
+                    <div style="font-size: 80px; font-weight: 900; color: white; line-height:0.85; margin: 5px 0; text-shadow: 0 10px 30px rgba(0,0,0,0.3); letter-spacing:-3px;">${el.symbol}</div>
+                    <h2 style="font-size: 32px; font-weight: 800; color:white; margin-top: 10px; text-shadow: 0 4px 15px rgba(0,0,0,0.2);">${el.name}</h2>
                 </div>
 
                 <!-- Content Section -->
-                <div style="padding: 40px; flex: 1; background: var(--bg-card);">
-                    <div style="background: rgba(0,0,0,0.03); border-radius: 24px; padding: 25px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px; position: relative;">
-                        <div style="position:absolute; top:-15px; left:25px; background:${cardColor}; color:white; padding:4px 15px; border-radius:10px; font-size:12px; font-weight:700; box-shadow: 0 4px 10px ${cardColor}44;">Ramazan Hoca Notu 📝</div>
-                        <p style="font-size: 17px; color:var(--text-primary); line-height:1.7; font-weight:500;">${el.bio}</p>
+                <div style="padding: 25px; flex: 1; background: var(--bg-card);">
+                    <div style="background: rgba(0,0,0,0.03); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px; position: relative;">
+                        <div style="position:absolute; top:-12px; left:20px; background:${cardColor}; color:white; padding:3px 12px; border-radius:8px; font-size:11px; font-weight:700; box-shadow: 0 4px 10px ${cardColor}44;">Ramazan Hoca Notu 📝</div>
+                        <p style="font-size: 15px; color:var(--text-primary); line-height:1.6; font-weight:500;">${el.bio}</p>
                     </div>
 
-                    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:15px; margin-bottom:35px;">
-                        <div style="background:var(--bg-secondary); padding:20px; border-radius:24px; text-align:left; border-left: 5px solid ${cardColor};">
-                            <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:800; letter-spacing:1px; margin-bottom:6px;">Sembol</div>
-                            <div style="font-size:24px; font-weight:800; color:var(--text-primary);">${el.symbol}</div>
+                    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; margin-bottom:25px;">
+                        <div style="background:var(--bg-secondary); padding:15px; border-radius:20px; text-align:left; border-left: 4px solid ${cardColor};">
+                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; letter-spacing:1px; margin-bottom:4px;">Sembol</div>
+                            <div style="font-size:20px; font-weight:800; color:var(--text-primary);">${el.symbol}</div>
                         </div>
-                        <div style="background:var(--bg-secondary); padding:20px; border-radius:24px; text-align:left; border-left: 5px solid ${cardColor};">
-                            <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:800; letter-spacing:1px; margin-bottom:6px;">Yük Durumu</div>
-                            <div style="font-size:24px; font-weight:800; color:var(--text-primary);">${el.charge || (el.charges ? el.charges.join(', ') : '0')}</div>
+                        <div style="background:var(--bg-secondary); padding:15px; border-radius:20px; text-align:left; border-left: 4px solid ${cardColor};">
+                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; letter-spacing:1px; margin-bottom:4px;">Yük Durumu</div>
+                            <div style="font-size:20px; font-weight:800; color:var(--text-primary);">${el.charge || (el.charges ? el.charges.join(', ') : '0')}</div>
                         </div>
                     </div>
                     
-                    <div style="display:flex; gap:15px; margin-top: auto;">
-                        <button class="btn btn-primary" onclick="APP.speak('${el.name}. ${el.bio.replace(/'/g, "")}')" style="flex:2.5; font-size:18px; padding: 20px; border-radius:24px; background: ${cardColor}; border:none; box-shadow: 0 10px 30px ${cardColor}55;">
-                            <span style="font-size:22px;">🔊</span> Sesli Dinleme Başlat
+                    <div style="display:flex; gap:12px; margin-top: auto;">
+                        <button class="btn btn-primary" onclick="APP.speak('${el.name}. ${el.bio.replace(/'/g, "")}')" style="flex:2.5; font-size:16px; padding: 15px; border-radius:20px; background: ${cardColor}; border:none; box-shadow: 0 8px 25px ${cardColor}55;">
+                            <span style="font-size:18px;">🔊</span> Sesli Dinleme
                         </button>
                     </div>
                 </div>
