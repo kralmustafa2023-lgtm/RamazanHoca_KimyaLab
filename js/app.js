@@ -64,12 +64,102 @@ const APP = (() => {
         if (coins) {
             if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
             if (typeof Animations !== 'undefined') Animations.confetti();
-            alert(`🎉 Günlük Harika Sandığını Açtın!\n\nTam ${coins} Kimya Altını Kazandın!`);
-            currentScreen = null; // force re-render
-            navigate('dashboard');
+            
+            showRewardModal(
+                "Günlük Sandık Açıldı!",
+                "Tebrikler! Ramazan Hoca'dan bugünkü ganimetini topladın. Kimyanın gücü seninle olsun!",
+                coins
+            );
         } else {
             alert('❌ Bugünkü sandığını zaten açtın. Yarına tekrar gel!');
         }
+    }
+
+    function showRewardModal(title, subtitle, amount) {
+        // Remove existing if any
+        const existing = document.querySelector('.reward-overlay');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.className = 'reward-overlay';
+        overlay.style.cssText = `
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(15px); z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.4s ease;
+        `;
+        
+        overlay.innerHTML = `
+            <div class="reward-modal" style="
+                background: var(--bg-card); 
+                max-width: 420px; width: 90%; 
+                border-radius: 40px; text-align: center;
+                overflow: hidden; box-shadow: 0 25px 100px rgba(0,0,0,0.6);
+                transform: scale(0.7) translateY(60px);
+                transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+                border: 1px solid rgba(255,255,255,0.1);
+                position: relative;
+            ">
+                <!-- Glare Effect -->
+                <div style="position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: radial-gradient(circle, rgba(255,214,0,0.1) 0%, transparent 60%); pointer-events:none;"></div>
+
+                <div style="background: linear-gradient(135deg, #FFD600 0%, #FF6D00 100%); padding: 60px 20px; position: relative;">
+                    <div style="font-size: 100px; margin-bottom: 0; animation: float 3s ease-in-out infinite;">🎁</div>
+                    <div class="confetti-container" style="position: absolute; inset:0; pointer-events:none; overflow:hidden;"></div>
+                    
+                    <!-- Sparkle effects -->
+                    <div style="position:absolute; top:20px; left:20%; animation: pulse 2s infinite; font-size:24px;">✨</div>
+                    <div style="position:absolute; bottom:30px; right:25%; animation: pulse 2s infinite 1s; font-size:20px;">✨</div>
+                </div>
+                
+                <div style="padding: 40px 30px; position:relative; z-index:2;">
+                    <h2 style="font-size: 30px; font-weight: 800; margin-bottom: 12px; color: var(--text-primary); letter-spacing: -0.5px;">${title}</h2>
+                    <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 35px; line-height: 1.6;">${subtitle}</p>
+                    
+                    <div style="background: rgba(255, 214, 0, 0.05); border-radius: 30px; padding: 30px 20px; margin-bottom: 40px; border: 2.5px dashed rgba(255, 214, 0, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <div style="font-size: 11px; font-weight: 800; color: #E65100; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 15px; opacity:0.8;">Kazanılan Ganimet</div>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <span id="reward-amount-count" style="font-size: 64px; font-weight: 900; color: #FF9100; text-shadow: 0 8px 25px rgba(255,145,0,0.3); font-family: 'Poppins', sans-serif;">0</span>
+                            <span style="font-size: 48px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));">🪙</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary btn-lg reward-close-btn" style="width: 100%; padding: 22px; border-radius: 20px; font-size: 18px; font-weight: 800; background: linear-gradient(135deg, #FFD600, #FF6D00); border: none; box-shadow: 0 12px 35px rgba(255,109,0,0.4); color: white; cursor: pointer; transition: var(--transition);">
+                        MUHTEŞEM! 🚀
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        const closeBtn = overlay.querySelector('.reward-close-btn');
+        closeBtn.onclick = () => {
+            if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+            overlay.style.opacity = '0';
+            overlay.querySelector('.reward-modal').style.transform = 'scale(0.8) translateY(30px)';
+            setTimeout(() => {
+                overlay.remove();
+                APP.navigate('dashboard');
+            }, 400);
+        };
+
+        // Show after a small delay
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            const modal = overlay.querySelector('.reward-modal');
+            modal.style.transform = 'scale(1) translateY(0)';
+            
+            // Animate counter
+            const counter = overlay.querySelector('#reward-amount-count');
+            if (typeof Animations !== 'undefined') {
+                Animations.animateCounter(counter, amount, 2000);
+                // Extra confetti inside
+                Animations.confetti(overlay.querySelector('.confetti-container'));
+            } else {
+                counter.textContent = amount;
+            }
+        }, 50);
     }
 
     // ============ CUSTOM AVATAR ============
