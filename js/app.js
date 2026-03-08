@@ -9,6 +9,15 @@ const APP = (() => {
     let selectedDifficulty = null;
     let selectedTable = null;
 
+    function getGoldIcon(size = 18) {
+        return `
+            <div style="display:inline-flex; align-items:center; justify-content:center; width:${size}px; height:${size}px; background:linear-gradient(135deg, #FFD600, #FFAB00); border:2px solid #E65100; border-radius:50%; box-shadow: 0 2px 4px rgba(0,0,0,0.15); position:relative; overflow:hidden; vertical-align:middle; line-height:1;">
+                <div style="position:absolute; top:15%; left:15%; width:25%; height:25%; background:rgba(255,255,255,0.6); border-radius:50%;"></div>
+                <span style="color:#BF360C; font-weight:900; font-size:${size*0.65}px; font-family: 'Inter', sans-serif;">$</span>
+            </div>
+        `;
+    }
+
     function init() {
         const savedTheme = localStorage.getItem('kimyalab_theme');
         if (savedTheme === 'dark') {
@@ -145,7 +154,7 @@ const APP = (() => {
                         <span style="position: absolute; top: -10px; background: #FF9100; color: white; padding: 2px 10px; border-radius: 6px; font-size: 9px; font-weight: 800; text-transform: uppercase;">Ganimet</span>
                         <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
                             <span id="reward-amount-count" style="font-size: 48px; font-weight: 900; color: #FF9100; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.1);">0</span>
-                            <img src="images/gold_coin.png" style="width:50px; height:50px; object-fit:contain; filter: drop-shadow(0 5px 15px rgba(255,145,0,0.4)); animation: coinVibe 2s ease-in-out infinite;">
+                            <div style="animation: coinVibe 2s ease-in-out infinite;">${getGoldIcon(45)}</div>
                         </div>
                     </div>
                     
@@ -427,7 +436,7 @@ const APP = (() => {
                             <div class="level-fill-mini" style="width: ${getLevelProgress(data.totalPoints)}%"></div>
                         </div>
                         <span class="level-points-mini" style="display:flex; align-items:center; gap:6px;">
-                            ${data.totalPoints} puan - <b style="color:#FFC107; display:flex; align-items:center; gap:4px;">${data.coins || 0} <img src="images/gold_coin.png" style="width:16px; height:16px; object-fit:contain; vertical-align:middle;"> Altın</b>
+                            ${data.totalPoints} puan - <b style="color:#FFC107; display:flex; align-items:center; gap:4px;">${data.coins || 0} ${getGoldIcon(16)} Altın</b>
                         </span>
                     </div>
                     <div class="settings-row" style="display:flex;gap:10px;margin-top:15px;margin-bottom:15px;">
@@ -527,7 +536,7 @@ const APP = (() => {
                     <div class="topbar-greeting">
                         <h2>Hoş geldin ${displayName}! 🧪</h2>
                         <p class="topbar-subtitle" style="display:flex; align-items:center; gap:6px;">
-                            Ramazan Hoca'nın Öğrencisi - ${data.coins || 0} Altın Ganimeti <img src="images/gold_coin.png" style="width:18px; height:18px; object-fit:contain;">
+                            Ramazan Hoca'nın Öğrencisi - ${data.coins || 0} Altın Ganimeti ${getGoldIcon(18)}
                         </p>
                     </div>
                     <div class="topbar-badge" style="background: var(--bg-card); border: 2.5px solid ${level.color || 'var(--teal)'}; padding: 10px 24px; border-radius: 30px; box-shadow: 0 6px 25px rgba(0,0,0,0.18); display: flex; align-items: center;">
@@ -545,7 +554,7 @@ const APP = (() => {
                             <span style="font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Ganimet</span>
                             <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
                                 <span style="font-weight: 900; color: #FFC107; font-size: 18px;">${data.coins || 0}</span>
-                                <img src="images/gold_coin.png" style="width:20px; height:20px; object-fit:contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+                                ${getGoldIcon(20)}
                             </div>
                         </div>
                     </div>
