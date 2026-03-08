@@ -143,12 +143,9 @@ const APP = (() => {
                     
                     <div style="background: rgba(255, 145, 0, 0.08); border-radius: 20px; padding: 15px; margin-bottom: 25px; border: 2px solid #FF9100; position: relative;">
                         <span style="position: absolute; top: -10px; background: #FF9100; color: white; padding: 2px 10px; border-radius: 6px; font-size: 9px; font-weight: 800; text-transform: uppercase;">Ganimet</span>
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
-                            <span id="reward-amount-count" style="font-size: 44px; font-weight: 900; color: #FF9100; letter-spacing: -1px;">0</span>
-                            <div style="width:36px; height:36px; background:#FFD600; border:3px solid #FF9100; border-radius:50%; box-shadow:0 4px 10px rgba(0,0,0,0.2); position:relative; overflow:hidden;">
-                                <div style="position:absolute; top:5px; left:5px; width:8px; height:8px; background:rgba(255,255,255,0.8); border-radius:50%;"></div>
-                                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#E65100; font-weight:900; font-size:16px;">✨</div>
-                            </div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                            <span id="reward-amount-count" style="font-size: 48px; font-weight: 900; color: #FF9100; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.1);">0</span>
+                            <img src="images/gold_coin.png" style="width:50px; height:50px; object-fit:contain; filter: drop-shadow(0 5px 15px rgba(255,145,0,0.4)); animation: coinVibe 2s ease-in-out infinite;">
                         </div>
                     </div>
                     
@@ -166,6 +163,10 @@ const APP = (() => {
                 @keyframes bounceFloat {
                     0%, 100% { transform: translateY(0) scale(1.05); }
                     50% { transform: translateY(-12px) scale(0.95); }
+                }
+                @keyframes coinVibe {
+                    0%, 100% { transform: scale(1) rotate(0deg); }
+                    50% { transform: scale(1.15) rotate(10deg); filter: drop-shadow(0 10px 20px rgba(255,145,0,0.6)); }
                 }
             </style>
         `;
@@ -426,7 +427,7 @@ const APP = (() => {
                             <div class="level-fill-mini" style="width: ${getLevelProgress(data.totalPoints)}%"></div>
                         </div>
                         <span class="level-points-mini" style="display:flex; align-items:center; gap:6px;">
-                            ${data.totalPoints} puan - <b style="color:#FFC107; display:flex; align-items:center; gap:4px;">${data.coins || 0} <span style="width:14px; height:14px; background:#FFD600; border:1.5px solid #FF9100; border-radius:50%; display:inline-block; box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span> Altın</b>
+                            ${data.totalPoints} puan - <b style="color:#FFC107; display:flex; align-items:center; gap:4px;">${data.coins || 0} <img src="images/gold_coin.png" style="width:16px; height:16px; object-fit:contain; vertical-align:middle;"> Altın</b>
                         </span>
                     </div>
                     <div class="settings-row" style="display:flex;gap:10px;margin-top:15px;margin-bottom:15px;">
@@ -525,8 +526,8 @@ const APP = (() => {
                 <div class="dashboard-topbar">
                     <div class="topbar-greeting">
                         <h2>Hoş geldin ${displayName}! 🧪</h2>
-                        <p class="topbar-subtitle" style="display:flex; align-items:center; gap:5px;">
-                            Ramazan Hoca'nın Öğrencisi - ${data.coins || 0} Altın Ganimeti <span style="width:16px; height:16px; background:#FFD600; border:1.5px solid #FF9100; border-radius:50%; display:inline-block; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></span>
+                        <p class="topbar-subtitle" style="display:flex; align-items:center; gap:6px;">
+                            Ramazan Hoca'nın Öğrencisi - ${data.coins || 0} Altın Ganimeti <img src="images/gold_coin.png" style="width:18px; height:18px; object-fit:contain;">
                         </p>
                     </div>
                     <div class="topbar-badge" style="background: var(--bg-card); border: 2.5px solid ${level.color || 'var(--teal)'}; padding: 10px 24px; border-radius: 30px; box-shadow: 0 6px 25px rgba(0,0,0,0.18); display: flex; align-items: center;">
@@ -544,9 +545,7 @@ const APP = (() => {
                             <span style="font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Ganimet</span>
                             <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
                                 <span style="font-weight: 900; color: #FFC107; font-size: 18px;">${data.coins || 0}</span>
-                                <div style="width:18px; height:18px; background:#FFD600; border:2px solid #FF9100; border-radius:50%; box-shadow:0 2px 5px rgba(0,0,0,0.2); position:relative; overflow:hidden;">
-                                    <div style="position:absolute; top:2px; left:2px; width:4px; height:4px; background:rgba(255,255,255,0.8); border-radius:50%;"></div>
-                                </div>
+                                <img src="images/gold_coin.png" style="width:20px; height:20px; object-fit:contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
                             </div>
                         </div>
                     </div>
