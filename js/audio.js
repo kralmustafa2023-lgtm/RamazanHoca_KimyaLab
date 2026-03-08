@@ -8,25 +8,48 @@ const AUDIO = (() => {
     let enabled = true;
 
     function init() {
-        if (!ctx) {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            if (AudioContext) {
-                ctx = new AudioContext();
+        try {
+            if (!ctx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    ctx = new AudioContext();
+                    console.log("AudioContext Created:", ctx.state);
+                }
             }
-        }
-        if (ctx && ctx.state === 'suspended') {
-            ctx.resume();
+            if (ctx && ctx.state === 'suspended') {
+                ctx.resume().then(() => {
+                    console.log("AudioContext Resumed:", ctx.state);
+                });
+            }
+        } catch (e) {
+            console.error("Audio Init Error:", e);
         }
     }
 
-    // Auto-Unlock AudioContext for Mobile/Chrome
-    ['click', 'touchstart', 'mousedown'].forEach(evt => {
-        window.addEventListener(evt, function unlock() {
-            init();
-            if (ctx) {
-                window.removeEventListener(evt, unlock);
-            }
-        }, { once: true });
+    // ULTRA ROBUST UNLOCK: Prime the pump with a silent sound on FIRST interaction
+    function unlockAudio() {
+        init();
+        if (!ctx || !enabled) return;
+
+        // Play a silent note to satisfy browser requirements for "user-initiated play"
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        gain.gain.value = 0.0001; // Effectively silent
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(0);
+        osc.stop(0.1);
+        
+        console.log("Audio Primed & Unlocked ✅");
+
+        // Remove listeners
+        ['click', 'touchstart', 'mousedown', 'keydown'].forEach(evt => {
+            window.removeEventListener(evt, unlockAudio);
+        });
+    }
+
+    ['click', 'touchstart', 'mousedown', 'keydown'].forEach(evt => {
+        window.addEventListener(evt, unlockAudio, { once: false }); // keep trying until success
     });
 
     function playTone(freq, type, duration, vol) {

@@ -19,6 +19,11 @@ const APP = (() => {
     }
 
     function init() {
+        // Global error logging for debugging "invisible" errors
+        window.onerror = function(msg, url, line) {
+            console.error(`Global Error: ${msg} at ${url}:${line}`);
+        };
+
         const savedTheme = localStorage.getItem('kimyalab_theme');
         if (savedTheme === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -439,9 +444,12 @@ const APP = (() => {
                             ${data.totalPoints} puan - <b style="color:#FFC107; display:flex; align-items:center; gap:4px;">${data.coins || 0} ${getGoldIcon(16)} Altın</b>
                         </span>
                     </div>
-                    <div class="settings-row" style="display:flex;gap:10px;margin-top:15px;margin-bottom:15px;">
-                        <button class="btn btn-primary" style="flex:1;padding:8px;font-size:12px;" onclick="APP.toggleTheme()">🌓 Tema</button>
-                        <button class="btn btn-primary" style="flex:1;padding:8px;font-size:12px;" onclick="APP.toggleAudio()" id="btn-audio-sidebar">🔊 Ses ${typeof AUDIO !== 'undefined' && AUDIO.isEnabled() ? 'AÇIK' : 'KAPALI'}</button>
+                    <div class="settings-row" style="display:flex; flex-direction:column; gap:8px; margin-top:10px; margin-bottom:15px;">
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn btn-primary" style="flex:1;padding:8px;font-size:12px;" onclick="APP.toggleTheme()">🌓 Tema</button>
+                            <button class="btn btn-primary" style="flex:1;padding:8px;font-size:12px;" onclick="APP.toggleAudio()" id="btn-audio-sidebar">🔊 Ses ${typeof AUDIO !== 'undefined' && AUDIO.isEnabled() ? 'AÇIK' : 'KAPALI'}</button>
+                        </div>
+                        <button class="btn" style="width:100%; padding:6px; font-size:11px; background:rgba(0,0,0,0.1); color:var(--text-muted); border:1px dashed var(--text-muted); border-radius:8px;" onclick="if(typeof AUDIO!=='undefined'){AUDIO.init(); this.textContent='✅ Ses Aktif Edildi'; setTimeout(()=>this.textContent='🔊 Ses Sorununu Gider', 2000);}">🔊 Ses Sorununu Gider</button>
                     </div>
                     <a class="nav-item nav-logout" onclick="AUTH.logout()">
                         <span class="nav-icon">🚪</span>
