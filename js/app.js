@@ -76,15 +76,14 @@ const APP = (() => {
     }
 
     function showRewardModal(title, subtitle, amount) {
-        // Remove existing if any
         const existing = document.querySelector('.reward-overlay');
         if (existing) existing.remove();
 
         const overlay = document.createElement('div');
         overlay.className = 'reward-overlay';
         overlay.style.cssText = `
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(15px); z-index: 10000;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px); z-index: 10000;
             display: flex; align-items: center; justify-content: center;
             opacity: 0; transition: opacity 0.4s ease;
         `;
@@ -92,43 +91,49 @@ const APP = (() => {
         overlay.innerHTML = `
             <div class="reward-modal" style="
                 background: var(--bg-card); 
-                max-width: 420px; width: 90%; 
-                border-radius: 40px; text-align: center;
-                overflow: hidden; box-shadow: 0 25px 100px rgba(0,0,0,0.6);
-                transform: scale(0.7) translateY(60px);
-                transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+                max-width: 360px; width: 85%; 
+                border-radius: 32px; text-align: center;
+                overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+                transform: scale(0.85) translateY(40px);
+                transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 border: 1px solid rgba(255,255,255,0.1);
                 position: relative;
+                font-family: 'Poppins', sans-serif;
             ">
-                <!-- Glare Effect -->
-                <div style="position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: radial-gradient(circle, rgba(255,214,0,0.1) 0%, transparent 60%); pointer-events:none;"></div>
-
-                <div style="background: linear-gradient(135deg, #FFD600 0%, #FF6D00 100%); padding: 60px 20px; position: relative;">
-                    <div style="font-size: 100px; margin-bottom: 0; animation: float 3s ease-in-out infinite;">🎁</div>
-                    <div class="confetti-container" style="position: absolute; inset:0; pointer-events:none; overflow:hidden;"></div>
+                <!-- Premium Header Glass -->
+                <div style="background: linear-gradient(135deg, #FFD600, #FF6D00); padding: 45px 20px; position: relative; overflow: hidden;">
+                    <!-- Realistic Shine -->
+                    <div style="position:absolute; top:0; left:-100%; width:50%; height:100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transform: skewX(-25deg); animation: cardShine 3s infinite;"></div>
                     
-                    <!-- Sparkle effects -->
-                    <div style="position:absolute; top:20px; left:20%; animation: pulse 2s infinite; font-size:24px;">✨</div>
-                    <div style="position:absolute; bottom:30px; right:25%; animation: pulse 2s infinite 1s; font-size:20px;">✨</div>
+                    <div style="font-size: 85px; margin-bottom: 0; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.2)); animation: float 3s ease-in-out infinite;">🎁</div>
+                    <div class="confetti-container" style="position: absolute; inset:0; pointer-events:none; overflow:hidden; opacity:0.6;"></div>
                 </div>
                 
-                <div style="padding: 40px 30px; position:relative; z-index:2;">
-                    <h2 style="font-size: 30px; font-weight: 800; margin-bottom: 12px; color: var(--text-primary); letter-spacing: -0.5px;">${title}</h2>
-                    <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 35px; line-height: 1.6;">${subtitle}</p>
+                <div style="padding: 30px 24px; background: var(--bg-card);">
+                    <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 8px; color: var(--text-primary); letter-spacing: -0.5px;">${title}</h2>
+                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px; line-height: 1.5; font-weight: 500;">${subtitle}</p>
                     
-                    <div style="background: rgba(255, 214, 0, 0.05); border-radius: 30px; padding: 30px 20px; margin-bottom: 40px; border: 2.5px dashed rgba(255, 214, 0, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                        <div style="font-size: 11px; font-weight: 800; color: #E65100; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 15px; opacity:0.8;">Kazanılan Ganimet</div>
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <span id="reward-amount-count" style="font-size: 64px; font-weight: 900; color: #FF9100; text-shadow: 0 8px 25px rgba(255,145,0,0.3); font-family: 'Poppins', sans-serif;">0</span>
-                            <span style="font-size: 48px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));">🪙</span>
+                    <div style="background: rgba(255, 145, 0, 0.04); border-radius: 24px; padding: 20px 15px; margin-bottom: 30px; border: 1.5px solid rgba(255, 145, 0, 0.15); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+                        <span style="position: absolute; top: -10px; background: #FF9100; color: white; padding: 2px 12px; border-radius: 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Kazancın</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span id="reward-amount-count" style="font-size: 48px; font-weight: 900; color: #FF9100; letter-spacing: -1px;">0</span>
+                            <span style="font-size: 36px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));">🪙</span>
                         </div>
                     </div>
                     
-                    <button class="btn btn-primary btn-lg reward-close-btn" style="width: 100%; padding: 22px; border-radius: 20px; font-size: 18px; font-weight: 800; background: linear-gradient(135deg, #FFD600, #FF6D00); border: none; box-shadow: 0 12px 35px rgba(255,109,0,0.4); color: white; cursor: pointer; transition: var(--transition);">
-                        MUHTEŞEM! 🚀
+                    <button class="btn reward-close-btn" style="width: 100%; padding: 18px; border-radius: 18px; font-size: 16px; font-weight: 800; background: linear-gradient(135deg, #FFD600, #FF6D00); border: none; box-shadow: 0 10px 25px rgba(255,109,0,0.3); color: white; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px;">
+                        Harika! 🚀
                     </button>
+                    <p style="margin-top: 15px; font-size: 11px; color: var(--text-muted); font-weight: 600; opacity: 0.7;">Ramazan Hoca başarılar diler!</p>
                 </div>
             </div>
+            <style>
+                @keyframes cardShine {
+                    0% { left: -100%; }
+                    20% { left: 150%; }
+                    100% { left: 150%; }
+                }
+            </style>
         `;
         
         document.body.appendChild(overlay);
@@ -137,24 +142,21 @@ const APP = (() => {
         closeBtn.onclick = () => {
             if (typeof AUDIO !== 'undefined') AUDIO.playClick();
             overlay.style.opacity = '0';
-            overlay.querySelector('.reward-modal').style.transform = 'scale(0.8) translateY(30px)';
+            overlay.querySelector('.reward-modal').style.transform = 'scale(0.9) translateY(20px)';
             setTimeout(() => {
                 overlay.remove();
                 APP.navigate('dashboard');
             }, 400);
         };
 
-        // Show after a small delay
         setTimeout(() => {
             overlay.style.opacity = '1';
             const modal = overlay.querySelector('.reward-modal');
             modal.style.transform = 'scale(1) translateY(0)';
             
-            // Animate counter
             const counter = overlay.querySelector('#reward-amount-count');
             if (typeof Animations !== 'undefined') {
-                Animations.animateCounter(counter, amount, 2000);
-                // Extra confetti inside
+                Animations.animateCounter(counter, amount, 1800);
                 Animations.confetti(overlay.querySelector('.confetti-container'));
             } else {
                 counter.textContent = amount;
