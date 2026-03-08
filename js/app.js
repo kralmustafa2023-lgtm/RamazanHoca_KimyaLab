@@ -143,9 +143,12 @@ const APP = (() => {
                     
                     <div style="background: rgba(255, 145, 0, 0.08); border-radius: 20px; padding: 15px; margin-bottom: 25px; border: 2px solid #FF9100; position: relative;">
                         <span style="position: absolute; top: -10px; background: #FF9100; color: white; padding: 2px 10px; border-radius: 6px; font-size: 9px; font-weight: 800; text-transform: uppercase;">Ganimet</span>
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <span id="reward-amount-count" style="font-size: 40px; font-weight: 900; color: #FF9100; letter-spacing: -1px;">0</span>
-                            <span style="font-size: 32px;">🪙</span>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                            <span id="reward-amount-count" style="font-size: 44px; font-weight: 900; color: #FF9100; letter-spacing: -1px;">0</span>
+                            <div style="width:36px; height:36px; background:#FFD600; border:3px solid #FF9100; border-radius:50%; box-shadow:0 4px 10px rgba(0,0,0,0.2); position:relative; overflow:hidden;">
+                                <div style="position:absolute; top:5px; left:5px; width:8px; height:8px; background:rgba(255,255,255,0.8); border-radius:50%;"></div>
+                                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#E65100; font-weight:900; font-size:16px;">✨</div>
+                            </div>
                         </div>
                     </div>
                     
@@ -422,7 +425,9 @@ const APP = (() => {
                         <div class="level-bar-mini">
                             <div class="level-fill-mini" style="width: ${getLevelProgress(data.totalPoints)}%"></div>
                         </div>
-                        <span class="level-points-mini">${data.totalPoints} puan - <b style="color:gold;">${data.coins || 0} Altın</b></span>
+                        <span class="level-points-mini" style="display:flex; align-items:center; gap:6px;">
+                            ${data.totalPoints} puan - <b style="color:#FFC107; display:flex; align-items:center; gap:4px;">${data.coins || 0} <span style="width:14px; height:14px; background:#FFD600; border:1.5px solid #FF9100; border-radius:50%; display:inline-block; box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span> Altın</b>
+                        </span>
                     </div>
                     <div class="settings-row" style="display:flex;gap:10px;margin-top:15px;margin-bottom:15px;">
                         <button class="btn btn-primary" style="flex:1;padding:8px;font-size:12px;" onclick="APP.toggleTheme()">🌓 Tema</button>
@@ -520,7 +525,9 @@ const APP = (() => {
                 <div class="dashboard-topbar">
                     <div class="topbar-greeting">
                         <h2>Hoş geldin ${displayName}! 🧪</h2>
-                        <p class="topbar-subtitle">Ramazan Hoca'nın Öğrencisi - ${data.coins || 0} Altın Ganimeti 🪙</p>
+                        <p class="topbar-subtitle" style="display:flex; align-items:center; gap:5px;">
+                            Ramazan Hoca'nın Öğrencisi - ${data.coins || 0} Altın Ganimeti <span style="width:16px; height:16px; background:#FFD600; border:1.5px solid #FF9100; border-radius:50%; display:inline-block; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></span>
+                        </p>
                     </div>
                     <div class="topbar-badge" style="background: var(--bg-card); border: 2.5px solid ${level.color || 'var(--teal)'}; padding: 10px 24px; border-radius: 30px; box-shadow: 0 6px 25px rgba(0,0,0,0.18); display: flex; align-items: center;">
                         <div class="level-icon" style="width:52px; height:52px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:white; position: relative; left: -15px; border: 3px solid white; box-shadow: 5px 0 15px rgba(0,0,0,0.15);">
@@ -533,9 +540,14 @@ const APP = (() => {
                             <span class="level-name" style="font-weight:900; color:var(--text-primary); font-size:17px; line-height:1.2;">${level.name}</span>
                             <span class="total-points" style="font-weight:800; color:var(--orange); font-size:14px;">${data.totalPoints} ⭐</span>
                         </div>
-                        <div style="margin-left: 25px; padding-left: 18px; border-left: 2px solid rgba(0,0,0,0.08); display: flex; flex-direction: column;">
+                        <div style="margin-left: 25px; padding-left: 18px; border-left: 2px solid rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center;">
                             <span style="font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Ganimet</span>
-                            <span style="font-weight: 900; color: #FFC107; font-size: 16px;">${data.coins || 0} 🪙</span>
+                            <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
+                                <span style="font-weight: 900; color: #FFC107; font-size: 18px;">${data.coins || 0}</span>
+                                <div style="width:18px; height:18px; background:#FFD600; border:2px solid #FF9100; border-radius:50%; box-shadow:0 2px 5px rgba(0,0,0,0.2); position:relative; overflow:hidden;">
+                                    <div style="position:absolute; top:2px; left:2px; width:4px; height:4px; background:rgba(255,255,255,0.8); border-radius:50%;"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
