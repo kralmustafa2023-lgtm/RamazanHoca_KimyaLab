@@ -6,56 +6,56 @@
 const AUDIO = (() => {
     let ctx = null;
     let enabled = true;
+    let isUnlocked = false;
 
+    // Aggressive Init: Can be called safely multiple times
     function init() {
+        if (!enabled) return;
+        
         try {
-            if (!ctx) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) {
-                    ctx = new AudioContext();
-                    console.log("AudioContext Created:", ctx.state);
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!ctx && AudioContext) {
+                ctx = new AudioContext();
+            }
+
+            if (ctx) {
+                if (ctx.state === 'suspended' || ctx.state === 'interrupted') {
+                    ctx.resume().then(() => {
+                        if (ctx.state === 'running') isUnlocked = true;
+                    });
+                } else if (ctx.state === 'running') {
+                    isUnlocked = true;
                 }
             }
-            if (ctx && ctx.state === 'suspended') {
-                ctx.resume().then(() => {
-                    console.log("AudioContext Resumed:", ctx.state);
-                });
-            }
         } catch (e) {
-            console.error("Audio Init Error:", e);
+            console.warn("Audio Context init failed:", e);
         }
     }
 
-    // ULTRA ROBUST UNLOCK: Prime the pump with a silent sound on FIRST interaction
-    function unlockAudio() {
-        init();
-        if (!ctx || !enabled) return;
-
-        // Play a silent note to satisfy browser requirements for "user-initiated play"
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        gain.gain.value = 0.0001; // Effectively silent
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(0);
-        osc.stop(0.1);
-        
-        console.log("Audio Primed & Unlocked ✅");
-
-        // Remove listeners
-        ['click', 'touchstart', 'mousedown', 'keydown'].forEach(evt => {
-            window.removeEventListener(evt, unlockAudio);
-        });
+    // Warm-up function to "pre-load" the engine
+    function warmUp() {
+        if (!enabled || !ctx || ctx.state !== 'running') return;
+        // Play a zero-volume buffer to keep the hardware awake
+        const buffer = ctx.createBuffer(1, 1, 22050);
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(ctx.destination);
+        source.start(0);
     }
 
-    ['click', 'touchstart', 'mousedown', 'keydown'].forEach(evt => {
-        window.addEventListener(evt, unlockAudio, { once: false }); // keep trying until success
+    // Universal Global Interaction Listener (Persistent)
+    const unlockEvents = ['click', 'touchstart', 'mousedown', 'keydown', 'touchend'];
+    unlockEvents.forEach(evt => {
+        window.addEventListener(evt, () => {
+            init();
+            if (isUnlocked) warmUp();
+        }, { passive: true });
     });
 
     function playTone(freq, type, duration, vol) {
         if (!enabled) return;
-        init(); // Ensure ctx is created/resumed
-        if (!ctx) return;
+        if (!isUnlocked) init();
+        if (!ctx || ctx.state !== 'running') return;
 
         try {
             const osc = ctx.createOscillator();
@@ -64,8 +64,8 @@ const AUDIO = (() => {
             osc.type = type;
             osc.frequency.setValueAtTime(freq, ctx.currentTime);
             
-            gain.gain.setValueAtTime(vol * 1.5, ctx.currentTime); // Slight boost
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+            gain.gain.setValueAtTime(vol * 1.8, ctx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
             osc.connect(gain);
             gain.connect(ctx.destination);
@@ -73,7 +73,7 @@ const AUDIO = (() => {
             osc.start();
             osc.stop(ctx.currentTime + duration);
         } catch (e) {
-            console.warn("Audio play failed:", e);
+            isUnlocked = false; // Reset flag to re-trigger init
         }
     }
 

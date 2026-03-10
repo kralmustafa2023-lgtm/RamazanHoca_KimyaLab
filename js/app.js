@@ -19,6 +19,11 @@ const APP = (() => {
     }
 
     function init() {
+        // Activate Security Shield
+        if (typeof AUTH !== 'undefined' && AUTH.initShield) {
+            AUTH.initShield();
+        }
+
         // Global error logging for debugging "invisible" errors
         window.onerror = function(msg, url, line) {
             console.error(`Global Error: ${msg} at ${url}:${line}`);
@@ -37,7 +42,10 @@ const APP = (() => {
     }
 
     function navigate(screen, data) {
-        if (typeof AUDIO !== 'undefined' && screen !== currentScreen) AUDIO.playClick();
+        if (typeof AUDIO !== 'undefined') {
+            AUDIO.init();
+            if (screen !== currentScreen) AUDIO.playClick();
+        }
         
         const container = document.getElementById('main-content');
         const sidebar = document.getElementById('sidebar');
