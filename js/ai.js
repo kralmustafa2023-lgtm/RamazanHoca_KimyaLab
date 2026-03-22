@@ -314,7 +314,7 @@ const AI = (() => {
 
             const data = await response.json();
 
-            if (data.error) throw new Error(data.error.message || 'API Hatası');
+            if (data.error) throw new Error(`${data.error.code || 'API Error'}: ${data.error.message || 'Bilinmeyen hata'}`);
 
             const botReply = data.candidates?.[0]?.content?.parts?.[0]?.text;
             
@@ -324,23 +324,23 @@ const AI = (() => {
                 hideTyping();
                 appendMessage('bot', botReply);
             } else {
-                throw new Error('Geçersiz yanıt formatı');
+                throw new Error('Yanıt oluşturulamadı (Boş Yanıt)');
             }
 
         } catch (error) {
             console.error('AI Subsystem Error:', error);
             hideTyping();
             
-            let errMsg = 'Bağlantı koptu veya veriler tam ulaşmadı. Lütfen farklı bir cümleyle tekrar dene.';
             const rawErr = String(error.message || '').toLowerCase();
+            let errMsg = `Bağlantı koptu. Teknik detay: ${error.message}`;
             
             if (rawErr.includes('quota') || rawErr.includes('rate limit') || rawErr.includes('429') || rawErr.includes('exhausted')) {
-                errMsg = 'Bana biraz hızlı ve arka arkaya mesaj attın! Sistem şu an yoğunluktan ötürü kendini 30 saniyelik dinlenmeye aldı. Küçük bir ara verip tekrar sormaya ne dersin? ⏱️';
-            } else if (rawErr.includes('key') || rawErr.includes('auth') || rawErr.includes('invalid')) {
-                errMsg = 'Güvenlik duvarına takıldık. Mustafa Uygur ana sunucuları bakıma almış olabilir. Lütfen sayfayı yenile.';
+                errMsg = 'Bana biraz hızlı ve arka arkaya mesaj attın! Sistem şu an yoğunluktan ötürü kendini 30 saniyelik dinlenmeye aldı.';
+            } else if (rawErr.includes('key') || rawErr.includes('auth') || rawErr.includes('invalid') || rawErr.includes('400')) {
+                errMsg = 'Güvenlik veya anahtar hatası oluştu. Lütfen Mustafa Uygur ile iletişime geç veya sayfayı yenile.';
             }
 
-            appendMessage('bot', 'Üzgünüm, tam algılayamadım. 🛑\n' + errMsg);
+            appendMessage('bot', '⚠️ Hata oluştu:\n' + errMsg);
         } finally {
             sendBtnRef.disabled = false;
         }
