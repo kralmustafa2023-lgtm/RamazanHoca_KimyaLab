@@ -533,6 +533,10 @@ const APP = (() => {
                 <span class="bottom-nav-icon">🎮</span>
                 <span class="bottom-nav-text">Oyna</span>
             </a>
+            <a class="bottom-nav-item ${currentScreen === 'periodicLab' ? 'active' : ''}" onclick="APP.navigate('periodicLab')">
+                <span class="bottom-nav-icon">🔬</span>
+                <span class="bottom-nav-text">P. Tablo</span>
+            </a>
             <a class="bottom-nav-item ${currentScreen === 'tables' ? 'active' : ''}" onclick="APP.navigate('tables')">
                 <span class="bottom-nav-icon">📖</span>
                 <span class="bottom-nav-text">Tablolar</span>
@@ -540,10 +544,6 @@ const APP = (() => {
             <a class="bottom-nav-item ${currentScreen === 'tournamentSetup' ? 'active' : ''}" onclick="APP.navigate('tournamentSetup')">
                 <span class="bottom-nav-icon">🏆</span>
                 <span class="bottom-nav-text">Turnuva</span>
-            </a>
-            <a class="bottom-nav-item" onclick="APP.showSettingsModal()">
-                <span class="bottom-nav-icon">⚙️</span>
-                <span class="bottom-nav-text">Ayarlar</span>
             </a>
         `;
 
@@ -602,24 +602,27 @@ const APP = (() => {
                             Ramazan Hoca'nın Öğrencisi - ${data.coins || 0} Altın Ganimeti ${getGoldIcon(18)}
                         </p>
                     </div>
-                    <div class="topbar-badge" style="background: var(--bg-card); border: 2.5px solid ${level.color || 'var(--teal)'}; padding: 10px 24px; border-radius: 30px; box-shadow: 0 6px 25px rgba(0,0,0,0.18); display: flex; align-items: center;">
-                        <div class="level-icon" style="width:52px; height:52px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:white; position: relative; left: -15px; border: 3px solid white; box-shadow: 5px 0 15px rgba(0,0,0,0.15);">
-                            ${data.activeAvatar && data.activeAvatar.includes('<img') ? 
-                                data.activeAvatar : 
-                                `<img src="images/logo.png" style="width:100%; height:100%; object-fit:cover; image-rendering: -webkit-optimize-contrast;">`
-                            }
-                        </div>
-                        <div style="display:flex; flex-direction:column; align-items:flex-start; margin-left: 2px;">
-                            <span class="level-name" style="font-weight:900; color:var(--text-primary); font-size:17px; line-height:1.2;">${level.name}</span>
-                            <span class="total-points" style="font-weight:800; color:var(--orange); font-size:14px;">${data.totalPoints} ⭐</span>
-                        </div>
-                        <div style="margin-left: 25px; padding-left: 18px; border-left: 2px solid rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center;">
-                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Ganimet</span>
-                            <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
-                                <span style="font-weight: 900; color: #FFC107; font-size: 18px;">${data.coins || 0}</span>
-                                ${getGoldIcon(20)}
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div class="topbar-badge" style="background: var(--bg-card); border: 2.5px solid ${level.color || 'var(--teal)'}; padding: 10px 24px; border-radius: 30px; box-shadow: 0 6px 25px rgba(0,0,0,0.18); display: flex; align-items: center;">
+                            <div class="level-icon" style="width:52px; height:52px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:white; position: relative; left: -15px; border: 3px solid white; box-shadow: 5px 0 15px rgba(0,0,0,0.15);">
+                                ${data.activeAvatar && data.activeAvatar.includes('<img') ? 
+                                    data.activeAvatar : 
+                                    `<img src="images/logo.png" style="width:100%; height:100%; object-fit:cover; image-rendering: -webkit-optimize-contrast;">`
+                                }
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:flex-start; margin-left: 2px;">
+                                <span class="level-name" style="font-weight:900; color:var(--text-primary); font-size:17px; line-height:1.2;">${level.name}</span>
+                                <span class="total-points" style="font-weight:800; color:var(--orange); font-size:14px;">${data.totalPoints} ⭐</span>
+                            </div>
+                            <div style="margin-left: 25px; padding-left: 18px; border-left: 2px solid rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center;">
+                                <span style="font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Ganimet</span>
+                                <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
+                                    <span style="font-weight: 900; color: #FFC107; font-size: 18px;">${data.coins || 0}</span>
+                                    ${getGoldIcon(20)}
+                                </div>
                             </div>
                         </div>
+                        <button onclick="APP.showSettingsModal()" title="Ayarlar" class="btn" style="background: var(--bg-card); color: var(--text-primary); border-radius: 50%; width: 50px; height: 50px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(0,0,0,0.08); font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='rotate(45deg)'" onmouseout="this.style.transform='none'">⚙️</button>
                     </div>
                 </div>
 
