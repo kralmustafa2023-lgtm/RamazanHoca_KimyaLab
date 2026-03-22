@@ -332,15 +332,15 @@ const AI = (() => {
             hideTyping();
             
             const rawErr = String(error.message || '').toLowerCase();
-            let errMsg = `Bağlantı koptu. Teknik detay: ${error.message}`;
+            let errMsg = 'Bağlantı koptu veya veriler tam ulaşmadı. Mustafa Uygur ana sunucuları bakıma almış olabilir. Lütfen sayfayı yenile.';
             
             if (rawErr.includes('quota') || rawErr.includes('rate limit') || rawErr.includes('429') || rawErr.includes('exhausted')) {
-                errMsg = 'Bana biraz hızlı ve arka arkaya mesaj attın! Sistem şu an yoğunluktan ötürü kendini 30 saniyelik dinlenmeye aldı.';
+                errMsg = 'Bana biraz hızlı ve arka arkaya mesaj attın! Sistem şu an yoğunluktan ötürü kendini 30 saniyelik dinlenmeye aldı. Küçük bir ara verip tekrar sormaya ne dersin? ⏱️';
             } else if (rawErr.includes('key') || rawErr.includes('auth') || rawErr.includes('invalid') || rawErr.includes('400')) {
-                errMsg = 'Güvenlik veya anahtar hatası oluştu. Lütfen Mustafa Uygur ile iletişime geç veya sayfayı yenile.';
+                errMsg = 'Güvenlik duvarına takıldık. Mustafa Uygur ana sunucuları kısa bir süre için erişime kapatılmış olabilir. Lütfen daha sonra tekrar dene.';
             }
 
-            appendMessage('bot', '⚠️ Hata oluştu:\n' + errMsg);
+            appendMessage('bot', 'Üzgünüm, şu anda tam bağlantı kuramıyorum. 🛑\n' + errMsg);
         } finally {
             sendBtnRef.disabled = false;
         }
