@@ -75,6 +75,8 @@ const APP = (() => {
                 case 'badges': renderBadges(); break;
                 case 'market': renderMarket(); break;
                 case 'periodicLab': renderPeriodicLab(); break;
+                case 'tournamentSetup': renderTournamentSetup(); break;
+                case 'tournamentConfig': renderTournamentConfig(); break;
             }
         });
     }
@@ -430,6 +432,10 @@ const APP = (() => {
                     <a class="nav-item ${currentScreen === 'periodicLab' ? 'active' : ''}" style="border: 1px solid var(--purple); background: rgba(124, 77, 255, 0.05);" onclick="APP.navigate('periodicLab')">
                         <span class="nav-icon">🔬</span>
                         <span class="nav-text" style="color:var(--purple);font-weight:600;">P. Tablo Lab.</span>
+                    </a>
+                    <a class="nav-item ${currentScreen === 'tournamentSetup' ? 'active' : ''}" style="border: 1px solid #FFD600; background: rgba(255, 214, 0, 0.05);" onclick="APP.navigate('tournamentSetup')">
+                        <span class="nav-icon">🏆</span>
+                        <span class="nav-text" style="color:#FFD600;font-weight:700;">Turnuva</span>
                     </a>
                     
                     <div class="nav-section-title">İSTATİSTİKLER</div>
@@ -1406,12 +1412,192 @@ const APP = (() => {
         }
     }
 
+    // ============ TOURNAMENT SETUP ============
+    let tournamentGroups = [];
+    let tournamentGroupCount = 2;
+    const TOURNAMENT_COLORS = ['#00BFA5', '#7C4DFF', '#FF4081', '#FF6D00'];
+    const TOURNAMENT_DEFAULTS = ['Aslanlar 🦁', 'Kartallar 🦅', 'Kurtlar 🐺', 'Şahinler 🦅'];
+
+    function renderTournamentSetup() {
+        const container = document.getElementById('main-content');
+        const countColors = [
+            { bg: 'linear-gradient(135deg, #00BFA5, #00897B)', shadow: 'rgba(0,191,165,0.35)' },
+            { bg: 'linear-gradient(135deg, #7C4DFF, #651FFF)', shadow: 'rgba(124,77,255,0.35)' },
+            { bg: 'linear-gradient(135deg, #FF4081, #C51162)', shadow: 'rgba(255,64,129,0.35)' }
+        ];
+
+        container.innerHTML = `
+            <div class="tournament-setup-screen">
+                <div class="screen-header">
+                    <button class="btn btn-ghost" onclick="APP.navigate('dashboard')">← Geri</button>
+                    <h2 class="screen-title">🏆 Turnuva Oluştur</h2>
+                    <p class="screen-subtitle">Sınıfı gruplara ayır ve yarışmayı başlat!</p>
+                </div>
+
+                <div class="tournament-setup-card">
+                    <h3 class="setup-section-title">👥 Kaç Grup Olacak?</h3>
+                    <div class="group-count-selector">
+                        ${[2,3,4].map((n, idx) => `
+                            <button class="btn group-count-btn ${tournamentGroupCount === n ? 'active' : ''}" 
+                                    style="--btn-bg: ${countColors[idx].bg}; --btn-shadow: ${countColors[idx].shadow}"
+                                    onclick="APP.setGroupCount(${n})">
+                                <span class="count-number">${n}</span>
+                                <span class="count-label">Grup</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="tournament-groups-card">
+                    <h3 class="setup-section-title">✏️ Grup İsimlerini Yazın</h3>
+                    <p style="font-size:13px;color:var(--text-muted);margin:-10px 0 16px;">Her grup kendi ismini yazsın veya boş bırakarak varsayılan isimleri kullansın.</p>
+                    <div class="group-names-list">
+                        ${Array.from({length: tournamentGroupCount}, (_, i) => `
+                            <div class="group-name-row" style="--group-color: ${TOURNAMENT_COLORS[i]}">
+                                <div class="group-color-dot" style="background: ${TOURNAMENT_COLORS[i]}">
+                                    <span style="color:white;font-weight:900;font-size:13px;">${i + 1}</span>
+                                </div>
+                                <input type="text" class="group-name-input" id="group-name-${i}"
+                                       placeholder="${TOURNAMENT_DEFAULTS[i]}" value="${tournamentGroups[i]?.name || ''}"
+                                       autocomplete="off">
+                                <div class="group-name-hint" style="color:${TOURNAMENT_COLORS[i]};font-size:11px;font-weight:600;white-space:nowrap;">Grup ${i + 1}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <button class="btn btn-tournament-continue" onclick="APP.goToTournamentConfig()">
+                    Devam Et →
+                </button>
+            </div>
+        `;
+        Animations.initRipples();
+        const cards = container.querySelectorAll('.tournament-setup-card, .tournament-groups-card, .group-count-btn, .group-name-row');
+        Animations.staggeredEntrance(Array.from(cards), 80);
+    }
+
+    function setGroupCount(count) {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        tournamentGroupCount = count;
+        renderTournamentSetup();
+    }
+
+    function goToTournamentConfig() {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        tournamentGroups = [];
+        for (let i = 0; i < tournamentGroupCount; i++) {
+            const input = document.getElementById(`group-name-${i}`);
+            const name = input && input.value.trim() ? input.value.trim() : TOURNAMENT_DEFAULTS[i];
+            tournamentGroups.push({ name, color: TOURNAMENT_COLORS[i] });
+        }
+        navigate('tournamentConfig');
+    }
+
+    function renderTournamentConfig() {
+        const container = document.getElementById('main-content');
+        if (!window._tMode) window._tMode = 'quiz';
+        if (!window._tDiff) window._tDiff = 'kolay';
+        if (!window._tTable) window._tTable = Object.keys(TABLES)[0];
+
+        container.innerHTML = `
+            <div class="tournament-config-screen">
+                <div class="screen-header">
+                    <button class="btn btn-ghost" onclick="APP.navigate('tournamentSetup')">← Geri</button>
+                    <h2 class="screen-title">⚙️ Turnuva Ayarları</h2>
+                </div>
+
+                <div class="tournament-groups-preview">
+                    ${tournamentGroups.map(g => `
+                        <div class="group-preview-chip" style="background:${g.color}18;border:2px solid ${g.color};color:${g.color}">
+                            ${g.name}
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="tournament-config-card">
+                    <h3 class="setup-section-title">🎮 Oyun Modu</h3>
+                    <div class="tournament-option-grid">
+                        <button class="btn t-opt-btn ${window._tMode==='quiz'?'active':''}" onclick="APP.setTMode('quiz',this)">
+                            <span class="t-opt-icon">🧪</span><span>Quiz</span>
+                        </button>
+                        <button class="btn t-opt-btn ${window._tMode==='flashcard'?'active':''}" onclick="APP.setTMode('flashcard',this)">
+                            <span class="t-opt-icon">🃏</span><span>Flashcard</span>
+                        </button>
+                        <button class="btn t-opt-btn ${window._tMode==='matching'?'active':''}" onclick="APP.setTMode('matching',this)">
+                            <span class="t-opt-icon">🔗</span><span>Eşleştirme</span>
+                        </button>
+                        <button class="btn t-opt-btn ${window._tMode==='fillTable'?'active':''}" onclick="APP.setTMode('fillTable',this)">
+                            <span class="t-opt-icon">📝</span><span>Tablo Doldur</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tournament-config-card">
+                    <h3 class="setup-section-title">⚡ Zorluk</h3>
+                    <div class="tournament-option-grid">
+                        <button class="btn t-opt-btn ${window._tDiff==='kolay'?'active':''}" onclick="APP.setTDiff('kolay',this)">🟢 Kolay</button>
+                        <button class="btn t-opt-btn ${window._tDiff==='orta'?'active':''}" onclick="APP.setTDiff('orta',this)">🟡 Orta</button>
+                        <button class="btn t-opt-btn ${window._tDiff==='zor'?'active':''}" onclick="APP.setTDiff('zor',this)">🔴 Zor</button>
+                    </div>
+                </div>
+
+                <div class="tournament-config-card">
+                    <h3 class="setup-section-title">📋 Tablo</h3>
+                    <div class="tournament-option-grid">
+                        ${Object.keys(TABLES).map(key => `
+                            <button class="btn t-opt-btn ${window._tTable===key?'active':''}" onclick="APP.setTTable('${key}',this)" style="--table-color:${TABLES[key].color}">
+                                <span class="t-opt-icon">${TABLES[key].icon}</span><span>${TABLES[key].name}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <button class="btn btn-tournament-go" onclick="APP.launchTournament()">
+                    🏆 TURNAYI BAŞLAT!
+                </button>
+            </div>
+        `;
+        Animations.initRipples();
+        const cards = container.querySelectorAll('.tournament-config-card, .t-opt-btn');
+        Animations.staggeredEntrance(Array.from(cards), 60);
+    }
+
+    function setTMode(mode, btn) {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        window._tMode = mode;
+        btn.closest('.tournament-option-grid').querySelectorAll('.t-opt-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    function setTDiff(diff, btn) {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        window._tDiff = diff;
+        btn.closest('.tournament-option-grid').querySelectorAll('.t-opt-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    function setTTable(table, btn) {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        window._tTable = table;
+        btn.closest('.tournament-option-grid').querySelectorAll('.t-opt-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function launchTournament() {
+        if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
+        Game.initTournament({
+            groups: tournamentGroups,
+            mode: window._tMode || 'quiz',
+            difficulty: window._tDiff || 'kolay',
+            table: window._tTable || 'katyonlar'
+        });
+    }
+
     return {
         init, navigate, handleLogin, updatePreview, togglePassword,
         switchTab, searchTable, showElementBio, speak,
         selectDifficulty, startGame, customizeAvatar,
         renderSidebar, renderBottomNav, renderMarket, renderPeriodicLab, showBigElementCard, showDailyChest,
-        toggleTheme, toggleAudio
+        toggleTheme, toggleAudio,
+        setGroupCount, goToTournamentConfig, setTMode, setTDiff, setTTable, launchTournament
     };
 })();
 

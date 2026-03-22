@@ -18,6 +18,7 @@ const Game = (() => {
     let totalTime = 0;
     let gameStartTime = null;
     let isRetryMode = false;
+    let tournamentState = null;
 
     // ============ FLASHCARD MODE ============
     function startFlashcard(table, difficulty) {
@@ -715,6 +716,12 @@ const Game = (() => {
     function finishGame(overrideTotal) {
         clearTimer();
         clearQuizTimer();
+
+        // Tournament mode redirect
+        if (tournamentState) {
+            finishTournamentRound(overrideTotal);
+            return;
+        }
         
         const timeSpent = Math.round((Date.now() - gameStartTime) / 1000);
         const total = overrideTotal || currentQuestions.length || currentQuestions.total || 0;
@@ -872,7 +879,298 @@ const Game = (() => {
     function exitGame() {
         clearTimer();
         clearQuizTimer();
+        if (tournamentState) {
+            tournamentState = null;
+        }
         APP.navigate('dashboard');
+    }
+
+    // ============ TOURNAMENT MODE ============
+    function getModeEmoji(mode) {
+        return { flashcard: '🃏', quiz: '🧪', fillTable: '📝', matching: '🔗' }[mode] || '🎮';
+    }
+    function getModeName(mode) {
+        return { flashcard: 'Flashcard', quiz: 'Quiz', fillTable: 'Tablo Doldur', matching: 'Eşleştirme' }[mode] || mode;
+    }
+    function getDiffName(diff) {
+        return { kolay: '🟢 Kolay', orta: '🟡 Orta', zor: '🔴 Zor' }[diff] || diff;
+    }
+
+    function initTournament(config) {
+        tournamentState = {
+            groups: config.groups,
+            currentGroupIndex: 0,
+            mode: config.mode,
+            difficulty: config.difficulty,
+            table: config.table,
+            sharedData: null,
+            results: []
+        };
+        tournamentState.sharedData = prepareTournamentData(config.mode, config.table, config.difficulty);
+        renderGroupSplash();
+    }
+
+    function prepareTournamentData(mode, table, difficulty) {
+        if (mode === 'quiz') {
+            let questions;
+            if (difficulty === 'zor') {
+                let allQ = [];
+                Object.keys(QUESTION_BANKS).forEach(key => {
+                    allQ = allQ.concat(QUESTION_BANKS[key].slice(0, 10));
+                });
+                questions = shuffleArray(allQ).slice(0, 30);
+            } else {
+                questions = shuffleArray([...QUESTION_BANKS[table]]);
+                questions = questions.slice(0, difficulty === 'kolay' ? 10 : 20);
+            }
+            return { type: 'quiz', questions };
+        }
+        if (mode === 'flashcard') {
+            const tableData = TABLES[table];
+            let items = shuffleArray([...tableData.items]);
+            let cards;
+            if (difficulty === 'kolay') {
+                cards = items.slice(0, Math.min(6, items.length)).map(item => ({ front: item.symbol, back: item.name, item }));
+            } else if (difficulty === 'orta') {
+                cards = items.slice(0, Math.min(10, items.length)).map(item => ({ front: item.name, back: item.symbol, item }));
+            } else {
+                cards = items.map(item => {
+                    const s = Math.random() > 0.5;
+                    return { front: s ? item.symbol : item.name, back: s ? item.name : item.symbol, item };
+                });
+            }
+            return { type: 'flashcard', cards };
+        }
+        if (mode === 'matching') {
+            const tableData = TABLES[table];
+            let items = shuffleArray([...tableData.items]);
+            let pairCount = difficulty === 'kolay' ? 5 : difficulty === 'orta' ? Math.min(10, items.length) : items.length;
+            items = items.slice(0, pairCount);
+            const rightOrder = shuffleArray(items.map((_, i) => i));
+            return { type: 'matching', items, rightOrder };
+        }
+        if (mode === 'fillTable') {
+            const tableData = TABLES[table];
+            let items = [...tableData.items];
+            let emptyCount = difficulty === 'kolay' ? 3 : difficulty === 'orta' ? 6 : Math.ceil(items.length / 2);
+            const emptyIndices = shuffleArray(items.map((_, i) => i)).slice(0, emptyCount);
+            const fillFields = {};
+            emptyIndices.forEach(idx => { fillFields[idx] = Math.random() > 0.5 ? 'symbol' : 'name'; });
+            return { type: 'fillTable', items, emptyIndices, fillFields };
+        }
+        return null;
+    }
+
+    function renderGroupSplash() {
+        const container = document.getElementById('main-content');
+        const group = tournamentState.groups[tournamentState.currentGroupIndex];
+        const groupNum = tournamentState.currentGroupIndex + 1;
+        const totalGroups = tournamentState.groups.length;
+
+        container.innerHTML = `
+            <div class="tournament-splash" style="--group-color: ${group.color}">
+                <div class="splash-bg"></div>
+                <div class="splash-content">
+                    <div class="splash-round-badge">TUR ${groupNum} / ${totalGroups}</div>
+                    <div class="splash-trophy">🏆</div>
+                    <h1 class="splash-group-name" style="color: ${group.color}">${group.name}</h1>
+                    <p class="splash-subtitle">Hazır mısınız?</p>
+                    <div class="splash-mode-info">
+                        <span class="splash-mode-chip">${getModeEmoji(tournamentState.mode)} ${getModeName(tournamentState.mode)}</span>
+                        <span class="splash-diff-chip">${getDiffName(tournamentState.difficulty)}</span>
+                    </div>
+                    <button class="btn btn-tournament-start" style="background: ${group.color}" onclick="Game.startTournamentRound()">
+                        BAŞLA! 🚀
+                    </button>
+                </div>
+                <div class="splash-particles" id="splash-particles"></div>
+            </div>
+        `;
+
+        if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
+        const pc = document.getElementById('splash-particles');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'splash-particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 2 + 's';
+            p.style.animationDuration = (2 + Math.random() * 3) + 's';
+            p.style.backgroundColor = group.color;
+            p.style.width = p.style.height = (4 + Math.random() * 8) + 'px';
+            pc.appendChild(p);
+        }
+    }
+
+    function startTournamentRound() {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        const data = tournamentState.sharedData;
+        const mode = tournamentState.mode;
+        const diff = tournamentState.difficulty;
+        const table = tournamentState.table;
+
+        currentMode = mode;
+        currentDifficulty = diff;
+        currentTable = table;
+        score = 0; combo = 0; maxCombo = 0;
+        wrongAnswers = []; currentIndex = 0;
+        gameStartTime = Date.now();
+        isRetryMode = false; timeLeft = 0;
+
+        if (mode === 'quiz') {
+            currentQuestions = data.questions.map(q => ({ ...q, options: [...q.options] }));
+            if (diff === 'orta') timeLeft = 30;
+            else if (diff === 'zor') timeLeft = 15;
+            renderQuiz();
+        } else if (mode === 'flashcard') {
+            currentQuestions = data.cards.map(c => ({ ...c, _flipped: false }));
+            if (diff === 'orta') { timeLeft = 120; startTimer(); }
+            else if (diff === 'zor') { timeLeft = 90; startTimer(); }
+            renderFlashcard();
+        } else if (mode === 'matching') {
+            const items = data.items;
+            currentQuestions = {
+                left: items.map((item, i) => ({ id: i, text: item.symbol, matched: false })),
+                right: data.rightOrder.map(i => ({ id: i, text: items[i].name, matched: false })),
+                total: items.length
+            };
+            selectedLeft = null; selectedRight = null;
+            if (diff !== 'kolay') { timeLeft = diff === 'orta' ? 120 : 60; startTimer(); }
+            renderMatching();
+        } else if (mode === 'fillTable') {
+            const { items, emptyIndices, fillFields } = data;
+            currentQuestions = items.map((item, i) => ({
+                ...item,
+                isEmpty: emptyIndices.includes(i),
+                userAnswer: '',
+                _symbolIsInput: emptyIndices.includes(i) ? fillFields[i] === 'symbol' : false
+            }));
+            renderFillTable();
+        }
+    }
+
+    function finishTournamentRound(overrideTotal) {
+        clearTimer(); clearQuizTimer();
+        const timeSpent = Math.round((Date.now() - gameStartTime) / 1000);
+        const total = overrideTotal || currentQuestions.length || currentQuestions.total || 0;
+        const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
+        const group = tournamentState.groups[tournamentState.currentGroupIndex];
+
+        tournamentState.results.push({ groupName: group.name, groupColor: group.color, score, total, percentage, maxCombo, timeSpent });
+        renderTournamentRoundResult(group, score, total, percentage, maxCombo, timeSpent);
+    }
+
+    function renderTournamentRoundResult(group, sc, total, percentage, mc, timeSpent) {
+        const container = document.getElementById('main-content');
+        const isLast = tournamentState.currentGroupIndex >= tournamentState.groups.length - 1;
+        if (typeof AUDIO !== 'undefined') { percentage >= 70 ? AUDIO.playSuccess() : AUDIO.playCorrect(); }
+
+        container.innerHTML = `
+            <div class="tournament-round-result">
+                <div class="round-result-header" style="background: linear-gradient(135deg, ${group.color}, ${group.color}88)">
+                    <div class="round-result-group-name">${group.name}</div>
+                    <h2 class="round-result-title">Tur Tamamlandı!</h2>
+                </div>
+                <div class="round-result-body">
+                    <div class="round-result-ring">
+                        <svg class="progress-ring" width="140" height="140">
+                            <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                            <circle class="progress-ring-circle" cx="70" cy="70" r="60" stroke="${group.color}" />
+                        </svg>
+                        <div class="round-result-pct" id="round-pct">0</div>
+                    </div>
+                    <div class="round-result-stats">
+                        <div class="round-stat"><span>✅</span><span id="round-sc">0</span><span>Doğru / ${total}</span></div>
+                        <div class="round-stat"><span>🔥</span><span>${mc}</span><span>Max Kombo</span></div>
+                        <div class="round-stat"><span>⏱️</span><span>${Storage.formatStudyTime(timeSpent)}</span><span>Süre</span></div>
+                    </div>
+                    <button class="btn btn-tournament-next" style="background: ${group.color}" onclick="Game.nextTournamentGroup()">
+                        ${isLast ? '🏆 SONUÇLARI GÖR!' : '▶️ Sıradaki Grup'}
+                    </button>
+                </div>
+            </div>
+        `;
+        setTimeout(() => {
+            Animations.animateCounter(document.getElementById('round-pct'), percentage);
+            Animations.animateCounter(document.getElementById('round-sc'), sc);
+            Animations.animateCircularProgress(document.querySelector('.round-result-ring'), percentage);
+        }, 300);
+        if (percentage === 100) setTimeout(() => Animations.confetti(), 500);
+    }
+
+    function nextTournamentGroup() {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        tournamentState.currentGroupIndex++;
+        if (tournamentState.currentGroupIndex >= tournamentState.groups.length) {
+            renderTournamentFinalResults();
+        } else {
+            renderGroupSplash();
+        }
+    }
+
+    function renderTournamentFinalResults() {
+        const container = document.getElementById('main-content');
+        const sorted = [...tournamentState.results].sort((a, b) => {
+            if (b.percentage !== a.percentage) return b.percentage - a.percentage;
+            return a.timeSpent - b.timeSpent;
+        });
+        const medals = ['🥇', '🥈', '🥉', '🏅'];
+        const rankLabels = ['ŞAMPİYON!', '2. Sıra', '3. Sıra', '4. Sıra'];
+        const winner = sorted[0];
+
+        if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
+        setTimeout(() => Animations.confetti(), 300);
+        setTimeout(() => Animations.confetti(), 1500);
+
+        container.innerHTML = `
+            <div class="tournament-final">
+                <div class="tournament-final-header">
+                    <div class="final-trophy">🏆</div>
+                    <h1 class="final-title">Turnuva Sona Erdi!</h1>
+                    <p class="final-winner">Kazanan: <strong style="color:${winner.groupColor}">${winner.groupName}</strong></p>
+                </div>
+                <div class="tournament-podium">
+                    ${sorted.map((r, idx) => `
+                        <div class="podium-card ${idx === 0 ? 'podium-winner' : ''}" style="--podium-color:${r.groupColor}; animation-delay:${idx * 0.2}s">
+                            <div class="podium-medal">${medals[idx] || '🏅'}</div>
+                            <div class="podium-rank-label">${rankLabels[idx] || (idx + 1) + '. Sıra'}</div>
+                            <div class="podium-group-name">${r.groupName}</div>
+                            <div class="podium-score-bar"><div class="podium-score-fill" style="width:0%;background:${r.groupColor}"></div></div>
+                            <div class="podium-details">
+                                <span>✅ ${r.score}/${r.total}</span>
+                                <span>📊 %${r.percentage}</span>
+                                <span>🔥 x${r.maxCombo}</span>
+                                <span>⏱️ ${Storage.formatStudyTime(r.timeSpent)}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="tournament-final-actions">
+                    <button class="btn btn-primary btn-lg" onclick="Game.endTournament()">🏠 Ana Menüye Dön</button>
+                    <button class="btn btn-secondary btn-lg" onclick="Game.restartTournament()">🔁 Turnuvayı Tekrarla</button>
+                </div>
+            </div>
+        `;
+
+        const cards = container.querySelectorAll('.podium-card');
+        Animations.staggeredEntrance(Array.from(cards), 200);
+        setTimeout(() => {
+            container.querySelectorAll('.podium-score-fill').forEach((fill, i) => {
+                setTimeout(() => { fill.style.width = sorted[i].percentage + '%'; }, i * 200);
+            });
+        }, 600);
+    }
+
+    function endTournament() {
+        tournamentState = null;
+        APP.navigate('dashboard');
+    }
+
+    function restartTournament() {
+        if (tournamentState) {
+            const config = { groups: tournamentState.groups, mode: tournamentState.mode, difficulty: tournamentState.difficulty, table: tournamentState.table };
+            tournamentState = null;
+            initTournament(config);
+        }
     }
 
     return {
@@ -881,6 +1179,8 @@ const Game = (() => {
         startFillTable, checkFillTable,
         startMatching, selectMatch,
         retryWrong, playAgain, exitGame,
-        finishGame
+        finishGame,
+        initTournament, startTournamentRound, nextTournamentGroup,
+        endTournament, restartTournament
     };
 })();

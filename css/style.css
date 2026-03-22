@@ -1110,3 +1110,323 @@ body.has-sidebar #main-content {
 
 /* Selection color */
 ::selection { background: rgba(0,191,165,0.3); }
+
+/* ============================================
+   TOURNAMENT STYLES
+   ============================================ */
+
+/* Tournament Setup */
+.tournament-setup-screen {
+    padding: 24px 30px 140px; max-width: 700px; margin: 0 auto;
+}
+.tournament-config-screen {
+    padding: 24px 30px 140px; max-width: 700px; margin: 0 auto;
+}
+.tournament-setup-card, .tournament-groups-card, .tournament-config-card {
+    background: var(--bg-card); border-radius: var(--radius-xl);
+    padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255,255,255,0.6);
+}
+.setup-section-title {
+    font-family: 'Poppins', sans-serif; font-size: 16px;
+    font-weight: 700; margin-bottom: 14px; color: var(--text-primary);
+}
+.group-count-selector {
+    display: flex; gap: 12px; justify-content: center;
+}
+.group-count-btn {
+    width: 78px; height: 78px; border-radius: var(--radius-md);
+    background: var(--bg-secondary); border: 3px solid transparent;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 2px; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+}
+.group-count-btn::before {
+    content: ''; position: absolute; inset: 0; opacity: 0;
+    background: var(--btn-bg); transition: opacity 0.3s ease;
+}
+.group-count-btn:hover { transform: translateY(-5px) scale(1.05); box-shadow: var(--shadow-md); }
+.group-count-btn:hover::before { opacity: 0.12; }
+.group-count-btn.active {
+    border-color: transparent; background: transparent;
+    box-shadow: 0 6px 20px var(--btn-shadow);
+}
+.group-count-btn.active::before { opacity: 1; }
+.group-count-btn.active .count-number,
+.group-count-btn.active .count-label { color: white; position: relative; z-index: 1; }
+.count-number {
+    font-size: 28px; font-weight: 900; position: relative; z-index: 1;
+    color: var(--text-primary); transition: color 0.3s ease;
+}
+.count-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    position: relative; z-index: 1; color: var(--text-muted); transition: color 0.3s ease;
+}
+
+.group-names-list { display: flex; flex-direction: column; gap: 10px; }
+.group-name-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 10px; border-radius: var(--radius-md);
+    border: 2px solid rgba(0,0,0,0.06); transition: all 0.3s ease;
+    background: var(--bg-primary);
+}
+.group-name-row:focus-within {
+    border-color: var(--group-color); background: var(--bg-card);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--group-color) 12%, transparent), var(--shadow-sm);
+}
+.group-color-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    flex-shrink: 0; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    display: flex; align-items: center; justify-content: center;
+}
+.group-name-input {
+    flex: 1; border: none; background: transparent; outline: none;
+    font-size: 15px; font-weight: 600; padding: 10px 4px;
+    color: var(--text-primary); font-family: 'Poppins', sans-serif;
+}
+.group-name-input::placeholder { color: var(--text-muted); font-weight: 400; font-size: 14px; }
+.group-name-hint { padding-right: 4px; }
+
+.btn-tournament-continue {
+    width: 100%; padding: 18px; border-radius: var(--radius-lg);
+    font-size: 18px; font-weight: 800; color: white; margin-top: 8px;
+    background: linear-gradient(135deg, var(--teal), var(--purple));
+    box-shadow: 0 8px 25px rgba(0,191,165,0.3); transition: all 0.3s ease;
+}
+.btn-tournament-continue:hover { box-shadow: 0 12px 35px rgba(0,191,165,0.4); transform: translateY(-2px); }
+
+/* Tournament Config */
+.tournament-groups-preview {
+    display: flex; gap: 10px; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 24px;
+}
+.group-preview-chip {
+    padding: 8px 20px; border-radius: 30px; font-weight: 700;
+    font-size: 14px; font-family: 'Poppins', sans-serif;
+}
+.tournament-option-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+}
+.t-opt-btn {
+    padding: 12px 10px; border-radius: var(--radius-md);
+    background: var(--bg-primary); border: 2px solid transparent;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; font-weight: 600; font-size: 13px;
+    transition: all 0.3s ease; color: var(--text-secondary);
+}
+.t-opt-btn:hover { background: rgba(0,191,165,0.06); }
+.t-opt-btn.active {
+    border-color: var(--teal); background: rgba(0,191,165,0.1);
+    color: var(--teal-dark); font-weight: 700;
+    box-shadow: 0 0 0 3px rgba(0,191,165,0.12);
+}
+.t-opt-icon { font-size: 24px; }
+
+.btn-tournament-go {
+    width: 100%; padding: 16px; border-radius: var(--radius-lg);
+    font-size: 18px; font-weight: 900; color: white; margin-top: 16px;
+    background: linear-gradient(135deg, #FFD600, #FF9100);
+    box-shadow: 0 8px 30px rgba(255,145,0,0.4);
+    transition: all 0.3s ease; letter-spacing: 0.5px;
+    animation: breathing 2s infinite;
+}
+.btn-tournament-go:hover { box-shadow: 0 12px 40px rgba(255,145,0,0.5); transform: translateY(-3px); }
+
+/* Tournament Splash */
+.tournament-splash {
+    min-height: 100vh; display: flex; align-items: center;
+    justify-content: center; position: relative; overflow: hidden;
+    background: var(--bg-primary);
+}
+.splash-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--group-color) 15%, transparent), transparent 70%);
+    animation: splashPulse 3s ease-in-out infinite;
+}
+@keyframes splashPulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+.splash-content {
+    text-align: center; z-index: 2; position: relative;
+    animation: splashEnter 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes splashEnter {
+    from { opacity: 0; transform: scale(0.8) translateY(30px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.splash-round-badge {
+    display: inline-block; padding: 8px 24px; border-radius: 30px;
+    background: var(--group-color); color: white;
+    font-weight: 800; font-size: 14px; letter-spacing: 2px;
+    margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+.splash-trophy {
+    font-size: 80px; margin: 20px 0;
+    animation: trophyBounce 2s ease-in-out infinite;
+}
+@keyframes trophyBounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-15px) scale(1.1); }
+}
+.splash-group-name {
+    font-family: 'Poppins', sans-serif; font-size: 48px;
+    font-weight: 900; margin-bottom: 8px;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.splash-subtitle {
+    font-size: 20px; color: var(--text-muted); font-weight: 500;
+    margin-bottom: 24px;
+}
+.splash-mode-info {
+    display: flex; gap: 12px; justify-content: center;
+    margin-bottom: 32px; flex-wrap: wrap;
+}
+.splash-mode-chip, .splash-diff-chip {
+    padding: 8px 18px; border-radius: 20px;
+    background: var(--bg-card); font-size: 14px; font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+.btn-tournament-start {
+    padding: 20px 60px; border-radius: var(--radius-lg);
+    font-size: 22px; font-weight: 900; color: white; border: none;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    transition: all 0.3s ease; letter-spacing: 1px;
+}
+.btn-tournament-start:hover { transform: translateY(-4px) scale(1.05); }
+.splash-particles {
+    position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+}
+.splash-particle {
+    position: absolute; border-radius: 50%; opacity: 0.3;
+    animation: particleFloat linear infinite;
+}
+@keyframes particleFloat {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.4; }
+    90% { opacity: 0.4; }
+    100% { transform: translateY(-20px) rotate(720deg); opacity: 0; }
+}
+
+/* Tournament Round Result */
+.tournament-round-result {
+    max-width: 500px; margin: 40px auto; border-radius: var(--radius-xl);
+    overflow: hidden; box-shadow: var(--shadow-lg);
+    background: var(--bg-card); animation: slideUp 0.5s ease;
+}
+.round-result-header {
+    padding: 30px; text-align: center; color: white;
+}
+.round-result-group-name {
+    font-size: 28px; font-weight: 900;
+    font-family: 'Poppins', sans-serif;
+}
+.round-result-title {
+    font-size: 16px; font-weight: 500; opacity: 0.9; margin-top: 4px;
+}
+.round-result-body { padding: 30px; text-align: center; }
+.round-result-ring {
+    position: relative; width: 140px; height: 140px; margin: 0 auto 24px;
+}
+.round-result-pct {
+    position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 36px; font-weight: 900;
+    font-family: 'Poppins', sans-serif;
+}
+.round-result-pct::after { content: '%'; font-size: 18px; font-weight: 600; }
+.round-result-stats {
+    display: flex; justify-content: center; gap: 20px;
+    margin-bottom: 28px; flex-wrap: wrap;
+}
+.round-stat {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 12px 18px; border-radius: var(--radius-md);
+    background: var(--bg-primary); min-width: 90px;
+}
+.round-stat span:first-child { font-size: 22px; }
+.round-stat span:nth-child(2) { font-size: 20px; font-weight: 800; }
+.round-stat span:last-child { font-size: 11px; color: var(--text-muted); }
+.btn-tournament-next {
+    width: 100%; padding: 18px; border-radius: var(--radius-lg);
+    font-size: 18px; font-weight: 800; color: white; border: none;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2); transition: all 0.3s ease;
+}
+.btn-tournament-next:hover { transform: translateY(-3px); }
+
+/* Tournament Final Results */
+.tournament-final {
+    padding: 30px 30px 160px; max-width: 800px; margin: 0 auto;
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center;
+}
+.tournament-final-header {
+    text-align: center; margin-bottom: 40px;
+}
+.final-trophy {
+    font-size: 90px;
+    animation: trophyBounce 2s ease-in-out infinite;
+    filter: drop-shadow(0 10px 30px rgba(255,215,0,0.4));
+}
+.final-title {
+    font-family: 'Poppins', sans-serif; font-size: 36px;
+    font-weight: 900; margin: 16px 0 8px;
+    background: linear-gradient(135deg, #FFD600, #FF9100);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.final-winner {
+    font-size: 20px; color: var(--text-secondary); font-weight: 500;
+}
+.final-winner strong { font-weight: 900; font-size: 24px; }
+.tournament-podium {
+    display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;
+}
+.podium-card {
+    display: flex; align-items: center; gap: 16px;
+    padding: 20px 24px; border-radius: var(--radius-xl);
+    background: var(--bg-card); box-shadow: var(--shadow-md);
+    border: 2px solid transparent; transition: all 0.5s ease;
+    animation: slideUp 0.5s ease both;
+}
+.podium-winner {
+    border-color: var(--podium-color);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--podium-color) 20%, transparent), var(--shadow-lg);
+    background: linear-gradient(135deg, var(--bg-card), color-mix(in srgb, var(--podium-color) 5%, var(--bg-card)));
+}
+.podium-medal { font-size: 42px; flex-shrink: 0; }
+.podium-rank-label {
+    font-size: 12px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--podium-color);
+}
+.podium-winner .podium-rank-label { font-size: 14px; }
+.podium-group-name {
+    font-family: 'Poppins', sans-serif; font-size: 22px;
+    font-weight: 800; color: var(--text-primary); flex: 1;
+}
+.podium-winner .podium-group-name { font-size: 26px; }
+.podium-score-bar {
+    width: 120px; height: 10px; border-radius: 5px;
+    background: var(--bg-secondary); overflow: hidden; flex-shrink: 0;
+}
+.podium-score-fill {
+    height: 100%; border-radius: 5px;
+    transition: width 1.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.podium-details {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    font-size: 13px; font-weight: 600; color: var(--text-secondary);
+}
+.tournament-final-actions {
+    display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+}
+.tournament-final-actions .btn { min-width: 200px; }
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes breathing {
+    0%, 100% { box-shadow: 0 8px 30px rgba(255,145,0,0.3); }
+    50% { box-shadow: 0 8px 40px rgba(255,145,0,0.5); }
+}

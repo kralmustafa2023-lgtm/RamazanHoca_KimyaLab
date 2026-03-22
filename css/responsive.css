@@ -67,6 +67,29 @@
     .tab-btn { padding: 8px 14px; font-size: 12px; }
     .table-row { padding: 10px 12px; gap: 8px; }
     .row-symbol { min-width: 60px; font-size: 14px; padding: 4px 8px; }
+
+    /* Tournament */
+    .tournament-setup-screen, .tournament-config-screen { padding: 16px; }
+    .splash-group-name { font-size: 32px; }
+    .splash-trophy { font-size: 60px; }
+    .btn-tournament-start { padding: 16px 40px; font-size: 18px; }
+    .podium-card { flex-wrap: wrap; padding: 16px; }
+    .podium-group-name { font-size: 18px; }
+    .podium-winner .podium-group-name { font-size: 20px; }
+    .podium-details { gap: 8px; font-size: 12px; }
+    .podium-score-bar { width: 80px; }
+    .final-title { font-size: 26px; }
+    .final-trophy { font-size: 70px; }
+    .tournament-final-actions { flex-direction: column; }
+    .tournament-final-actions .btn { min-width: auto; width: 100%; }
+    .tournament-option-grid { grid-template-columns: repeat(2, 1fr); }
+    .group-count-btn { width: 68px; height: 68px; }
+    .count-number { font-size: 24px; }
+    .t-setup-header { padding: 40px 16px 30px; }
+    .t-setup-title { font-size: 24px; }
+    .t-setup-trophy { font-size: 44px; }
+    .t-setup-body { padding: 16px 16px 120px; }
+    .tournament-config-screen { padding: 16px 16px 120px; }
 }
 
 @media (max-width: 480px) {
@@ -84,4 +107,7 @@
     .combo-emoji { font-size: 48px; }
     .results-emoji { font-size: 56px; }
     .results-title { font-size: 22px; }
+
+    .splash-group-name { font-size: 28px; }
+    .tournament-option-grid { grid-template-columns: 1fr 1fr; }
 }
