@@ -289,9 +289,17 @@ const AI = (() => {
 
         try {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
+            
+            // CRITICAL: Gemini API usually requires the first message to be 'user'.
+            // If our history starts with the 'model' greeting, we must skip it for the API.
+            let apiHistory = [...chatHistory];
+            while (apiHistory.length > 0 && apiHistory[0].role !== 'user') {
+                apiHistory.shift();
+            }
+
             const payload = {
                 systemInstruction: { parts: [{ text: getSystemInstruction() }] },
-                contents: chatHistory
+                contents: apiHistory
             };
 
             const response = await fetch(url, {
