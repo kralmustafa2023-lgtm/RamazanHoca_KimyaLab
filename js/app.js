@@ -474,6 +474,47 @@ const APP = (() => {
         `;
     }
 
+    function showSettingsModal() {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        const existing = document.querySelector('.settings-overlay');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.className = 'settings-overlay';
+        overlay.style.cssText = `
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+            z-index: 10000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        `;
+        
+        const audioState = (typeof AUDIO !== 'undefined' && AUDIO.isEnabled()) ? 'AÇIK' : 'KAPALI';
+        
+        overlay.innerHTML = `
+            <div style="background: var(--bg-card); padding: 30px 20px; border-radius: 24px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); transform: translateY(30px) scale(0.9); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.25); border: 1px solid rgba(255,255,255,0.08);">
+                <div style="font-size: 40px; margin-bottom: 10px;">⚙️</div>
+                <h3 style="margin-bottom: 25px; font-weight: 800; color: var(--text-primary); font-family: 'Poppins', sans-serif;">Ayarlar</h3>
+                
+                <button class="btn" style="width: 100%; margin-bottom: 15px; padding: 14px; border-radius: 12px; font-weight: 700; background: rgba(124, 77, 255, 0.1); color: var(--purple); border: 2px solid rgba(124, 77, 255, 0.3);" onclick="APP.toggleTheme()">
+                    🌓 Temayı Değiştir
+                </button>
+                
+                <button class="btn" id="modal-audio-btn" style="width: 100%; margin-bottom: 25px; padding: 14px; border-radius: 12px; font-weight: 700; background: rgba(0, 191, 165, 0.1); color: var(--teal); border: 2px solid rgba(0, 191, 165, 0.3);" onclick="APP.toggleAudio(); this.innerHTML='🔊 Ses Durumu: ' + (typeof AUDIO !== 'undefined' && AUDIO.isEnabled() ? 'AÇIK' : 'KAPALI')">
+                    🔊 Ses Durumu: ${audioState}
+                </button>
+                
+                <button class="btn" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; background: var(--red); color: white; border: none; box-shadow: 0 4px 15px rgba(244,67,54,0.3);" onclick="this.closest('.settings-overlay').remove()">
+                    KAPAT
+                </button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            overlay.children[0].style.transform = 'translateY(0) scale(1)';
+        }, 10);
+    }
+
     function renderBottomNav() {
         let bottomNav = document.getElementById('bottom-nav');
         if (!bottomNav) {
@@ -488,10 +529,6 @@ const APP = (() => {
                 <span class="bottom-nav-icon">🏠</span>
                 <span class="bottom-nav-text">Ana Sayfa</span>
             </a>
-            <a class="bottom-nav-item ${currentScreen === 'periodicLab' ? 'active' : ''}" onclick="APP.navigate('periodicLab')" style="${currentScreen === 'periodicLab' ? 'color:var(--purple);' : ''}">
-                <span class="bottom-nav-icon">🔬</span>
-                <span class="bottom-nav-text">P. Tablo</span>
-            </a>
             <a class="bottom-nav-item ${currentScreen === 'modeSelect' ? 'active' : ''}" onclick="APP.navigate('modeSelect')">
                 <span class="bottom-nav-icon">🎮</span>
                 <span class="bottom-nav-text">Oyna</span>
@@ -500,9 +537,13 @@ const APP = (() => {
                 <span class="bottom-nav-icon">📖</span>
                 <span class="bottom-nav-text">Tablolar</span>
             </a>
-            <a class="bottom-nav-item" onclick="APP.toggleTheme()">
-                <span class="bottom-nav-icon">🌓</span>
-                <span class="bottom-nav-text">Tema</span>
+            <a class="bottom-nav-item ${currentScreen === 'tournamentSetup' ? 'active' : ''}" onclick="APP.navigate('tournamentSetup')">
+                <span class="bottom-nav-icon">🏆</span>
+                <span class="bottom-nav-text">Turnuva</span>
+            </a>
+            <a class="bottom-nav-item" onclick="APP.showSettingsModal()">
+                <span class="bottom-nav-icon">⚙️</span>
+                <span class="bottom-nav-text">Ayarlar</span>
             </a>
         `;
 
@@ -1596,7 +1637,7 @@ const APP = (() => {
         switchTab, searchTable, showElementBio, speak,
         selectDifficulty, startGame, customizeAvatar,
         renderSidebar, renderBottomNav, renderMarket, renderPeriodicLab, showBigElementCard, showDailyChest,
-        toggleTheme, toggleAudio,
+        toggleTheme, toggleAudio, showSettingsModal,
         setGroupCount, goToTournamentConfig, setTMode, setTDiff, setTTable, launchTournament
     };
 })();
