@@ -288,7 +288,7 @@ const AI = (() => {
         sendBtnRef.disabled = true;
 
         try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
+            const url = `https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${API_KEY}`;
             
             // Ensure first message is user role
             let apiHistory = JSON.parse(JSON.stringify(chatHistory));
