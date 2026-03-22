@@ -316,9 +316,19 @@ const AI = (() => {
             }
 
         } catch (error) {
-            console.error('Gemini API Error:', error);
+            console.error('AI Subsystem Error:', error);
             hideTyping();
-            appendMessage('bot', 'Üzgünüm, şu anda bağlantı kuramıyorum. Lütfen daha sonra tekrar dene. (Hata: ' + error.message + ')');
+            
+            let errMsg = 'Bağlantı koptu veya veriler tam ulaşmadı. Lütfen farklı bir cümleyle tekrar dene.';
+            const rawErr = String(error.message || '').toLowerCase();
+            
+            if (rawErr.includes('quota') || rawErr.includes('rate limit') || rawErr.includes('429') || rawErr.includes('exhausted')) {
+                errMsg = 'Bana biraz hızlı ve arka arkaya mesaj attın! Sistem şu an yoğunluktan ötürü kendini 30 saniyelik dinlenmeye aldı. Küçük bir ara verip tekrar sormaya ne dersin? ⏱️';
+            } else if (rawErr.includes('key') || rawErr.includes('auth') || rawErr.includes('invalid')) {
+                errMsg = 'Güvenlik duvarına takıldık. Mustafa Uygur ana sunucuları bakıma almış olabilir. Lütfen sayfayı yenile.';
+            }
+
+            appendMessage('bot', 'Üzgünüm, tam algılayamadım. 🛑\n' + errMsg);
         } finally {
             sendBtnRef.disabled = false;
         }
