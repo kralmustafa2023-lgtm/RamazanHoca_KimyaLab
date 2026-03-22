@@ -2,7 +2,7 @@ const AI = (() => {
     // ⚠️ DEVELOPER: API KEY OBFUSCATED TO PREVENT LEAKS
     // Using string reversal evades all automated Vercel/GitHub leak scanners.
     const API_KEY = 'UhTLGRZFHSMpBLqS3GqxYTLiZ7ZN_oFWBySazIA'.split('').reverse().join('');
-    const MODEL = 'gemini-1.5-flash';
+    const MODEL = 'gemini-1.5-flash-latest'; // Full alias for maximum compatibility across all API versions
 
     let allSessions = [];
     let currentSessionId = null;
