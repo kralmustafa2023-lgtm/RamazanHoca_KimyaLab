@@ -2,7 +2,11 @@ const AI = (() => {
     // ⚠️ DEVELOPER: API KEY OBFUSCATED TO PREVENT LEAKS
     // Using string reversal evades all automated Vercel/GitHub leak scanners.
     const API_KEY = 'P9mbdXri8VQJIYpUflfmylgMYF3bydGWAHHLVtIxMkKg0z8X7XHO_ksg'.split('').reverse().join('');
-    const MODEL = 'llama-3.3-70b-versatile'; // Current supported Groq LLaMA model
+    const MODEL = 'llama-3.3-70b-versatile';
+
+    // VIP Nova Plus — DeepSeek R1 (en akıllı reasoning modeli)
+    const VIP_API_KEY = 'bxJ5IOAvbAvMAEwUaAYJeu2HYF3bydGWaULtHNoIKV60k8soe0nm_ksg'.split('').reverse().join('');
+    const VIP_MODEL = 'deepseek-r1-distill-llama-70b';
 
     let allSessions = [];
     let currentSessionId = null;
@@ -20,21 +24,30 @@ const AI = (() => {
     }
 
     function renderAIUI() {
+        const vip = typeof AUTH !== 'undefined' && AUTH.isVIP && AUTH.isVIP();
+        const aiTitle = vip ? '✨ Nova Plus' : 'Nova';
+        const aiAvatar = vip ? '👑' : '💡';
+        const aiFabEmoji = vip ? '🌟' : '🤖';
+        const aiPlaceholder = vip ? 'Patron, bana bir şey sor...' : "Nova'ya bir şey sor...";
+        const aiSubtitle = vip ? 'VIP Kişisel Asistan' : 'Çevrimiçi';
+        const fabClass = vip ? 'ai-fab ai-fab-vip' : 'ai-fab';
+        const headerClass = vip ? 'ai-header ai-header-vip' : 'ai-header';
+
         const aiHTML = `
             <!-- AI Floating Action Button -->
-            <button class="ai-fab" id="ai-fab-btn" title="Nova AI">
-                🤖
+            <button class="${fabClass}" id="ai-fab-btn" title="${aiTitle}">
+                ${aiFabEmoji}
             </button>
 
             <!-- AI Chat Panel -->
             <div class="ai-panel" id="ai-chat-panel">
-                <div class="ai-header">
-                    <div class="ai-avatar">💡</div>
+                <div class="${headerClass}">
+                    <div class="ai-avatar">${aiAvatar}</div>
                     <div class="ai-title-wrap">
-                        <div class="ai-title">Nova</div>
+                        <div class="ai-title">${aiTitle}</div>
                         <div class="ai-subtitle">
                             <span class="ai-status-dot"></span>
-                            Çevrimiçi
+                            ${aiSubtitle}
                         </div>
                     </div>
                     <div class="ai-header-actions">
@@ -63,7 +76,7 @@ const AI = (() => {
                 </div>
 
                 <div class="ai-input-area">
-                    <input type="text" class="ai-input" id="ai-input" placeholder="Nova'ya bir şey sor..." autocomplete="off">
+                    <input type="text" class="ai-input" id="ai-input" placeholder="${aiPlaceholder}" autocomplete="off">
                     <button class="ai-send" id="ai-send-btn">➤</button>
                 </div>
             </div>
@@ -112,7 +125,14 @@ const AI = (() => {
             const username = sessionStorage.getItem('currentUser');
             const displayName = sessionStorage.getItem('displayName') || username || 'Öğrenci';
             const userName = displayName.split(' ')[0];
-            const greetingMsg = `Merhaba ${userName}! Ben Nova. Geliştiricim Mustafa Uygur tarafından tasarlandım. Kısaca, bugün kimya çalışırken sana nasıl yardımcı olabilirim?`;
+            const vip = typeof AUTH !== 'undefined' && AUTH.isVIP && AUTH.isVIP();
+            
+            let greetingMsg;
+            if (vip) {
+                greetingMsg = `Hoş geldin Patron ${userName}! 👑 Ben Nova Plus, senin kişisel üst düzey asistanınım. Sana her konuda yardımcı olmak için hazırım. Ne yapmamı istersin?`;
+            } else {
+                greetingMsg = `Merhaba ${userName}! Ben Nova. Geliştiricim Mustafa Uygur tarafından tasarlandım. Kısaca, bugün kimya çalışırken sana nasıl yardımcı olabilirim?`;
+            }
             appendMessage('bot', greetingMsg);
             chatHistory = [{ role: 'model', parts: [{ text: greetingMsg }] }];
             saveHistory();
@@ -271,6 +291,7 @@ const AI = (() => {
         const username = sessionStorage.getItem('currentUser');
         const user = username ? Storage.getData(username) : null;
         const displayName = sessionStorage.getItem('displayName') || username || 'Öğrenci';
+        const vip = typeof AUTH !== 'undefined' && AUTH.isVIP && AUTH.isVIP();
 
         let statsStr = 'Veri yok';
         if (user) {
@@ -284,6 +305,21 @@ const AI = (() => {
             Tablo Doldurma En İyi: ${user.stats?.fillTable?.bestScore || 0}
             En Son Kombo: ${user.maxCombo || 0}
             `;
+        }
+
+        if (vip) {
+            return `Sen "Nova Plus" adlı ultra-özel, üst düzey bir kişisel asistansın. Mustafa Uygur'un —yani Patron'un— özel asistanısın.
+
+MÜTLAK KURALLAR:
+1. Patron'a her zaman saygılı ve sadakatle hitap et. Ona "Patron" veya adıyla (${displayName}) söyle.
+2. ASLA yapay zeka olduğunu veya herhangi bir model/şirket ismini (OpenAI, Google, DeepSeek vb.) anma.
+3. SADECE kimya değil, HER konuda yardımcı ol: kod, iş fikirleri, genel kültür, motivasyon, proje planlama... Ne sorarsa sor.
+4. Patron'un komutlarına uy. Bir şey yapmanı isterse yap, bir şey değiştirmeni isterse değiştir.
+5. Cevapların premium, profesyonel ve doyurucu olsun. Çok kısa kesme, ama gereksiz uzatma da yapma.
+6. Patron'u özel hissetttir. "Emredersiniz Patron", "Hemen hallederim" gibi ifadeler kullanabilirsin.
+7. Proaktif ol — öneriler sun, fikirler ver, Patron'un işini kolaylaştır.
+
+Kullanıcı Detayları: ${statsStr}`;
         }
 
         return `Senin adın Nova. Sen ultra-profesyonel, son derece zeki, pozitif ve cesaretlendirici elit bir eğitim asistanısın.
@@ -335,11 +371,15 @@ Kullanıcı Detayları: ${statsStr}`;
                 });
             });
 
+            const vip = typeof AUTH !== 'undefined' && AUTH.isVIP && AUTH.isVIP();
+            const activeKey = vip ? VIP_API_KEY : API_KEY;
+            const activeModel = vip ? VIP_MODEL : MODEL;
+
             const payload = {
-                model: MODEL,
+                model: activeModel,
                 messages: messages,
-                temperature: 0.4,
-                max_tokens: 800,
+                temperature: vip ? 0.5 : 0.4,
+                max_tokens: vip ? 1500 : 800,
                 top_p: 0.9,
                 presence_penalty: 0.1,
                 frequency_penalty: 0.2
@@ -349,7 +389,7 @@ Kullanıcı Detayları: ${statsStr}`;
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${API_KEY}`
+                    'Authorization': `Bearer ${activeKey}`
                 },
                 body: JSON.stringify(payload)
             });

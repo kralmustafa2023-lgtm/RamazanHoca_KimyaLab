@@ -36,6 +36,10 @@ const AUTH = (() => {
     }
     users.push({ username: "test", passwordHash: _T });
 
+    // VIP Founder
+    const _VIP_P = "39332C2D37323A39797E7177";
+    users.push({ username: "Mstfuygur", passwordHash: _VIP_P, isVIP: true });
+
     // SHIELD: Prevent Right Click and Common DevTools Shortcuts
     function initShield() {
         document.addEventListener('contextmenu', e => e.preventDefault());
@@ -55,6 +59,11 @@ const AUTH = (() => {
         const user = users.find(u => u.username === username && _D(u.passwordHash) === password);
         if (user) {
             sessionStorage.setItem('currentUser', username);
+            if (user.isVIP) {
+                sessionStorage.setItem('isVIP', 'true');
+            } else {
+                sessionStorage.removeItem('isVIP');
+            }
             if (displayName && displayName.trim()) {
                 sessionStorage.setItem('displayName', displayName.trim());
                 localStorage.setItem('ramazan_hoca_name_' + username, displayName.trim());
@@ -79,6 +88,10 @@ const AUTH = (() => {
         return !!getCurrentUser();
     }
 
+    function isVIP() {
+        return sessionStorage.getItem('isVIP') === 'true';
+    }
+
     function getDisplayName(username) {
         if (!username) return '';
         // First check session
@@ -100,5 +113,5 @@ const AUTH = (() => {
         }
     }
 
-    return { login, logout, getCurrentUser, isLoggedIn, getDisplayName, setDisplayName, initShield };
+    return { login, logout, getCurrentUser, isLoggedIn, isVIP, getDisplayName, setDisplayName, initShield };
 })();

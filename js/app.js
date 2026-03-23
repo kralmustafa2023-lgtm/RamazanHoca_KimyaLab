@@ -30,8 +30,8 @@ const APP = (() => {
         };
 
         const savedTheme = localStorage.getItem('kimyalab_theme');
-        if (savedTheme === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
         }
 
         if (AUTH.isLoggedIn()) {
@@ -288,6 +288,7 @@ const APP = (() => {
 
                         <div class="login-footer">
                             <p>Nizip Sosyal Bilimler Lisesi 🏫</p>
+                            <p style="margin-top:12px;"><a onclick="APP.showVIPLogin()" style="color:var(--text-muted); font-size:11px; cursor:pointer; opacity:0.5; transition:0.3s;" onmouseover="this.style.opacity='1'; this.style.color='gold';" onmouseout="this.style.opacity='0.5'; this.style.color='var(--text-muted)';">🔑 Kurucu Girişi</a></p>
                         </div>
                     </div>
                 </div>
@@ -394,24 +395,29 @@ const APP = (() => {
         const username = AUTH.getCurrentUser();
         const data = Storage.getData(username);
         const level = getLevel(data.totalPoints);
+        const vip = AUTH.isVIP();
+
+        const sidebarClass = vip ? 'sidebar-content vip-sidebar' : 'sidebar-content';
+        const userBadge = vip ? '<span style="background:linear-gradient(135deg,#FFD700,#FF8C00);color:#000;font-size:9px;font-weight:900;padding:2px 6px;border-radius:6px;margin-left:4px;animation:vipPulse 2s infinite;">👑 VIP</span>' : '';
+        const avatarBorder = vip ? 'border: 3px solid gold; box-shadow: 0 0 20px rgba(255,215,0,0.5);' : 'border: 2.5px solid var(--white); box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
 
         sidebar.innerHTML = `
-            <div class="sidebar-content">
+            <div class="${sidebarClass}">
                 <div class="sidebar-logo">
                     <img src="images/logo.png" alt="NSBL" class="sidebar-logo-img">
-                    <span class="sidebar-logo-text">KimyaLab</span>
+                    <span class="sidebar-logo-text">${vip ? '👑 KimyaLab VIP' : 'KimyaLab'}</span>
                 </div>
                 
-                <div class="sidebar-user">
-                    <div class="user-avatar" style="width:50px; height:50px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:white; border: 2.5px solid var(--white); box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius:50%;">
+                <div class="sidebar-user" ${vip ? 'style="background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,140,0,0.1)); border: 1px solid rgba(255,215,0,0.3);"' : ''}>
+                    <div class="user-avatar" style="width:50px; height:50px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:white; ${avatarBorder} border-radius:50%;">
                         ${data.activeAvatar && data.activeAvatar.includes('<img') ? 
                             data.activeAvatar : 
                             `<img src="images/logo.png" style="width:100%; height:100%; object-fit:cover; image-rendering: -webkit-optimize-contrast;">`
                         }
                     </div>
                     <div class="user-info">
-                        <span class="user-name" style="font-size:15px;">${AUTH.getDisplayName(username)}</span>
-                        <span class="user-level" style="color:${level.color}; font-weight:700;">${level.name}</span>
+                        <span class="user-name" style="font-size:15px;">${AUTH.getDisplayName(username)} ${userBadge}</span>
+                        <span class="user-level" style="color:${vip ? 'gold' : level.color}; font-weight:700;">${vip ? 'Kurucu Patron 👑' : level.name}</span>
                     </div>
                 </div>
 
@@ -571,6 +577,7 @@ const APP = (() => {
         const displayName = AUTH.getDisplayName(username);
         const level = getLevel(data.totalPoints);
         const accuracy = Storage.getOverallAccuracy(username);
+        const vip = AUTH.isVIP();
 
         // Random motivation
         const motiv = MOTIVATIONAL_MESSAGES[Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length)];
@@ -604,11 +611,11 @@ const APP = (() => {
 
         container.innerHTML = `
             <div class="dashboard-screen">
-                <div class="dashboard-topbar">
+                <div class="dashboard-topbar" ${vip ? 'style="background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,140,0,0.05)); border: 1px solid rgba(255,215,0,0.2); border-radius: 20px; padding: 20px;"' : ''}>
                     <div class="topbar-greeting">
-                        <h2>Hoş geldin ${displayName}! 🧪</h2>
+                        <h2>${vip ? '👑 Hoş geldin Patron ' + displayName + '!' : 'Hoş geldin ' + displayName + '! 🧪'}</h2>
                         <p class="topbar-subtitle" style="display:flex; align-items:center; gap:6px;">
-                            Ramazan Hoca'nın Öğrencisi - ${data.coins || 0} Altın Ganimeti ${getGoldIcon(18)}
+                            ${vip ? '✨ VIP Kurucu Erişimi Aktif' : "Ramazan Hoca'nın Öğrencisi"} - ${data.coins || 0} Altın Ganimeti ${getGoldIcon(18)}
                         </p>
                     </div>
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -1661,13 +1668,85 @@ const APP = (() => {
         });
     }
 
+    // ============ VIP LOGIN MODAL ============
+    function showVIPLogin() {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        const existing = document.querySelector('.vip-login-overlay');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.className = 'vip-login-overlay';
+        overlay.style.cssText = `
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
+            z-index: 10000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        `;
+
+        overlay.innerHTML = `
+            <div style="background: linear-gradient(145deg, #1a1a2e, #0f0f23); padding: 40px 30px; border-radius: 28px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 0 60px rgba(255,215,0,0.2), 0 20px 50px rgba(0,0,0,0.5); transform: translateY(30px) scale(0.9); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.25); border: 2px solid rgba(255,215,0,0.3); position: relative; overflow: hidden;">
+                <div style="position:absolute; top:0; left:-100%; width:60%; height:100%; background: linear-gradient(90deg, transparent, rgba(255,215,0,0.1), transparent); transform: skewX(-30deg); animation: premiumShine 3s infinite;"></div>
+                <div style="font-size: 60px; margin-bottom: 15px; filter: drop-shadow(0 5px 15px rgba(255,215,0,0.4)); animation: bounceFloat 3s ease-in-out infinite;">👑</div>
+                <h3 style="margin-bottom: 8px; font-weight: 900; color: #FFD700; font-family: 'Poppins', sans-serif; font-size: 22px; text-shadow: 0 2px 10px rgba(255,215,0,0.3);">Kurucu VIP Girişi</h3>
+                <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 25px;">Sadece uygulama kurucusu için özel erişim</p>
+                
+                <div style="margin-bottom: 15px; position: relative;">
+                    <input type="text" id="vip-username" placeholder="Kurucu Kullanıcı Adı" style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 2px solid rgba(255,215,0,0.2); background: rgba(255,255,255,0.05); color: #FFD700; font-size: 14px; font-weight: 600; outline: none; font-family: inherit; transition: border 0.3s;" onfocus="this.style.borderColor='rgba(255,215,0,0.5)'" onblur="this.style.borderColor='rgba(255,215,0,0.2)'">
+                </div>
+                <div style="margin-bottom: 15px; position: relative;">
+                    <input type="password" id="vip-password" placeholder="VIP Şifre" style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 2px solid rgba(255,215,0,0.2); background: rgba(255,255,255,0.05); color: #FFD700; font-size: 14px; font-weight: 600; outline: none; font-family: inherit; transition: border 0.3s;" onfocus="this.style.borderColor='rgba(255,215,0,0.5)'" onblur="this.style.borderColor='rgba(255,215,0,0.2)'">
+                </div>
+                <div id="vip-error" style="color: #FF5252; font-size: 12px; margin-bottom: 10px; min-height: 18px;"></div>
+                
+                <button class="btn" onclick="APP.handleVIPLogin()" style="width: 100%; padding: 16px; border-radius: 14px; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; border: none; box-shadow: 0 8px 25px rgba(255,215,0,0.3); cursor: pointer; transition: all 0.3s; margin-bottom: 12px; letter-spacing: 0.5px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 12px 30px rgba(255,215,0,0.4)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 8px 25px rgba(255,215,0,0.3)'">
+                    👑 VIP GİRİŞ YAP
+                </button>
+                <button class="btn" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 600; background: transparent; color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" onclick="this.closest('.vip-login-overlay').remove()">
+                    Geri Dön
+                </button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            overlay.children[0].style.transform = 'translateY(0) scale(1)';
+        }, 10);
+
+        // Enter key handler
+        overlay.querySelector('#vip-password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') APP.handleVIPLogin();
+        });
+    }
+
+    function handleVIPLogin() {
+        const username = document.getElementById('vip-username').value.trim();
+        const password = document.getElementById('vip-password').value.trim();
+        const errorEl = document.getElementById('vip-error');
+
+        if (!username || !password) {
+            errorEl.textContent = 'Tüm alanları doldurun!';
+            return;
+        }
+
+        const result = AUTH.login(username, password, username);
+        if (result.success && AUTH.isVIP()) {
+            const overlay = document.querySelector('.vip-login-overlay');
+            if (overlay) overlay.remove();
+            if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
+            navigate('dashboard');
+        } else {
+            errorEl.textContent = 'VIP bilgileri hatalı! Sadece kurucu giriş yapabilir.';
+            if (typeof Animations !== 'undefined') Animations.shake(document.getElementById('vip-password').parentElement);
+        }
+    }
+
     return {
         init, navigate, handleLogin, updatePreview, togglePassword,
         switchTab, searchTable, showElementBio, speak,
         selectDifficulty, startGame, customizeAvatar,
         renderSidebar, renderBottomNav, renderMarket, renderPeriodicLab, showBigElementCard, showDailyChest,
         toggleTheme, toggleAudio, showSettingsModal, setTheme,
-        setGroupCount, goToTournamentConfig, setTMode, setTDiff, setTTable, launchTournament
+        setGroupCount, goToTournamentConfig, setTMode, setTDiff, setTTable, launchTournament,
+        showVIPLogin, handleVIPLogin
     };
 })();
 

@@ -331,3 +331,76 @@ body:not(.has-sidebar) .ai-panel {
         transform: translateY(0);
     }
 }
+
+/* ============ VIP / NOVA PLUS STYLES ============ */
+
+/* VIP Floating Button — Gold */
+.ai-fab-vip {
+    background: linear-gradient(135deg, #FFD700, #FF8C00) !important;
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 140, 0, 0.3) !important;
+    animation: vipFabGlow 2s ease-in-out infinite;
+}
+.ai-fab-vip::before {
+    background: linear-gradient(135deg, #FFD700, #FF8C00, #FFD700) !important;
+}
+.ai-fab-vip:hover {
+    box-shadow: 0 15px 40px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 140, 0, 0.5) !important;
+}
+
+@keyframes vipFabGlow {
+    0%, 100% { box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 140, 0, 0.3); }
+    50% { box-shadow: 0 10px 40px rgba(255, 215, 0, 0.7), 0 0 35px rgba(255, 140, 0, 0.5); }
+}
+
+/* VIP Panel Header — Premium Gold Gradient */
+.ai-header-vip {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%) !important;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3) !important;
+    position: relative;
+    overflow: hidden;
+}
+.ai-header-vip::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.08), transparent);
+    transform: skewX(-30deg);
+    animation: premiumShine 3s infinite;
+}
+.ai-header-vip .ai-title {
+    background: linear-gradient(135deg, #FFD700, #FF8C00) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    font-weight: 900 !important;
+}
+.ai-header-vip .ai-subtitle {
+    color: rgba(255, 215, 0, 0.6) !important;
+}
+.ai-header-vip .ai-status-dot {
+    background: #FFD700 !important;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6) !important;
+}
+.ai-header-vip .ai-avatar {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 140, 0, 0.1)) !important;
+    border: 2px solid rgba(255, 215, 0, 0.4) !important;
+}
+
+/* VIP Sidebar */
+.vip-sidebar {
+    position: relative;
+}
+.vip-sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, rgba(255, 215, 0, 0.03) 0%, transparent 50%, rgba(255, 140, 0, 0.02) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* VIP Pulse Animation */
+@keyframes vipPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+}
