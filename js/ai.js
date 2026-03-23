@@ -4,9 +4,9 @@ const AI = (() => {
     const API_KEY = 'P9mbdXri8VQJIYpUflfmylgMYF3bydGWAHHLVtIxMkKg0z8X7XHO_ksg'.split('').reverse().join('');
     const MODEL = 'llama-3.3-70b-versatile';
 
-    // VIP Nova Plus — DeepSeek R1 (en akıllı reasoning modeli)
+    // VIP Nova Plus — GPT-OSS 120B (en büyük ve en akıllı ücretsiz model)
     const VIP_API_KEY = 'bxJ5IOAvbAvMAEwUaAYJeu2HYF3bydGWaULtHNoIKV60k8soe0nm_ksg'.split('').reverse().join('');
-    const VIP_MODEL = 'deepseek-r1-distill-llama-70b';
+    const VIP_MODEL = 'openai/gpt-oss-120b';
 
     let allSessions = [];
     let currentSessionId = null;
