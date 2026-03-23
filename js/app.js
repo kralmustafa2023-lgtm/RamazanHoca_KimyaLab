@@ -394,10 +394,6 @@ const APP = (() => {
             formStudent.style.display = 'none';
             formVip.style.display = 'block'; // Block prevents horizontal layout bug
             
-            // Add VIP premium feel to container
-            containerBox.style.boxShadow = '0 30px 60px rgba(0,0,0,0.3), 0 0 40px rgba(255,215,0,0.15)';
-            containerBox.style.border = '1px solid rgba(255,215,0,0.2)';
-            
             setTimeout(() => document.getElementById('vip-username').focus(), 50);
         } else {
             btnVip.style.background = 'transparent';
@@ -410,10 +406,6 @@ const APP = (() => {
 
             formVip.style.display = 'none';
             formStudent.style.display = 'block'; // Block prevents horizontal layout bug
-            
-            // Remove VIP feel
-            containerBox.style.boxShadow = '';
-            containerBox.style.border = '';
             
             setTimeout(() => document.getElementById('login-displayname').focus(), 50);
         }
