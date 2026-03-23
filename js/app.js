@@ -380,7 +380,7 @@ const APP = (() => {
 
         const result = AUTH.login(username, password, displayName);
         if (result.success) {
-            navigate('dashboard');
+            window.location.reload();
         } else {
             errorEl.textContent = result.message;
             Animations.shake(document.querySelector('.login-form'));
@@ -1729,10 +1729,7 @@ const APP = (() => {
 
         const result = AUTH.login(username, password, username);
         if (result.success && AUTH.isVIP()) {
-            const overlay = document.querySelector('.vip-login-overlay');
-            if (overlay) overlay.remove();
-            if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
-            navigate('dashboard');
+            window.location.reload();
         } else {
             errorEl.textContent = 'VIP bilgileri hatalı! Sadece kurucu giriş yapabilir.';
             if (typeof Animations !== 'undefined') Animations.shake(document.getElementById('vip-password').parentElement);
