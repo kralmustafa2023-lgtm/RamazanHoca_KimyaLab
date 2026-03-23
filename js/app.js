@@ -392,7 +392,7 @@ const APP = (() => {
             btnVip.style.boxShadow = '0 4px 15px rgba(255,215,0,0.4)';
 
             formStudent.style.display = 'none';
-            formVip.style.display = 'flex'; // Uses login-form flex-direction
+            formVip.style.display = 'block'; // Block prevents horizontal layout bug
             
             // Add VIP premium feel to container
             containerBox.style.boxShadow = '0 30px 60px rgba(0,0,0,0.3), 0 0 40px rgba(255,215,0,0.15)';
@@ -409,7 +409,7 @@ const APP = (() => {
             btnStudent.style.boxShadow = '0 4px 10px rgba(0,0,0,0.05)';
 
             formVip.style.display = 'none';
-            formStudent.style.display = 'flex'; // Restore normal form via class default
+            formStudent.style.display = 'block'; // Block prevents horizontal layout bug
             
             // Remove VIP feel
             containerBox.style.boxShadow = '';
