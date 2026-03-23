@@ -150,6 +150,11 @@ const AI = (() => {
         triggerGreeting();
     }
 
+    function getStorageKey() {
+        const username = sessionStorage.getItem('currentUser') || 'anon';
+        return `nova_sessions_v3_${username}`;
+    }
+
     function saveHistory() {
         if (!currentSessionId) currentSessionId = Date.now();
         
@@ -168,12 +173,23 @@ const AI = (() => {
 
         session.messages = chatHistory;
         session.date = new Date().toLocaleDateString('tr-TR');
-        localStorage.setItem('nova_sessions_v2', JSON.stringify(allSessions));
+        localStorage.setItem(getStorageKey(), JSON.stringify(allSessions));
     }
 
     function loadHistory() {
         try {
-            const saved = localStorage.getItem('nova_sessions_v2');
+            const key = getStorageKey();
+            let saved = localStorage.getItem(key);
+            
+            // Legacy göçü
+            if (!saved) {
+                const legacy = localStorage.getItem('nova_sessions_v2');
+                if (legacy) {
+                    saved = legacy;
+                    localStorage.setItem(key, legacy);
+                }
+            }
+
             if (saved) {
                 allSessions = JSON.parse(saved);
                 if (allSessions.length > 0) {
@@ -226,7 +242,7 @@ const AI = (() => {
 
     function deleteSession(id) {
         allSessions = allSessions.filter(s => s.id !== id);
-        localStorage.setItem('nova_sessions_v2', JSON.stringify(allSessions));
+        localStorage.setItem(getStorageKey(), JSON.stringify(allSessions));
         if (currentSessionId === id && isPanelOpen) {
             startNewChat();
         }

@@ -78,7 +78,7 @@ const AUTH = (() => {
         sessionStorage.removeItem('currentUser');
         sessionStorage.removeItem('displayName');
         sessionStorage.removeItem('isVIP');
-        APP.navigate('login');
+        window.location.reload();
     }
 
     function getCurrentUser() {
