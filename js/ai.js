@@ -343,12 +343,12 @@ const AI = (() => {
             hideTyping();
             
             const rawErr = String(error.message || '').toLowerCase();
-            let errMsg = 'Bağlantı koptu veya veriler tam ulaşmadı. Mustafa Uygur ana sunucuları bakıma almış olabilir. Lütfen sayfayı yenile.';
+            let errMsg = 'Bağlantı şu an zayıf. Mustafa Uygur ana sunucusunda teknik bir güncelleme yapılıyor olabilir. Lütfen sayfayı yenileyip tekrar dene.';
             
             if (rawErr.includes('quota') || rawErr.includes('rate limit') || rawErr.includes('429') || rawErr.includes('exhausted')) {
-                errMsg = 'Bana biraz hızlı ve arka arkaya mesaj attın! Sistem şu an yoğunluktan ötürü kendini 30 saniyelik dinlenmeye aldı. Küçük bir ara verip tekrar sormaya ne dersin? ⏱️';
-            } else if (rawErr.includes('key') || rawErr.includes('auth') || rawErr.includes('invalid') || rawErr.includes('400')) {
-                errMsg = 'Güvenlik duvarına takıldık. Mustafa Uygur ana sunucuları kısa bir süre için erişime kapatılmış olabilir. Lütfen daha sonra tekrar dene.';
+                errMsg = 'Bana biraz hızlı ve arka arkaya mesaj attın! Mustafa Uygur sunucuları şu an senin için 30 saniyelik bir mola verdi. Birazdan tekrar görüşelim? ⏱️';
+            } else if (rawErr.includes('key') || rawErr.includes('auth') || rawErr.includes('invalid') || rawErr.includes('400') || rawErr.includes('model')) {
+                errMsg = 'Güvenlik duvarı uyarısı! Mustafa Uygur ana sunucusu şu an sadece sınırlı erişime izin veriyor. Lütfen kısa bir süre sonra tekrar dene.';
             }
 
             appendMessage('bot', 'Üzgünüm, şu anda tam bağlantı kuramıyorum. 🛑\n' + errMsg);
