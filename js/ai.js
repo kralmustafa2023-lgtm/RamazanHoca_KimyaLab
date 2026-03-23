@@ -290,16 +290,19 @@ const AI = (() => {
         try {
             const url = `https://api.groq.com/openai/v1/chat/completions`;
             
-            // Map the internal Gemini-style chatHistory format to OpenAI/Groq messages format
+            // LLaMA 3 / Groq strict sequence enforcement: user must speak first after system prompt
+            let safeHistory = JSON.parse(JSON.stringify(chatHistory));
+            while (safeHistory.length > 0 && safeHistory[0].role !== 'user') {
+                safeHistory.shift();
+            }
+
             let messages = [
                 { role: 'system', content: getSystemInstruction() }
             ];
 
-            chatHistory.forEach(msg => {
-                let openaiRole = msg.role === 'model' ? 'assistant' : 'user';
-                // Note: Groq is very flexible and allows the assistant to 'speak first' in history
+            safeHistory.forEach(msg => {
                 messages.push({
-                    role: openaiRole,
+                    role: msg.role === 'model' ? 'assistant' : 'user',
                     content: msg.parts[0].text
                 });
             });
@@ -339,16 +342,8 @@ const AI = (() => {
             console.error('AI Subsystem Error:', error);
             hideTyping();
             
-            const rawErr = String(error.message || '').toLowerCase();
-            let errMsg = 'Bağlantı koptu veya veriler tam ulaşmadı. Mustafa Uygur ana sunucuları bakıma almış olabilir. Lütfen sayfayı yenile.';
-            
-            if (rawErr.includes('quota') || rawErr.includes('rate limit') || rawErr.includes('429') || rawErr.includes('exhausted')) {
-                errMsg = 'Bana biraz hızlı ve arka arkaya mesaj attın! Sistem şu an yoğunluktan ötürü kendini 30 saniyelik dinlenmeye aldı. Küçük bir ara verip tekrar sormaya ne dersin? ⏱️';
-            } else if (rawErr.includes('key') || rawErr.includes('auth') || rawErr.includes('invalid') || rawErr.includes('400')) {
-                errMsg = 'Güvenlik duvarına takıldık. Mustafa Uygur ana sunucuları kısa bir süre için erişime kapatılmış olabilir. Lütfen daha sonra tekrar dene.';
-            }
-
-            appendMessage('bot', 'Üzgünüm, şu anda tam bağlantı kuramıyorum. 🛑\n' + errMsg);
+            // ⚠️ Geliştirici hata modu: Hatanın tam kök nedenini görebilmek için doğrudan hatayı gösteriyorum
+            appendMessage('bot', '⚠️ Hata oluştu:\nBağlantı koptu. Teknik detay: ' + error.message);
         } finally {
             sendBtnRef.disabled = false;
         }
