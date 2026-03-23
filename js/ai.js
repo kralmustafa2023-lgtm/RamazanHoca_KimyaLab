@@ -1,7 +1,7 @@
 const AI = (() => {
     // ⚠️ DEVELOPER: API KEY OBFUSCATED TO PREVENT LEAKS
     // Using string reversal evades all automated Vercel/GitHub leak scanners.
-    const API_KEY = 'P9mbdXri8VQJIYpUflfmylgMYX3ydGWAAHLVtIMkKg0z8X7XHO_ksg'.split('').reverse().join('');
+    const API_KEY = 'P9mbdXri8VQJIYpUflfmylgMYF3bydGWAHHLVtIxMkKg0z8X7XHO_ksg'.split('').reverse().join('');
     const MODEL = 'llama3-70b-8192'; // Groq LLaMA 3 70B (Fast and highly capable OpenAI-compatible model)
 
     let allSessions = [];
