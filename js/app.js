@@ -417,40 +417,35 @@ const APP = (() => {
 
                 <nav class="sidebar-nav">
                     <div class="nav-section-title">ANA MENÜ</div>
-                    <a class="nav-item ${currentScreen === 'dashboard' ? 'active' : ''}" style="border: 1px solid var(--teal); background: rgba(0, 191, 165, 0.05); margin-bottom: 6px;" onclick="APP.navigate('dashboard')">
+                    <a class="nav-item ${currentScreen === 'dashboard' ? 'active' : ''}" style="border: 2px solid var(--teal); background: rgba(0, 191, 165, 0.1); box-shadow: 0 0 12px rgba(0, 191, 165, 0.3); border-radius: 12px; margin-bottom: 8px;" onclick="APP.navigate('dashboard')">
                         <span class="nav-icon">🏠</span>
-                        <span class="nav-text" style="color:var(--teal); font-weight:600;">Ana Sayfa</span>
+                        <span class="nav-text" style="color:var(--teal); font-weight:700;">Ana Sayfa</span>
                     </a>
                     
-                    <a class="nav-item ${currentScreen === 'modeSelect' ? 'active' : ''}" style="border: 1px solid var(--orange); background: rgba(255, 152, 0, 0.05); margin-bottom: 6px;" onclick="APP.navigate('modeSelect')">
+                    <a class="nav-item ${currentScreen === 'modeSelect' ? 'active' : ''}" style="border: 2px solid var(--orange); background: rgba(255, 109, 0, 0.1); box-shadow: 0 0 12px rgba(255, 109, 0, 0.3); border-radius: 12px; margin-bottom: 8px;" onclick="APP.navigate('modeSelect')">
                         <span class="nav-icon">🎮</span>
-                        <span class="nav-text" style="color:var(--orange); font-weight:600;">Oyun Modları</span>
+                        <span class="nav-text" style="color:var(--orange); font-weight:700;">Oyun Modları</span>
                     </a>
                     
-                    <a class="nav-item ${currentScreen === 'tournamentSetup' ? 'active' : ''}" style="border: 1px solid #FFD600; background: rgba(255, 214, 0, 0.05); margin-bottom: 6px;" onclick="APP.navigate('tournamentSetup')">
-                        <span class="nav-icon">🏆</span>
-                        <span class="nav-text" style="color:#FFD600; font-weight:700;">Turnuva</span>
-                    </a>
-                    
-                    <a class="nav-item ${currentScreen === 'tables' ? 'active' : ''}" style="border: 1px solid var(--blue); background: rgba(33, 150, 243, 0.05); margin-bottom: 6px;" onclick="APP.navigate('tables')">
+                    <a class="nav-item ${currentScreen === 'tables' ? 'active' : ''}" style="border: 2px solid #2196F3; background: rgba(33, 150, 243, 0.1); box-shadow: 0 0 12px rgba(33, 150, 243, 0.3); border-radius: 12px; margin-bottom: 8px;" onclick="APP.navigate('tables')">
                         <span class="nav-icon">📖</span>
-                        <span class="nav-text" style="color:var(--blue); font-weight:600;">Tablolar</span>
+                        <span class="nav-text" style="color:#2196F3; font-weight:700;">Tablolar</span>
                     </a>
                     
-                    <a class="nav-item ${currentScreen === 'periodicLab' ? 'active' : ''}" style="border: 1px solid var(--purple); background: rgba(124, 77, 255, 0.05); margin-bottom: 6px;" onclick="APP.navigate('periodicLab')">
+                    <a class="nav-item ${currentScreen === 'periodicLab' ? 'active' : ''}" style="border: 2px solid var(--purple); background: rgba(124, 77, 255, 0.1); box-shadow: 0 0 12px rgba(124, 77, 255, 0.3); border-radius: 12px; margin-bottom: 8px;" onclick="APP.navigate('periodicLab')">
                         <span class="nav-icon">🔬</span>
-                        <span class="nav-text" style="color:var(--purple); font-weight:600;">P. Tablo Lab.</span>
+                        <span class="nav-text" style="color:var(--purple); font-weight:700;">P. Tablo Lab.</span>
                     </a>
                     
                     <div class="nav-section-title" style="margin-top: 10px;">İSTATİSTİKLER</div>
-                    <a class="nav-item ${currentScreen === 'statistics' ? 'active' : ''}" style="border: 1px solid var(--pink); background: rgba(233, 30, 99, 0.05); margin-bottom: 6px;" onclick="APP.navigate('statistics')">
+                    <a class="nav-item ${currentScreen === 'statistics' ? 'active' : ''}" style="border: 2px solid var(--pink); background: rgba(255, 64, 129, 0.1); box-shadow: 0 0 12px rgba(255, 64, 129, 0.3); border-radius: 12px; margin-bottom: 8px;" onclick="APP.navigate('statistics')">
                         <span class="nav-icon">📊</span>
-                        <span class="nav-text" style="color:var(--pink); font-weight:600;">İstatistikler</span>
+                        <span class="nav-text" style="color:var(--pink); font-weight:700;">İstatistikler</span>
                     </a>
                     
-                    <a class="nav-item ${currentScreen === 'badges' ? 'active' : ''}" style="border: 1px solid var(--teal-dark); background: rgba(0, 137, 123, 0.05); margin-bottom: 6px;" onclick="APP.navigate('badges')">
+                    <a class="nav-item ${currentScreen === 'badges' ? 'active' : ''}" style="border: 2px solid var(--teal-dark); background: rgba(0, 137, 123, 0.1); box-shadow: 0 0 12px rgba(0, 137, 123, 0.3); border-radius: 12px; margin-bottom: 8px;" onclick="APP.navigate('badges')">
                         <span class="nav-icon">🎖️</span>
-                        <span class="nav-text" style="color:var(--teal-dark); font-weight:600;">Rozetler</span>
+                        <span class="nav-text" style="color:var(--teal-dark); font-weight:700;">Rozetler</span>
                     </a>
                 </nav>
 
@@ -545,10 +540,6 @@ const APP = (() => {
             <a class="bottom-nav-item ${currentScreen === 'tables' ? 'active' : ''}" onclick="APP.navigate('tables')">
                 <span class="bottom-nav-icon">📖</span>
                 <span class="bottom-nav-text">Tablolar</span>
-            </a>
-            <a class="bottom-nav-item ${currentScreen === 'tournamentSetup' ? 'active' : ''}" onclick="APP.navigate('tournamentSetup')">
-                <span class="bottom-nav-icon">🏆</span>
-                <span class="bottom-nav-text">Turnuva</span>
             </a>
         `;
 
@@ -687,6 +678,13 @@ const APP = (() => {
                                 <h4 class="mode-name">Quiz</h4>
                                 <p class="mode-desc">Bilgini test et</p>
                                 <div class="mode-best">En iyi: ${data.stats.quiz.bestScore}</div>
+                                <button class="btn btn-mode">Oyna →</button>
+                            </div>
+                            <div class="mode-card mode-tournament" style="background: linear-gradient(135deg, #FFD600, #FF6D00);" onclick="APP.navigate('tournamentSetup')">
+                                <div class="mode-icon">🏆</div>
+                                <h4 class="mode-name">Turnuva</h4>
+                                <p class="mode-desc">Dünya çapında yarış</p>
+                                <div class="mode-best">Meydan oku!</div>
                                 <button class="btn btn-mode">Oyna →</button>
                             </div>
                         </div>
@@ -930,6 +928,13 @@ const APP = (() => {
                         <p class="mode-select-desc">150 sorudan oluşan test bankasıyla kendini sına!</p>
                         <div class="mode-select-best">🏅 En iyi: ${data.stats.quiz.bestScore}</div>
                         <button class="btn btn-mode-select">Oyna →</button>
+                    </div>
+                    <div class="mode-select-card card-tournament" style="background: linear-gradient(135deg, #FFD600, #FF6D00);" onclick="APP.navigate('tournamentSetup')">
+                        <div class="mode-select-icon">🏆</div>
+                        <h3 class="mode-select-name">Turnuva</h3>
+                        <p class="mode-select-desc">Rakiplerinle yarış, kupayı kazan ve şampiyon ol!</p>
+                        <div class="mode-select-best">🏅 Büyük Ödüller</div>
+                        <button class="btn btn-mode-select">Meydan Oku →</button>
                     </div>
                 </div>
             </div>

@@ -439,7 +439,7 @@ body.has-sidebar #main-content {
 }
 
 /* ---- DASHBOARD ---- */
-.dashboard-screen { padding: 30px 30px 120px 30px; max-width: 1200px; margin: 0 auto; }
+.dashboard-screen { padding: 30px 30px 120px 30px; max-width: 1300px; margin: 0 auto; }
 .dashboard-topbar {
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 28px; flex-wrap: wrap; gap: 16px;
@@ -497,7 +497,7 @@ body.has-sidebar #main-content {
     font-family: 'Poppins', sans-serif;
 }
 .mode-cards-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 16px;
 }
 .mode-card {
@@ -661,10 +661,10 @@ body.has-sidebar #main-content {
 
 /* ---- MODE / DIFFICULTY / TABLE SELECT ---- */
 .mode-select-screen, .difficulty-screen, .table-select-screen {
-    padding: 30px; max-width: 1000px; margin: 0 auto;
+    padding: 30px; max-width: 1300px; margin: 0 auto;
 }
 .mode-select-grid, .table-select-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px; margin-top: 8px;
 }
 .mode-select-card {
