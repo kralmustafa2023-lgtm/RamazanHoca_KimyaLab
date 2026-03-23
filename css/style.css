@@ -439,7 +439,7 @@ body.has-sidebar #main-content {
 }
 
 /* ---- DASHBOARD ---- */
-.dashboard-screen { padding: 30px 30px 120px 30px; max-width: 1300px; margin: 0 auto; }
+.dashboard-screen { padding: 30px 30px 140px 30px; max-width: 1300px; margin: 0 auto; }
 .dashboard-topbar {
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 28px; flex-wrap: wrap; gap: 16px;
@@ -560,7 +560,7 @@ body.has-sidebar #main-content {
 .dash-nav-buttons .btn { flex: 1; min-width: 160px; }
 
 /* ---- TABLES SCREEN ---- */
-.tables-screen { padding: 30px; max-width: 1000px; margin: 0 auto; }
+.tables-screen { padding: 30px 30px 140px 30px; max-width: 1000px; margin: 0 auto; }
 .screen-header { margin-bottom: 24px; }
 .screen-title { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
 .screen-subtitle { color: var(--text-muted); font-size: 14px; }
@@ -661,7 +661,7 @@ body.has-sidebar #main-content {
 
 /* ---- MODE / DIFFICULTY / TABLE SELECT ---- */
 .mode-select-screen, .difficulty-screen, .table-select-screen {
-    padding: 30px; max-width: 1300px; margin: 0 auto;
+    padding: 30px 30px 140px 30px; max-width: 1300px; margin: 0 auto;
 }
 .mode-select-grid, .table-select-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -748,7 +748,7 @@ body.has-sidebar #main-content {
 }
 
 /* ---- GAME SCREENS ---- */
-.game-screen { padding: 20px; max-width: 800px; margin: 0 auto; }
+.game-screen { padding: 20px 20px 140px 20px; max-width: 800px; margin: 0 auto; }
 .game-header {
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 16px;
@@ -947,7 +947,7 @@ body.has-sidebar #main-content {
 .matching-lines { width: 40px; }
 
 /* Results */
-.results-screen { text-align: center; padding: 40px 20px; }
+.results-screen { text-align: center; padding: 40px 20px 140px 20px; }
 .results-emoji { font-size: 72px; margin-bottom: 16px; animation: bounceIn 0.8s ease; }
 @keyframes bounceIn {
     0% { transform: scale(0); } 50% { transform: scale(1.2); } 100% { transform: scale(1); }
@@ -1008,7 +1008,7 @@ body.has-sidebar #main-content {
 .badge-title { font-size: 13px; font-weight: 600; }
 
 /* ---- STATISTICS ---- */
-.statistics-screen { padding: 30px; max-width: 1000px; margin: 0 auto; }
+.statistics-screen { padding: 30px 30px 140px 30px; max-width: 1000px; margin: 0 auto; }
 .stats-grid {
     display: grid; grid-template-columns: repeat(4, 1fr);
     gap: 16px; margin-bottom: 24px;
@@ -1055,7 +1055,7 @@ body.has-sidebar #main-content {
 .mode-stat-value { font-size: 15px; font-weight: 700; color: var(--teal-dark); display: block; margin-top: 4px; }
 
 /* ---- BADGES SCREEN ---- */
-.badges-screen { padding: 30px; max-width: 1000px; margin: 0 auto; }
+.badges-screen { padding: 30px 30px 140px 30px; max-width: 1000px; margin: 0 auto; }
 .badges-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 16px; margin-top: 8px;
