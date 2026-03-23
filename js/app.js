@@ -266,11 +266,11 @@ const APP = (() => {
                         </div>
 
                         <!-- Login Tabs -->
-                        <div style="display:flex; background: rgba(0,0,0,0.05); padding: 5px; border-radius: 12px; margin-bottom: 25px; gap: 5px;">
-                            <button id="tab-student" onclick="APP.switchLoginTab('student')" style="flex:1; padding: 12px; border-radius: 8px; border: none; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s; background: var(--bg-card); color: var(--text-primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                        <div style="display:flex; background: rgba(0,0,0,0.05); padding: 4px; border-radius: 10px; margin-bottom: 15px; gap: 4px;">
+                            <button id="tab-student" onclick="APP.switchLoginTab('student')" style="flex:1; padding: 8px; border-radius: 8px; border: none; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.3s; background: var(--bg-card); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
                                 Öğrenci Girişi
                             </button>
-                            <button id="tab-vip" onclick="APP.switchLoginTab('vip')" style="flex:1; padding: 12px; border-radius: 8px; border: none; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s; background: transparent; color: var(--text-muted);">
+                            <button id="tab-vip" onclick="APP.switchLoginTab('vip')" style="flex:1; padding: 8px; border-radius: 8px; border: none; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.3s; background: transparent; color: var(--text-muted);">
                                 👑 VIP Kurucu
                             </button>
                         </div>
@@ -300,25 +300,24 @@ const APP = (() => {
                         </form>
 
                         <!-- VIP Form -->
-                        <div id="form-vip" style="display: none; flex-direction: column; gap: 15px;">
-                            <div style="text-align: center; margin-bottom: 5px;">
-                                <div style="font-size: 40px; filter: drop-shadow(0 4px 10px rgba(255,215,0,0.4)); animation: bounceFloat 3s infinite;">👑</div>
-                                <h3 style="color: #FFD700; margin-top: 5px; font-weight: 800; text-shadow: 0 2px 10px rgba(255,215,0,0.2);">Sadece Kurucu İçin</h3>
+                        <div id="form-vip" style="display: none; flex-direction: column;">
+                            <div style="text-align: center; margin-bottom: 10px;">
+                                <div style="font-size: 32px; filter: drop-shadow(0 4px 10px rgba(255,215,0,0.4)); animation: bounceFloat 3s infinite; line-height: 1;">👑</div>
                             </div>
                             
-                            <div class="input-group" style="background: rgba(255,215,0,0.05); border: 2px solid rgba(255,215,0,0.2);">
+                            <div class="input-group" style="background: rgba(255,215,0,0.05); border: 2px solid rgba(255,215,0,0.2); margin-bottom: 10px;">
                                 <span class="input-icon" style="color: #FFD700;">👑</span>
                                 <input type="text" id="vip-username" placeholder="Kurucu Kullanıcı Adı" 
                                        class="input-field" autocomplete="off" style="color: #FFD700; font-weight: 700;">
                             </div>
-                            <div class="input-group" style="background: rgba(255,215,0,0.05); border: 2px solid rgba(255,215,0,0.2);">
+                            <div class="input-group" style="background: rgba(255,215,0,0.05); border: 2px solid rgba(255,215,0,0.2); margin-bottom: 10px;">
                                 <span class="input-icon" style="color: #FFD700;">🔑</span>
                                 <input type="password" id="vip-password" placeholder="Gizli VIP Şifre" 
                                        class="input-field" autocomplete="off" style="color: #FFD700; font-weight: 700;">
                             </div>
-                            <div id="vip-error" style="color: #FF5252; font-size: 13px; font-weight:600; min-height: 18px; text-align: center;"></div>
+                            <div id="vip-error" style="color: #FF5252; font-size: 12px; font-weight:600; min-height: 15px; text-align: center; margin-bottom: 5px;"></div>
                             
-                            <button type="button" class="btn" onclick="APP.handleVIPLogin()" style="width: 100%; padding: 16px; border-radius: 14px; font-weight: 800; font-size: 16px; background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; border: none; box-shadow: 0 8px 25px rgba(255,215,0,0.3); cursor: pointer; transition: 0.3s; margin-top: 5px;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                            <button type="button" class="btn" onclick="APP.handleVIPLogin()" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; border: none; box-shadow: 0 6px 20px rgba(255,215,0,0.3); cursor: pointer; transition: 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
                                 VIP GİRİŞ YAP ✨
                             </button>
                         </div>
