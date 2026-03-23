@@ -253,17 +253,30 @@ const APP = (() => {
     // ============ LOGIN SCREEN ============
     function renderLogin() {
         const container = document.getElementById('main-content');
+        let activeTab = 'student';
+
         container.innerHTML = `
             <div class="login-screen">
                 <div class="login-left">
-                    <div class="login-form-container">
+                    <div class="login-form-container" style="transition: all 0.4s ease;" id="login-container-box">
                         <div class="login-logo">
                             <img src="images/logo.png" alt="NSBL Logo" class="logo-image">
                             <h1 class="login-title">Ramazan Hoca'nın<br>KimyaLab</h1>
                             <p class="login-subtitle">Kimyayı Fethedelim! ⚗️</p>
                         </div>
 
-                        <form class="login-form" onsubmit="APP.handleLogin(event)">
+                        <!-- Login Tabs -->
+                        <div style="display:flex; background: rgba(0,0,0,0.05); padding: 5px; border-radius: 12px; margin-bottom: 25px; gap: 5px;">
+                            <button id="tab-student" onclick="APP.switchLoginTab('student')" style="flex:1; padding: 12px; border-radius: 8px; border: none; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s; background: var(--bg-card); color: var(--text-primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                                Öğrenci Girişi
+                            </button>
+                            <button id="tab-vip" onclick="APP.switchLoginTab('vip')" style="flex:1; padding: 12px; border-radius: 8px; border: none; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s; background: transparent; color: var(--text-muted);">
+                                👑 VIP Kurucu
+                            </button>
+                        </div>
+
+                        <!-- Student Form -->
+                        <form id="form-student" class="login-form" onsubmit="APP.handleLogin(event)">
                             <div class="input-group">
                                 <span class="input-icon">✏️</span>
                                 <input type="text" id="login-displayname" placeholder="Adınızı girin (örn: Ahmet)" 
@@ -286,9 +299,32 @@ const APP = (() => {
                             </button>
                         </form>
 
+                        <!-- VIP Form -->
+                        <div id="form-vip" style="display: none; flex-direction: column; gap: 15px;">
+                            <div style="text-align: center; margin-bottom: 5px;">
+                                <div style="font-size: 40px; filter: drop-shadow(0 4px 10px rgba(255,215,0,0.4)); animation: bounceFloat 3s infinite;">👑</div>
+                                <h3 style="color: #FFD700; margin-top: 5px; font-weight: 800; text-shadow: 0 2px 10px rgba(255,215,0,0.2);">Sadece Kurucu İçin</h3>
+                            </div>
+                            
+                            <div class="input-group" style="background: rgba(255,215,0,0.05); border: 2px solid rgba(255,215,0,0.2);">
+                                <span class="input-icon" style="color: #FFD700;">👑</span>
+                                <input type="text" id="vip-username" placeholder="Kurucu Kullanıcı Adı" 
+                                       class="input-field" autocomplete="off" style="color: #FFD700; font-weight: 700;">
+                            </div>
+                            <div class="input-group" style="background: rgba(255,215,0,0.05); border: 2px solid rgba(255,215,0,0.2);">
+                                <span class="input-icon" style="color: #FFD700;">🔑</span>
+                                <input type="password" id="vip-password" placeholder="Gizli VIP Şifre" 
+                                       class="input-field" autocomplete="off" style="color: #FFD700; font-weight: 700;">
+                            </div>
+                            <div id="vip-error" style="color: #FF5252; font-size: 13px; font-weight:600; min-height: 18px; text-align: center;"></div>
+                            
+                            <button type="button" class="btn" onclick="APP.handleVIPLogin()" style="width: 100%; padding: 16px; border-radius: 14px; font-weight: 800; font-size: 16px; background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; border: none; box-shadow: 0 8px 25px rgba(255,215,0,0.3); cursor: pointer; transition: 0.3s; margin-top: 5px;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                                VIP GİRİŞ YAP ✨
+                            </button>
+                        </div>
+
                         <div class="login-footer">
                             <p>Nizip Sosyal Bilimler Lisesi 🏫</p>
-                            <p style="margin-top:12px;"><a onclick="APP.showVIPLogin()" style="color:var(--text-muted); font-size:11px; cursor:pointer; opacity:0.5; transition:0.3s;" onmouseover="this.style.opacity='1'; this.style.color='gold';" onmouseout="this.style.opacity='0.5'; this.style.color='var(--text-muted)';">🔑 Kurucu Girişi</a></p>
                         </div>
                     </div>
                 </div>
@@ -335,6 +371,58 @@ const APP = (() => {
         Animations.initRipples();
         const formElements = container.querySelectorAll('.input-group, .btn-login, .login-logo');
         Animations.staggeredEntrance(Array.from(formElements), 120);
+        // VIP Enter key event
+        const vipPw = document.getElementById('vip-password');
+        if (vipPw) {
+            vipPw.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') APP.handleVIPLogin();
+            });
+        }
+    }
+
+    function switchLoginTab(tab) {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        const btnStudent = document.getElementById('tab-student');
+        const btnVip = document.getElementById('tab-vip');
+        const formStudent = document.getElementById('form-student');
+        const formVip = document.getElementById('form-vip');
+        const containerBox = document.getElementById('login-container-box');
+
+        if (tab === 'vip') {
+            btnStudent.style.background = 'transparent';
+            btnStudent.style.color = 'var(--text-muted)';
+            btnStudent.style.boxShadow = 'none';
+
+            btnVip.style.background = 'linear-gradient(135deg, #FFD700, #FF8C00)';
+            btnVip.style.color = '#000';
+            btnVip.style.boxShadow = '0 4px 15px rgba(255,215,0,0.4)';
+
+            formStudent.style.display = 'none';
+            formVip.style.display = 'flex';
+            
+            // Add VIP premium feel to container
+            containerBox.style.boxShadow = '0 30px 60px rgba(0,0,0,0.3), 0 0 40px rgba(255,215,0,0.15)';
+            containerBox.style.border = '1px solid rgba(255,215,0,0.2)';
+            
+            setTimeout(() => document.getElementById('vip-username').focus(), 50);
+        } else {
+            btnVip.style.background = 'transparent';
+            btnVip.style.color = 'var(--text-muted)';
+            btnVip.style.boxShadow = 'none';
+
+            btnStudent.style.background = 'var(--bg-card)';
+            btnStudent.style.color = 'var(--text-primary)';
+            btnStudent.style.boxShadow = '0 4px 10px rgba(0,0,0,0.05)';
+
+            formVip.style.display = 'none';
+            formStudent.style.display = 'flex';
+            
+            // Remove VIP feel
+            containerBox.style.boxShadow = '';
+            containerBox.style.border = '';
+            
+            setTimeout(() => document.getElementById('login-displayname').focus(), 50);
+        }
     }
 
     function updatePreview() {
@@ -1668,53 +1756,10 @@ const APP = (() => {
         });
     }
 
-    // ============ VIP LOGIN MODAL ============
+    // ============ VIP LOGIN MODAL (MIGRATED TO TABS) ============
+    // Kept to avoid undefined errors if any old button holds ref, but logic is now inside renderLogin tabs.
     function showVIPLogin() {
-        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
-        const existing = document.querySelector('.vip-login-overlay');
-        if (existing) existing.remove();
-
-        const overlay = document.createElement('div');
-        overlay.className = 'vip-login-overlay';
-        overlay.style.cssText = `
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
-            z-index: 10000; display: flex; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.3s ease;
-        `;
-
-        overlay.innerHTML = `
-            <div style="background: linear-gradient(145deg, #1a1a2e, #0f0f23); padding: 40px 30px; border-radius: 28px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 0 60px rgba(255,215,0,0.2), 0 20px 50px rgba(0,0,0,0.5); transform: translateY(30px) scale(0.9); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.25); border: 2px solid rgba(255,215,0,0.3); position: relative; overflow: hidden;">
-                <div style="position:absolute; top:0; left:-100%; width:60%; height:100%; background: linear-gradient(90deg, transparent, rgba(255,215,0,0.1), transparent); transform: skewX(-30deg); animation: premiumShine 3s infinite;"></div>
-                <div style="font-size: 60px; margin-bottom: 15px; filter: drop-shadow(0 5px 15px rgba(255,215,0,0.4)); animation: bounceFloat 3s ease-in-out infinite;">👑</div>
-                <h3 style="margin-bottom: 8px; font-weight: 900; color: #FFD700; font-family: 'Poppins', sans-serif; font-size: 22px; text-shadow: 0 2px 10px rgba(255,215,0,0.3);">Kurucu VIP Girişi</h3>
-                <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 25px;">Sadece uygulama kurucusu için özel erişim</p>
-                
-                <div style="margin-bottom: 15px; position: relative;">
-                    <input type="text" id="vip-username" placeholder="Kurucu Kullanıcı Adı" style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 2px solid rgba(255,215,0,0.2); background: rgba(255,255,255,0.05); color: #FFD700; font-size: 14px; font-weight: 600; outline: none; font-family: inherit; transition: border 0.3s;" onfocus="this.style.borderColor='rgba(255,215,0,0.5)'" onblur="this.style.borderColor='rgba(255,215,0,0.2)'">
-                </div>
-                <div style="margin-bottom: 15px; position: relative;">
-                    <input type="password" id="vip-password" placeholder="VIP Şifre" style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 2px solid rgba(255,215,0,0.2); background: rgba(255,255,255,0.05); color: #FFD700; font-size: 14px; font-weight: 600; outline: none; font-family: inherit; transition: border 0.3s;" onfocus="this.style.borderColor='rgba(255,215,0,0.5)'" onblur="this.style.borderColor='rgba(255,215,0,0.2)'">
-                </div>
-                <div id="vip-error" style="color: #FF5252; font-size: 12px; margin-bottom: 10px; min-height: 18px;"></div>
-                
-                <button class="btn" onclick="APP.handleVIPLogin()" style="width: 100%; padding: 16px; border-radius: 14px; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; border: none; box-shadow: 0 8px 25px rgba(255,215,0,0.3); cursor: pointer; transition: all 0.3s; margin-bottom: 12px; letter-spacing: 0.5px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 12px 30px rgba(255,215,0,0.4)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 8px 25px rgba(255,215,0,0.3)'">
-                    👑 VIP GİRİŞ YAP
-                </button>
-                <button class="btn" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 600; background: transparent; color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" onclick="this.closest('.vip-login-overlay').remove()">
-                    Geri Dön
-                </button>
-            </div>
-        `;
-        document.body.appendChild(overlay);
-        setTimeout(() => {
-            overlay.style.opacity = '1';
-            overlay.children[0].style.transform = 'translateY(0) scale(1)';
-        }, 10);
-
-        // Enter key handler
-        overlay.querySelector('#vip-password').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') APP.handleVIPLogin();
-        });
+        switchLoginTab('vip');
     }
 
     function handleVIPLogin() {
@@ -1737,7 +1782,7 @@ const APP = (() => {
     }
 
     return {
-        init, navigate, handleLogin, updatePreview, togglePassword,
+        init, navigate, handleLogin, updatePreview, togglePassword, switchLoginTab,
         switchTab, searchTable, showElementBio, speak,
         selectDifficulty, startGame, customizeAvatar,
         renderSidebar, renderBottomNav, renderMarket, renderPeriodicLab, showBigElementCard, showDailyChest,
