@@ -77,6 +77,7 @@ const AUTH = (() => {
     function logout() {
         sessionStorage.removeItem('currentUser');
         sessionStorage.removeItem('displayName');
+        sessionStorage.removeItem('isVIP');
         APP.navigate('login');
     }
 
