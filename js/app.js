@@ -381,6 +381,8 @@ const APP = (() => {
         const formStudent = document.getElementById('form-student');
         const formVip = document.getElementById('form-vip');
         const containerBox = document.getElementById('login-container-box');
+        const previewGreeting = document.getElementById('preview-greeting');
+        const previewSubtitle = document.querySelector('.preview-subtitle');
 
         if (tab === 'vip') {
             btnStudent.style.background = 'transparent';
@@ -394,6 +396,13 @@ const APP = (() => {
             formStudent.style.display = 'none';
             formVip.style.display = 'block'; // Block prevents horizontal layout bug
             
+            if (previewGreeting) {
+                previewGreeting.innerHTML = `<div style="font-size: 38px; margin-bottom: 2px; animation: bounceFloat 2s ease-in-out infinite; filter: drop-shadow(0 0 15px rgba(255,215,0,0.8)); line-height: 1;">👑</div><span style="background: linear-gradient(135deg, #FFD700, #FF8C00); -webkit-background-clip: text; color: transparent; font-weight: 900; font-size: 26px; text-shadow: 0 0 20px rgba(255,215,0,0.2);">Hoş geldin Patron</span>`;
+            }
+            if (previewSubtitle) {
+                previewSubtitle.innerHTML = `<span style="color: #FFD700; font-weight: 800; letter-spacing: 1px; text-shadow: 0 0 10px rgba(255,140,0,0.4);">✨ VIP Özel Erişim</span>`;
+            }
+            
             setTimeout(() => document.getElementById('vip-username').focus(), 50);
         } else {
             btnVip.style.background = 'transparent';
@@ -406,6 +415,11 @@ const APP = (() => {
 
             formVip.style.display = 'none';
             formStudent.style.display = 'block'; // Block prevents horizontal layout bug
+            
+            if (previewSubtitle) {
+                previewSubtitle.textContent = "Ramazan Hoca'nın öğrencisi";
+            }
+            APP.updatePreview(); // Restore student preview name
             
             setTimeout(() => document.getElementById('login-displayname').focus(), 50);
         }
