@@ -417,35 +417,40 @@ const APP = (() => {
 
                 <nav class="sidebar-nav">
                     <div class="nav-section-title">ANA MENÜ</div>
-                    <a class="nav-item ${currentScreen === 'dashboard' ? 'active' : ''}" onclick="APP.navigate('dashboard')">
+                    <a class="nav-item ${currentScreen === 'dashboard' ? 'active' : ''}" style="border: 1px solid var(--teal); background: rgba(0, 191, 165, 0.05); margin-bottom: 6px;" onclick="APP.navigate('dashboard')">
                         <span class="nav-icon">🏠</span>
-                        <span class="nav-text">Ana Sayfa</span>
-                    </a>
-                    <a class="nav-item ${currentScreen === 'modeSelect' ? 'active' : ''}" onclick="APP.navigate('modeSelect')">
-                        <span class="nav-icon">🎮</span>
-                        <span class="nav-text">Oyun Modları</span>
-                    </a>
-                    <a class="nav-item ${currentScreen === 'tables' ? 'active' : ''}" onclick="APP.navigate('tables')">
-                        <span class="nav-icon">📖</span>
-                        <span class="nav-text">Tablolar</span>
-                    </a>
-                    <a class="nav-item ${currentScreen === 'periodicLab' ? 'active' : ''}" style="border: 1px solid var(--purple); background: rgba(124, 77, 255, 0.05);" onclick="APP.navigate('periodicLab')">
-                        <span class="nav-icon">🔬</span>
-                        <span class="nav-text" style="color:var(--purple);font-weight:600;">P. Tablo Lab.</span>
-                    </a>
-                    <a class="nav-item ${currentScreen === 'tournamentSetup' ? 'active' : ''}" style="border: 1px solid #FFD600; background: rgba(255, 214, 0, 0.05);" onclick="APP.navigate('tournamentSetup')">
-                        <span class="nav-icon">🏆</span>
-                        <span class="nav-text" style="color:#FFD600;font-weight:700;">Turnuva</span>
+                        <span class="nav-text" style="color:var(--teal); font-weight:600;">Ana Sayfa</span>
                     </a>
                     
-                    <div class="nav-section-title">İSTATİSTİKLER</div>
-                    <a class="nav-item ${currentScreen === 'statistics' ? 'active' : ''}" onclick="APP.navigate('statistics')">
-                        <span class="nav-icon">📊</span>
-                        <span class="nav-text">İstatistikler</span>
+                    <a class="nav-item ${currentScreen === 'modeSelect' ? 'active' : ''}" style="border: 1px solid var(--orange); background: rgba(255, 152, 0, 0.05); margin-bottom: 6px;" onclick="APP.navigate('modeSelect')">
+                        <span class="nav-icon">🎮</span>
+                        <span class="nav-text" style="color:var(--orange); font-weight:600;">Oyun Modları</span>
                     </a>
-                    <a class="nav-item ${currentScreen === 'badges' ? 'active' : ''}" onclick="APP.navigate('badges')">
+                    
+                    <a class="nav-item ${currentScreen === 'tournamentSetup' ? 'active' : ''}" style="border: 1px solid #FFD600; background: rgba(255, 214, 0, 0.05); margin-bottom: 6px;" onclick="APP.navigate('tournamentSetup')">
                         <span class="nav-icon">🏆</span>
-                        <span class="nav-text">Rozetler</span>
+                        <span class="nav-text" style="color:#FFD600; font-weight:700;">Turnuva</span>
+                    </a>
+                    
+                    <a class="nav-item ${currentScreen === 'tables' ? 'active' : ''}" style="border: 1px solid var(--blue); background: rgba(33, 150, 243, 0.05); margin-bottom: 6px;" onclick="APP.navigate('tables')">
+                        <span class="nav-icon">📖</span>
+                        <span class="nav-text" style="color:var(--blue); font-weight:600;">Tablolar</span>
+                    </a>
+                    
+                    <a class="nav-item ${currentScreen === 'periodicLab' ? 'active' : ''}" style="border: 1px solid var(--purple); background: rgba(124, 77, 255, 0.05); margin-bottom: 6px;" onclick="APP.navigate('periodicLab')">
+                        <span class="nav-icon">🔬</span>
+                        <span class="nav-text" style="color:var(--purple); font-weight:600;">P. Tablo Lab.</span>
+                    </a>
+                    
+                    <div class="nav-section-title" style="margin-top: 10px;">İSTATİSTİKLER</div>
+                    <a class="nav-item ${currentScreen === 'statistics' ? 'active' : ''}" style="border: 1px solid var(--pink); background: rgba(233, 30, 99, 0.05); margin-bottom: 6px;" onclick="APP.navigate('statistics')">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text" style="color:var(--pink); font-weight:600;">İstatistikler</span>
+                    </a>
+                    
+                    <a class="nav-item ${currentScreen === 'badges' ? 'active' : ''}" style="border: 1px solid var(--teal-dark); background: rgba(0, 137, 123, 0.05); margin-bottom: 6px;" onclick="APP.navigate('badges')">
+                        <span class="nav-icon">🎖️</span>
+                        <span class="nav-text" style="color:var(--teal-dark); font-weight:600;">Rozetler</span>
                     </a>
                 </nav>
 
