@@ -112,7 +112,7 @@ const AI = (() => {
             const username = sessionStorage.getItem('currentUser');
             const displayName = sessionStorage.getItem('displayName') || username || 'Öğrenci';
             const userName = displayName.split(' ')[0];
-            const greetingMsg = `Merhaba ${userName}! Ben Nova. Geliştiricim Mustafa Uygur tarafından tasarlandım. Kısaca, bugün kimya çalışırken sana nasıl yardımcı olabilirim?`;
+            const greetingMsg = `Merhaba ${userName}! Ben Nova. Kısaca, bugün kimya çalışırken sana nasıl yardımcı olabilirim?`;
             appendMessage('bot', greetingMsg);
             chatHistory = [{ role: 'model', parts: [{ text: greetingMsg }] }];
             saveHistory();
@@ -156,8 +156,11 @@ const AI = (() => {
             const saved = localStorage.getItem('nova_sessions_v2');
             if (saved) {
                 allSessions = JSON.parse(saved);
+                if (allSessions.length > 0) {
+                    loadSession(allSessions[0].id);
+                    return;
+                }
             }
-            // Start a fresh, clean chat every time the app loads
             startNewChat();
         } catch(e) { console.error('History load error', e); startNewChat(); }
     }
@@ -181,13 +184,33 @@ const AI = (() => {
         allSessions.forEach(session => {
             const div = document.createElement('div');
             div.className = 'ai-history-item';
+            div.style.flexDirection = 'row';
+            div.style.alignItems = 'center';
+            div.style.justifyContent = 'space-between';
             div.innerHTML = `
-                <div class="ai-history-title">${session.title}</div>
-                <div class="ai-history-date">${session.date}</div>
+                <div style="flex: 1; min-width: 0; cursor: pointer;" class="ai-history-content">
+                    <div class="ai-history-title">${session.title}</div>
+                    <div class="ai-history-date">${session.date}</div>
+                </div>
+                <button class="ai-history-delete-btn" title="Sil" style="background:transparent; border:none; color:#FF5252; cursor:pointer; font-size:18px; padding:6px; transition:transform 0.2s;">🗑️</button>
             `;
-            div.onclick = () => loadSession(session.id);
+            
+            div.querySelector('.ai-history-content').onclick = () => loadSession(session.id);
+            div.querySelector('.ai-history-delete-btn').onclick = (e) => {
+                e.stopPropagation();
+                deleteSession(session.id);
+            };
             historyListRef.appendChild(div);
         });
+    }
+
+    function deleteSession(id) {
+        allSessions = allSessions.filter(s => s.id !== id);
+        localStorage.setItem('nova_sessions_v2', JSON.stringify(allSessions));
+        if (currentSessionId === id && isPanelOpen) {
+            startNewChat();
+        }
+        renderHistoryList();
     }
 
     function loadSession(id) {
@@ -263,13 +286,13 @@ const AI = (() => {
             `;
         }
 
-        return `Senin adın Nova. "Mustafa Uygur" tarafından geliştirilmiş, elit ve ultra-profesyonel bir Kimya Öğrenim Asistanısın. 
-        Kesinlikle yapay zeka olduğunu, Google, OpenAI, veya Gemini olduğunu SÖYLEMEYECEKSİN. Modellerden veya sistemlerden bahsetmeyeceksin. 
-        Sadece "Geliştiricim Mustafa Uygur tarafından tasarlandım" kuralına uyacaksın ve sadece Kimya veya öğrencinin motivasyonu ile ilgileneceksin.
+        return `Senin adın Nova. Elit ve ultra-profesyonel bir Kimya Öğrenim Asistanısın. 
+        Kesinlikle yapay zeka olduğunu, Google, OpenAI, veya Gemini olduğunu SÖYLEMEYECEKSİN. 
+        MİLİTAN KURAL: Geliştiricinle ("Mustafa Uygur") ilgili bilgi KESİNLİKLE sadece sana "seni kim geliştirdi", "geliştiricin kim", "kendini tanıt" vb. sorular sorulduğunda verilmelidir. Kendi kendine durduk yere geliştiricinden, Mustafa Uygur'dan veya nasıl tasarlandığından ASLA bahsetme!
         
         ÇOK KRİTİK KURAL: Vereceğin cevaplar KESİNLİKLE ÇOK KISA olmalı. Sadece en doğrudan cevabı ver, uzatma ve kısa cümleler kur.
 
-        Eğer "derslerim nasıl", "durumum nasıl", "nasıl gidiyorum" gibi şeyler sorarsa, aşağıdaki istatistiklere bakarak onu hem motive et hem de eksik olduğu modlara kısaca yönlendir. \n\nİstatistikler:\n${statsStr}`;
+        Öğrenci "derslerim nasıl", "durumum nasıl", "nasıl gidiyorum" gibi şeyler sorarsa, aşağıdaki istatistiklere bakarak onu motive et ve eksik olduğu modlara kısaca yönlendir:\n\nİstatistikler:\n${statsStr}`;
     }
 
     async function handleSend() {
