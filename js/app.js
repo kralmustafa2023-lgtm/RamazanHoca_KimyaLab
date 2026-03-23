@@ -447,6 +447,11 @@ const APP = (() => {
                         <span class="nav-icon">🎖️</span>
                         <span class="nav-text" style="color:var(--teal-dark); font-weight:700;">Rozetler</span>
                     </a>
+                    <div class="nav-section-title" style="margin-top: 10px;">DİĞER</div>
+                    <a class="nav-item" style="border: 2px solid var(--text-muted); background: rgba(136, 150, 171, 0.1); box-shadow: 0 0 12px rgba(136, 150, 171, 0.2); border-radius: 12px; margin-bottom: 8px;" onclick="APP.showSettingsModal()">
+                        <span class="nav-icon">⚙️</span>
+                        <span class="nav-text" style="color:var(--text-muted); font-weight:700;">Ayarlar</span>
+                    </a>
                 </nav>
 
                 <div class="sidebar-footer">
@@ -455,17 +460,10 @@ const APP = (() => {
                             <div class="level-fill-mini" style="width: ${getLevelProgress(data.totalPoints)}%"></div>
                         </div>
                         <span class="level-points-mini" style="display:flex; align-items:center; gap:6px;">
-                            ${data.totalPoints} puan - <b style="color:#FFC107; display:flex; align-items:center; gap:4px;">${data.coins || 0} ${getGoldIcon(16)} Altın</b>
+                            ${data.totalPoints} Puan - <b style="color:#FFC107; display:flex; align-items:center; gap:4px;">${data.coins || 0} ${getGoldIcon(16)} Altın</b>
                         </span>
                     </div>
-                    <div class="settings-row" style="display:flex; flex-direction:column; gap:8px; margin-top:10px; margin-bottom:15px;">
-                        <div style="display:flex; gap:10px;">
-                            <button class="btn btn-primary" style="flex:1;padding:8px;font-size:12px;" onclick="APP.toggleTheme()">🌓 Tema</button>
-                            <button class="btn btn-primary" style="flex:1;padding:8px;font-size:12px;" onclick="APP.toggleAudio()" id="btn-audio-sidebar">🔊 Ses ${typeof AUDIO !== 'undefined' && AUDIO.isEnabled() ? 'AÇIK' : 'KAPALI'}</button>
-                        </div>
-                        <button class="btn" style="width:100%; padding:6px; font-size:11px; background:rgba(0,0,0,0.1); color:var(--text-muted); border:1px dashed var(--text-muted); border-radius:8px;" onclick="if(typeof AUDIO!=='undefined'){AUDIO.init(); this.textContent='✅ Ses Aktif Edildi'; setTimeout(()=>this.textContent='🔊 Ses Sorununu Gider', 2000);}">🔊 Ses Sorununu Gider</button>
-                    </div>
-                    <a class="nav-item nav-logout" onclick="AUTH.logout()">
+                    <a class="nav-item nav-logout" onclick="AUTH.logout()" style="margin-top:20px;">
                         <span class="nav-icon">🚪</span>
                         <span class="nav-text">Çıkış Yap</span>
                     </a>
@@ -490,17 +488,28 @@ const APP = (() => {
         const audioState = (typeof AUDIO !== 'undefined' && AUDIO.isEnabled()) ? 'AÇIK' : 'KAPALI';
         
         overlay.innerHTML = `
-            <div style="background: var(--bg-card); padding: 30px 20px; border-radius: 24px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); transform: translateY(30px) scale(0.9); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.25); border: 1px solid rgba(255,255,255,0.08);">
+            <div style="background: var(--bg-card); padding: 30px 20px; border-radius: 24px; width: 90%; max-width: 360px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); transform: translateY(30px) scale(0.9); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.25); border: 1px solid rgba(255,255,255,0.08);">
                 <div style="font-size: 40px; margin-bottom: 10px;">⚙️</div>
                 <h3 style="margin-bottom: 25px; font-weight: 800; color: var(--text-primary); font-family: 'Poppins', sans-serif;">Ayarlar</h3>
                 
-                <button class="btn" style="width: 100%; margin-bottom: 15px; padding: 14px; border-radius: 12px; font-weight: 700; background: rgba(124, 77, 255, 0.1); color: var(--purple); border: 2px solid rgba(124, 77, 255, 0.3);" onclick="APP.toggleTheme()">
-                    🌓 Temayı Değiştir
-                </button>
+                <div style="text-align:left; margin-bottom:20px;">
+                    <label style="font-size:13px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:block;">🎨 Tema Seçimi</label>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <button class="btn" style="padding:10px; border-radius:10px; background:#F0F4F8; border:2px solid #8896AB; color:#1A2138; font-weight:600;" onclick="APP.setTheme('light')">☀️ Açık</button>
+                        <button class="btn" style="padding:10px; border-radius:10px; background:#1E1E2A; border:2px solid #6B7A90; color:#F0F4F8; font-weight:600;" onclick="APP.setTheme('dark')">🌙 Koyu</button>
+                        <button class="btn" style="padding:10px; border-radius:10px; background:#001529; border:2px solid #285973; color:#64FFDA; font-weight:600;" onclick="APP.setTheme('ocean')">🌊 Okyanus</button>
+                        <button class="btn" style="padding:10px; border-radius:10px; background:#000000; border:2px solid #330044; color:#BC13FE; font-weight:600; text-shadow: 0 0 5px #BC13FE;" onclick="APP.setTheme('neon')">⚡ Neon</button>
+                        <button class="btn" style="padding:10px; border-radius:10px; background:#2A1B18; border:2px solid #8E6A5A; color:#FF9F1C; font-weight:600; grid-column: span 2;" onclick="APP.setTheme('sunset')">🌇 Günbatımı (Sunset)</button>
+                    </div>
+                </div>
                 
-                <button class="btn" id="modal-audio-btn" style="width: 100%; margin-bottom: 25px; padding: 14px; border-radius: 12px; font-weight: 700; background: rgba(0, 191, 165, 0.1); color: var(--teal); border: 2px solid rgba(0, 191, 165, 0.3);" onclick="APP.toggleAudio(); this.innerHTML='🔊 Ses Durumu: ' + (typeof AUDIO !== 'undefined' && AUDIO.isEnabled() ? 'AÇIK' : 'KAPALI')">
-                    🔊 Ses Durumu: ${audioState}
-                </button>
+                <div style="text-align:left; margin-bottom:25px;">
+                    <label style="font-size:13px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:block;">🔊 Ses ve Efektler</label>
+                    <button class="btn" id="modal-audio-btn" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; background: rgba(0, 191, 165, 0.1); color: var(--teal); border: 2px solid rgba(0, 191, 165, 0.3); margin-bottom: 8px;" onclick="APP.toggleAudio(); this.innerHTML='🔊 Ses Durumu: ' + (typeof AUDIO !== 'undefined' && AUDIO.isEnabled() ? 'AÇIK' : 'KAPALI')">
+                        🔊 Ses Durumu: ${audioState}
+                    </button>
+                    <button class="btn" style="width:100%; padding:10px; font-size:12px; background:rgba(0,0,0,0.05); color:var(--text-muted); border:1px dashed var(--text-muted); border-radius:10px;" onclick="if(typeof AUDIO!=='undefined'){AUDIO.init(); this.textContent='✅ Çözüldü'; setTimeout(()=>this.textContent='🔊 Tıklama Sesi Gelmiyorsa Tıkla', 2000);}">🔊 Tıklama Sesi Gelmiyorsa Tıkla</button>
+                </div>
                 
                 <button class="btn" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; background: var(--red); color: white; border: none; box-shadow: 0 4px 15px rgba(244,67,54,0.3);" onclick="this.closest('.settings-overlay').remove()">
                     KAPAT
@@ -1450,12 +1459,15 @@ const APP = (() => {
         }, 50);
     }
 
-    function toggleTheme() {
+    function setTheme(theme) {
         if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('kimyalab_theme', theme);
+    }
+
+    function toggleTheme() {
         const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('kimyalab_theme', next);
+        setTheme(current === 'dark' ? 'light' : 'dark');
     }
 
     function toggleAudio() {
@@ -1650,7 +1662,7 @@ const APP = (() => {
         switchTab, searchTable, showElementBio, speak,
         selectDifficulty, startGame, customizeAvatar,
         renderSidebar, renderBottomNav, renderMarket, renderPeriodicLab, showBigElementCard, showDailyChest,
-        toggleTheme, toggleAudio, showSettingsModal,
+        toggleTheme, toggleAudio, showSettingsModal, setTheme,
         setGroupCount, goToTournamentConfig, setTMode, setTDiff, setTTable, launchTournament
     };
 })();
