@@ -102,6 +102,74 @@
     --shadow-lg: 0 8px 40px rgba(233, 196, 106, 0.2);
 }
 
+[data-theme="cyberpunk"] {
+    --white: #000000;
+    --bg-primary: #0D0221;
+    --bg-secondary: #17072B;
+    --bg-card: rgba(23, 7, 43, 0.85);
+    --text-primary: #00FF41;
+    --text-secondary: #FF0055;
+    --text-muted: #A300D6;
+    --teal: #00FF41;
+    --purple: #FF0055;
+    --pink: #FEE715;
+    --orange: #00FFFF;
+    --shadow-sm: 0 2px 8px rgba(0,255,65,0.4);
+    --shadow-md: 0 4px 20px rgba(255,0,85,0.4);
+    --shadow-lg: 0 8px 40px rgba(254,231,21,0.4);
+}
+
+[data-theme="forest"] {
+    --white: #102516;
+    --bg-primary: #071609;
+    --bg-secondary: #102516;
+    --bg-card: rgba(16, 37, 22, 0.85);
+    --text-primary: #E8F5E9;
+    --text-secondary: #81C784;
+    --text-muted: #4CAF50;
+    --teal: #00E676;
+    --purple: #69F0AE;
+    --pink: #B2FF59;
+    --orange: #EEFF41;
+    --shadow-sm: 0 2px 8px rgba(0,230,118,0.2);
+    --shadow-md: 0 4px 20px rgba(105,240,174,0.3);
+    --shadow-lg: 0 8px 40px rgba(178,255,89,0.3);
+}
+
+[data-theme="candy"] {
+    --white: #FFF0F5;
+    --bg-primary: #FFFAFC;
+    --bg-secondary: #FFF0F5;
+    --bg-card: rgba(255, 240, 245, 0.9);
+    --text-primary: #5C2A4F;
+    --text-secondary: #9B5D88;
+    --text-muted: #D194C0;
+    --teal: #FF66A3;
+    --purple: #9A66FF;
+    --pink: #FF99D6;
+    --orange: #66CCFF;
+    --shadow-sm: 0 2px 8px rgba(255,102,163,0.3);
+    --shadow-md: 0 4px 20px rgba(154,102,255,0.3);
+    --shadow-lg: 0 8px 40px rgba(255,153,214,0.3);
+}
+
+[data-theme="galaxy"] {
+    --white: #0B0E14;
+    --bg-primary: #05060A;
+    --bg-secondary: #0B0E14;
+    --bg-card: rgba(11, 14, 20, 0.85);
+    --text-primary: #E0E7FF;
+    --text-secondary: #7A89A6;
+    --text-muted: #475470;
+    --teal: #00D2FF;
+    --purple: #7209B7;
+    --pink: #F72585;
+    --orange: #4361EE;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.6);
+    --shadow-md: 0 4px 20px rgba(114,9,183,0.4);
+    --shadow-lg: 0 8px 40px rgba(247,37,133,0.4);
+}
+
 /* ---- Reset & Base ---- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; scroll-behavior: smooth; }

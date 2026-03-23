@@ -494,12 +494,16 @@ const APP = (() => {
                 
                 <div style="text-align:left; margin-bottom:20px;">
                     <label style="font-size:13px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:block;">🎨 Tema Seçimi</label>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                        <button class="btn" style="padding:10px; border-radius:10px; background:#F0F4F8; border:2px solid #8896AB; color:#1A2138; font-weight:600;" onclick="APP.setTheme('light')">☀️ Açık</button>
-                        <button class="btn" style="padding:10px; border-radius:10px; background:#1E1E2A; border:2px solid #6B7A90; color:#F0F4F8; font-weight:600;" onclick="APP.setTheme('dark')">🌙 Koyu</button>
-                        <button class="btn" style="padding:10px; border-radius:10px; background:#001529; border:2px solid #285973; color:#64FFDA; font-weight:600;" onclick="APP.setTheme('ocean')">🌊 Okyanus</button>
-                        <button class="btn" style="padding:10px; border-radius:10px; background:#000000; border:2px solid #330044; color:#BC13FE; font-weight:600; text-shadow: 0 0 5px #BC13FE;" onclick="APP.setTheme('neon')">⚡ Neon</button>
-                        <button class="btn" style="padding:10px; border-radius:10px; background:#2A1B18; border:2px solid #8E6A5A; color:#FF9F1C; font-weight:600; grid-column: span 2;" onclick="APP.setTheme('sunset')">🌇 Günbatımı (Sunset)</button>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                        <button class="btn" style="padding:8px; border-radius:8px; background:#F0F4F8; border:2px solid #8896AB; color:#1A2138; font-weight:600; font-size:12px;" onclick="APP.setTheme('light')">☀️ Açık</button>
+                        <button class="btn" style="padding:8px; border-radius:8px; background:#1E1E2A; border:2px solid #6B7A90; color:#F0F4F8; font-weight:600; font-size:12px;" onclick="APP.setTheme('dark')">🌙 Koyu</button>
+                        <button class="btn" style="padding:8px; border-radius:8px; background:#001529; border:2px solid #285973; color:#64FFDA; font-weight:600; font-size:12px;" onclick="APP.setTheme('ocean')">🌊 Okyanus</button>
+                        <button class="btn" style="padding:8px; border-radius:8px; background:#000000; border:2px solid #330044; color:#BC13FE; font-weight:600; font-size:12px; text-shadow: 0 0 5px #BC13FE;" onclick="APP.setTheme('neon')">⚡ Neon</button>
+                        <button class="btn" style="padding:8px; border-radius:8px; background:#2A1B18; border:2px solid #8E6A5A; color:#FF9F1C; font-weight:600; font-size:12px;" onclick="APP.setTheme('sunset')">🌇 Sunset</button>
+                        <button class="btn" style="padding:8px; border-radius:8px; background:#0D0221; border:2px solid #FF0055; color:#00FF41; font-weight:600; font-size:12px;" onclick="APP.setTheme('cyberpunk')">🕹️ Cyberpunk</button>
+                        <button class="btn" style="padding:8px; border-radius:8px; background:#102516; border:2px solid #4CAF50; color:#00E676; font-weight:600; font-size:12px;" onclick="APP.setTheme('forest')">🌲 Orman</button>
+                        <button class="btn" style="padding:8px; border-radius:8px; background:#FFF0F5; border:2px solid #D194C0; color:#FF66A3; font-weight:600; font-size:12px;" onclick="APP.setTheme('candy')">🍬 Candy</button>
+                        <button class="btn" style="padding:8px; border-radius:8px; background:#05060A; border:2px solid #7209B7; color:#00D2FF; font-weight:600; font-size:12px; grid-column: span 2;" onclick="APP.setTheme('galaxy')">🌌 Galaksi (Galaxy)</button>
                     </div>
                 </div>
                 
@@ -555,7 +559,7 @@ const APP = (() => {
         if (currentScreen === 'login') {
             bottomNav.style.display = 'none';
         } else {
-            bottomNav.style.display = 'flex';
+            bottomNav.style.display = '';
         }
     }
 
