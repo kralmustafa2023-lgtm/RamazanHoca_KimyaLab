@@ -300,27 +300,22 @@ const APP = (() => {
                         </form>
 
                         <!-- VIP Form -->
-                        <div id="form-vip" style="display: none; flex-direction: column;">
-                            <div style="text-align: center; margin-bottom: 10px;">
-                                <div style="font-size: 32px; filter: drop-shadow(0 4px 10px rgba(255,215,0,0.4)); animation: bounceFloat 3s infinite; line-height: 1;">👑</div>
-                            </div>
-                            
-                            <div class="input-group" style="background: rgba(255,215,0,0.05); border: 2px solid rgba(255,215,0,0.2); margin-bottom: 10px;">
-                                <span class="input-icon" style="color: #FFD700;">👑</span>
+                        <form id="form-vip" class="login-form" style="display: none;" onsubmit="APP.handleVIPLogin(event)">
+                            <div class="input-group" style="background: rgba(255,215,0,0.05); border: 2px solid #FFD700; box-shadow: 0 0 10px rgba(255,215,0,0.2);">
+                                <span class="input-icon" style="color: #FFD700; filter: drop-shadow(0 0 5px rgba(255,215,0,0.5));">👑</span>
                                 <input type="text" id="vip-username" placeholder="Kurucu Kullanıcı Adı" 
                                        class="input-field" autocomplete="off" style="color: #FFD700; font-weight: 700;">
                             </div>
-                            <div class="input-group" style="background: rgba(255,215,0,0.05); border: 2px solid rgba(255,215,0,0.2); margin-bottom: 10px;">
-                                <span class="input-icon" style="color: #FFD700;">🔑</span>
+                            <div class="input-group" style="background: rgba(255,215,0,0.05); border: 2px solid #FFD700; box-shadow: 0 0 10px rgba(255,215,0,0.2);">
+                                <span class="input-icon" style="color: #FFD700; filter: drop-shadow(0 0 5px rgba(255,215,0,0.5));">🔑</span>
                                 <input type="password" id="vip-password" placeholder="Gizli VIP Şifre" 
                                        class="input-field" autocomplete="off" style="color: #FFD700; font-weight: 700;">
                             </div>
-                            <div id="vip-error" style="color: #FF5252; font-size: 12px; font-weight:600; min-height: 15px; text-align: center; margin-bottom: 5px;"></div>
-                            
-                            <button type="button" class="btn" onclick="APP.handleVIPLogin()" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; border: none; box-shadow: 0 6px 20px rgba(255,215,0,0.3); cursor: pointer; transition: 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                            <div id="vip-error" class="login-error" style="color: #FF5252;"></div>
+                            <button type="submit" class="btn btn-lg btn-login" style="background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; font-weight: 800; box-shadow: 0 0 15px rgba(255,215,0,0.4); text-shadow: none;">
                                 VIP GİRİŞ YAP ✨
                             </button>
-                        </div>
+                        </form>
 
                         <div class="login-footer">
                             <p>Nizip Sosyal Bilimler Lisesi 🏫</p>
@@ -397,7 +392,7 @@ const APP = (() => {
             btnVip.style.boxShadow = '0 4px 15px rgba(255,215,0,0.4)';
 
             formStudent.style.display = 'none';
-            formVip.style.display = 'flex';
+            formVip.style.display = 'flex'; // Uses login-form flex-direction
             
             // Add VIP premium feel to container
             containerBox.style.boxShadow = '0 30px 60px rgba(0,0,0,0.3), 0 0 40px rgba(255,215,0,0.15)';
@@ -414,7 +409,7 @@ const APP = (() => {
             btnStudent.style.boxShadow = '0 4px 10px rgba(0,0,0,0.05)';
 
             formVip.style.display = 'none';
-            formStudent.style.display = 'flex';
+            formStudent.style.display = 'flex'; // Restore normal form via class default
             
             // Remove VIP feel
             containerBox.style.boxShadow = '';
@@ -1761,7 +1756,8 @@ const APP = (() => {
         switchLoginTab('vip');
     }
 
-    function handleVIPLogin() {
+    function handleVIPLogin(e) {
+        if (e) e.preventDefault();
         const username = document.getElementById('vip-username').value.trim();
         const password = document.getElementById('vip-password').value.trim();
         const errorEl = document.getElementById('vip-error');
