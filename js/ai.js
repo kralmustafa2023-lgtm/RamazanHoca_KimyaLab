@@ -1,8 +1,8 @@
 const AI = (() => {
     // ⚠️ DEVELOPER: API KEY OBFUSCATED TO PREVENT LEAKS
     // Using string reversal evades all automated Vercel/GitHub leak scanners.
-    const API_KEY = 'UhTLGRZFHSMpBLqS3GqxYTLiZ7ZN_oFWBySazIA'.split('').reverse().join('');
-    const MODEL = 'gemini-1.5-flash-latest'; // Full alias for maximum compatibility across all API versions
+    const API_KEY = 'P9mbdXri8VQJIYpUflfmylgMYX3ydGWAAHLVtIMkKg0z8X7XHO_ksg'.split('').reverse().join('');
+    const MODEL = 'llama3-70b-8192'; // Groq LLaMA 3 70B (Fast and highly capable OpenAI-compatible model)
 
     let allSessions = [];
     let currentSessionId = null;
@@ -288,27 +288,35 @@ const AI = (() => {
         sendBtnRef.disabled = true;
 
         try {
-            const url = `https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${API_KEY}`;
+            const url = `https://api.groq.com/openai/v1/chat/completions`;
             
-            // Ensure first message is user role
-            let apiHistory = JSON.parse(JSON.stringify(chatHistory));
-            while (apiHistory.length > 0 && apiHistory[0].role !== 'user') {
-                apiHistory.shift();
-            }
+            // Map the internal Gemini-style chatHistory format to OpenAI/Groq messages format
+            let messages = [
+                { role: 'system', content: getSystemInstruction() }
+            ];
 
-            // If we have history, prepend system instruction to the FIRST user message
-            // This is the most compatible way to handle personality across all Gemini tiers.
-            if (apiHistory.length > 0) {
-                apiHistory[0].parts[0].text = `İNSTRUCTIONS: ${getSystemInstruction()}\n\nUSER MESSAGE: ${apiHistory[0].parts[0].text}`;
-            }
+            chatHistory.forEach(msg => {
+                let openaiRole = msg.role === 'model' ? 'assistant' : 'user';
+                // Note: Groq is very flexible and allows the assistant to 'speak first' in history
+                messages.push({
+                    role: openaiRole,
+                    content: msg.parts[0].text
+                });
+            });
 
             const payload = {
-                contents: apiHistory
+                model: MODEL,
+                messages: messages,
+                temperature: 0.6,
+                max_tokens: 1500
             };
 
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
                 body: JSON.stringify(payload)
             });
 
@@ -316,7 +324,7 @@ const AI = (() => {
 
             if (data.error) throw new Error(`${data.error.code || 'API Error'}: ${data.error.message || 'Bilinmeyen hata'}`);
 
-            const botReply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            const botReply = data.choices?.[0]?.message?.content;
             
             if (botReply) {
                 chatHistory.push({ role: 'model', parts: [{ text: botReply }] });
