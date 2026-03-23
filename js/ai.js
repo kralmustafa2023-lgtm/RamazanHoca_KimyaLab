@@ -2,7 +2,7 @@ const AI = (() => {
     // ⚠️ DEVELOPER: API KEY OBFUSCATED TO PREVENT LEAKS
     // Using string reversal evades all automated Vercel/GitHub leak scanners.
     const API_KEY = 'P9mbdXri8VQJIYpUflfmylgMYF3bydGWAHHLVtIxMkKg0z8X7XHO_ksg'.split('').reverse().join('');
-    const MODEL = 'llama3-70b-8192'; // Groq LLaMA 3 70B (Fast and highly capable OpenAI-compatible model)
+    const MODEL = 'llama-3.3-70b-versatile'; // Current supported Groq LLaMA model
 
     let allSessions = [];
     let currentSessionId = null;
@@ -342,8 +342,16 @@ const AI = (() => {
             console.error('AI Subsystem Error:', error);
             hideTyping();
             
-            // ⚠️ Geliştirici hata modu: Hatanın tam kök nedenini görebilmek için doğrudan hatayı gösteriyorum
-            appendMessage('bot', '⚠️ Hata oluştu:\nBağlantı koptu. Teknik detay: ' + error.message);
+            const rawErr = String(error.message || '').toLowerCase();
+            let errMsg = 'Bağlantı koptu veya veriler tam ulaşmadı. Mustafa Uygur ana sunucuları bakıma almış olabilir. Lütfen sayfayı yenile.';
+            
+            if (rawErr.includes('quota') || rawErr.includes('rate limit') || rawErr.includes('429') || rawErr.includes('exhausted')) {
+                errMsg = 'Bana biraz hızlı ve arka arkaya mesaj attın! Sistem şu an yoğunluktan ötürü kendini 30 saniyelik dinlenmeye aldı. Küçük bir ara verip tekrar sormaya ne dersin? ⏱️';
+            } else if (rawErr.includes('key') || rawErr.includes('auth') || rawErr.includes('invalid') || rawErr.includes('400')) {
+                errMsg = 'Güvenlik duvarına takıldık. Mustafa Uygur ana sunucuları kısa bir süre için erişime kapatılmış olabilir. Lütfen daha sonra tekrar dene.';
+            }
+
+            appendMessage('bot', 'Üzgünüm, şu anda tam bağlantı kuramıyorum. 🛑\n' + errMsg);
         } finally {
             sendBtnRef.disabled = false;
         }
