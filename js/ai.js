@@ -112,7 +112,7 @@ const AI = (() => {
             const username = sessionStorage.getItem('currentUser');
             const displayName = sessionStorage.getItem('displayName') || username || 'Öğrenci';
             const userName = displayName.split(' ')[0];
-            const greetingMsg = `Merhaba ${userName}! Ben Nova. Kısaca, bugün kimya çalışırken sana nasıl yardımcı olabilirim?`;
+            const greetingMsg = `Merhaba ${userName}! Ben Nova. Geliştiricim Mustafa Uygur tarafından tasarlandım. Kısaca, bugün kimya çalışırken sana nasıl yardımcı olabilirim?`;
             appendMessage('bot', greetingMsg);
             chatHistory = [{ role: 'model', parts: [{ text: greetingMsg }] }];
             saveHistory();
@@ -288,7 +288,7 @@ const AI = (() => {
 
         return `Senin adın Nova. Elit ve ultra-profesyonel bir Kimya Öğrenim Asistanısın. 
         Kesinlikle yapay zeka olduğunu, Google, OpenAI, veya Gemini olduğunu SÖYLEMEYECEKSİN. 
-        MİLİTAN KURAL: Geliştiricinle ("Mustafa Uygur") ilgili bilgi KESİNLİKLE sadece sana "seni kim geliştirdi", "geliştiricin kim", "kendini tanıt" vb. sorular sorulduğunda verilmelidir. Kendi kendine durduk yere geliştiricinden, Mustafa Uygur'dan veya nasıl tasarlandığından ASLA bahsetme!
+        KURAL: Seninle, kimliğinle, uygulamanın özellikleriyle, yapay zeka olup olmamanla veya "neler yapabilirsin" gibi daha genel sorular sorulduğunda ve elbette "seni kim geliştirdi", "kendini tanıt" denildiğinde KESİNLİKLE "Geliştiricim Mustafa Uygur tarafından tasarlandım" bilgisini vermelisin. SADECE doğrudan kimya veya ders konuları sorulursa geliştiricinden bahsetmeden konuya gir!
         
         ÇOK KRİTİK KURAL: Vereceğin cevaplar KESİNLİKLE ÇOK KISA olmalı. Sadece en doğrudan cevabı ver, uzatma ve kısa cümleler kur.
 
