@@ -55,27 +55,38 @@ const AUTH = (() => {
         console.log("%cBu alan sadece geliştiriciler içindir. Buraya kod yapıştırmak hesabınızın güvenliğini tehlikeye atabilir!", "font-size: 18px; color: #333;");
     }
 
+    async function sync() {
+        const username = getCurrentUser();
+        if (!username) return;
+
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000); 
+            const req = await fetch(`/api/sync?username=${encodeURIComponent(username)}`, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            
+            if (req.ok) {
+                const res = await req.json();
+                if (res.success && res.data) {
+                    localStorage.setItem('ramazan_hoca_' + username, JSON.stringify(res.data));
+                    console.log('✅ ' + username + ' verileri buluttan güncellendi!');
+                    return true;
+                }
+            }
+        } catch(e) {
+            console.warn('⚠️ Senkronizasyon başarısız, çevrimdışı devam ediliyor.');
+        }
+        return false;
+    }
+
     async function login(username, password, displayName) {
         const user = users.find(u => u.username === username && _D(u.passwordHash) === password);
         if (user) {
-            // 🔥 MySQL Sync -> Pull user database before finishing login!
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 6000); // Increased to 6 seconds for Vercel Cold Start
-                const req = await fetch(`/api/sync?username=${encodeURIComponent(username)}`, { signal: controller.signal });
-                clearTimeout(timeoutId);
-                if (req.ok) {
-                    const res = await req.json();
-                    if (res.success && res.data) {
-                        localStorage.setItem('ramazan_hoca_' + username, JSON.stringify(res.data));
-                        console.log('✅ ' + username + ' verileri veritabanından çekildi!');
-                    }
-                }
-            } catch(e) {
-                console.warn('⚠️ Sunucu bağlantısı yok veya gecikmeli, yerel save ile devam ediliyor.');
-            }
-
             sessionStorage.setItem('currentUser', username);
+            
+            // 🔥 MySQL Sync -> Pull user database before finishing login!
+            await sync();
+
             if (user.isVIP) {
                 sessionStorage.setItem('isVIP', 'true');
             } else {
@@ -131,5 +142,5 @@ const AUTH = (() => {
         }
     }
 
-    return { login, logout, getCurrentUser, isLoggedIn, isVIP, getDisplayName, setDisplayName, initShield };
+    return { login, logout, sync, getCurrentUser, isLoggedIn, isVIP, getDisplayName, setDisplayName, initShield };
 })();

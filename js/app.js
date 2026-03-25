@@ -35,6 +35,13 @@ const APP = (() => {
         }
 
         if (AUTH.isLoggedIn()) {
+            // Background sync to catch up if they were already logged in (e.g. on mobile)
+            AUTH.sync().then(synced => {
+                if (synced && (currentScreen === 'dashboard' || currentScreen === 'statistics' || currentScreen === 'badges')) {
+                    console.log("Sync finished, refreshing screen...");
+                    navigate(currentScreen);
+                }
+            });
             navigate('dashboard');
         } else {
             navigate('login');
