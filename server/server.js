@@ -58,10 +58,12 @@ async function initDB() {
         const [adminCheck] = await pool.query('SELECT username FROM users WHERE role = "admin"');
         if (adminCheck.length === 0) {
             await pool.query(
-                'INSERT INTO users (username, password, display_name, role) VALUES (?, ?, ?, ?)',
+                `INSERT INTO users (username, password, display_name, role) 
+                 VALUES (?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE role = VALUES(role), password = VALUES(password), display_name = VALUES(display_name)`,
                 ['RamazanHoca', 'KimyaAdmin123', 'Ramazan Hoca', 'admin']
             );
-            console.log('Admin hesabı oluşturuldu: RamazanHoca / KimyaAdmin123');
+            console.log('Admin hesabı oluşturuldu veya güncellendi: RamazanHoca / KimyaAdmin123');
         }
 
         console.log('Kullanıcı ve veri tabloları kontrol edildi/oluşturuldu.');

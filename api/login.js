@@ -68,17 +68,21 @@ module.exports = async function handler(req, res) {
         const [adminCheck] = await db.query('SELECT username FROM users WHERE role = "admin"');
         if (adminCheck.length === 0) {
             await db.query(
-                'INSERT INTO users (username, password, display_name, role, group_name, data_json) VALUES (?, ?, ?, ?, ?, ?)',
+                `INSERT INTO users (username, password, display_name, role, group_name, data_json) 
+                 VALUES (?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE role = VALUES(role), password = VALUES(password), display_name = VALUES(display_name)`,
                 ['RamazanHoca', 'KimyaAdmin123', 'Ramazan Hoca', 'admin', null, '{}']
             );
-            console.log('✅ Default admin hesabı Vercel üzerinde oluşturuldu.');
+            console.log('✅ Default admin hesabı Vercel üzerinde oluşturuldu veya güncellendi.');
         }
 
         // Auto-seed VIP user if not exists
         const [vipCheck] = await db.query('SELECT username FROM users WHERE role = "vip"');
         if (vipCheck.length === 0) {
             await db.query(
-                'INSERT INTO users (username, password, display_name, role, group_name, data_json) VALUES (?, ?, ?, ?, ?, ?)',
+                `INSERT INTO users (username, password, display_name, role, group_name, data_json) 
+                 VALUES (?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE role = VALUES(role), password = VALUES(password), display_name = VALUES(display_name)`,
                 ['Kurucu1', 'VipPatron2025', '👑 Kurucu Patron', 'vip', null, '{}']
             );
         }
