@@ -61,7 +61,7 @@ const AUTH = (() => {
             // 🔥 MySQL Sync -> Pull user database before finishing login!
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5s max wait to keep login fast
+                const timeoutId = setTimeout(() => controller.abort(), 6000); // Increased to 6 seconds for Vercel Cold Start
                 const req = await fetch(`/api/sync?username=${encodeURIComponent(username)}`, { signal: controller.signal });
                 clearTimeout(timeoutId);
                 if (req.ok) {

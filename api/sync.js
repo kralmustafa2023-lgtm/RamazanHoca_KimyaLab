@@ -5,25 +5,34 @@ let pool;
 
 async function getPool() {
     if (!pool) {
+        // Aiven requires SSL. We'll use the URL but ensure SSL is properly configured for Node environment.
+        const dbUrl = process.env.DATABASE_URL;
+        
         pool = mysql.createPool({
-            uri: process.env.DATABASE_URL,
+            uri: dbUrl,
+            ssl: {
+                rejectUnauthorized: false // Required for some cloud providers like Aiven in serverless environments
+            },
             waitForConnections: true,
-            connectionLimit: 4, // Maximize free-tier resilience
+            connectionLimit: 1, // Keep it low for serverless functions to avoid hitting Aiven limits
             queueLimit: 0,
-            ssl: { rejectUnauthorized: true }
+            connectTimeout: 10000 // 10 seconds timeout for the initial connection
         });
         
         // Auto-initialize the table on Vercel if it's the very first hit
         try {
-            await pool.query(`
+            const conn = await pool.getConnection();
+            await conn.query(`
                 CREATE TABLE IF NOT EXISTS users (
                     username VARCHAR(100) PRIMARY KEY,
                     data_json LONGTEXT,
                     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 )
             `);
+            conn.release();
+            console.log('Database initialized successfully');
         } catch (err) {
-            console.error('Table Creation Error:', err); // Log but don't crash
+            console.error('Database Initialization Error:', err);
         }
     }
     return pool;
