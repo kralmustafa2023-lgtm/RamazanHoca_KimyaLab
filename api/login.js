@@ -46,18 +46,22 @@ module.exports = async function handler(req, res) {
             )
         `);
 
-        // Upgrade existing table if columns are missing (e.g. migrating from v2 to v3)
-        try {
-            await db.query(`
-                ALTER TABLE users 
-                ADD COLUMN password VARCHAR(255) DEFAULT NULL,
-                ADD COLUMN display_name VARCHAR(200) DEFAULT NULL,
-                ADD COLUMN role ENUM('student','vip','admin') DEFAULT 'student',
-                ADD COLUMN group_name VARCHAR(100) DEFAULT NULL,
-                ADD COLUMN banned TINYINT(1) DEFAULT 0
-            `);
-        } catch (e) {
-            // Error code 1060 means Duplicate column name, which is perfectly fine.
+        // Upgrade existing table if columns are missing.
+        // Doing this column by column individually so if one exists, it won't abort the others.
+        const columnsToAdd = [
+            "ADD COLUMN password VARCHAR(255) DEFAULT NULL",
+            "ADD COLUMN display_name VARCHAR(200) DEFAULT NULL",
+            "ADD COLUMN role ENUM('student','vip','admin') DEFAULT 'student'",
+            "ADD COLUMN group_name VARCHAR(100) DEFAULT NULL",
+            "ADD COLUMN banned TINYINT(1) DEFAULT 0"
+        ];
+
+        for (const colDef of columnsToAdd) {
+            try {
+                await db.query(`ALTER TABLE users ${colDef}`);
+            } catch (e) {
+                // Ignore duplicate column errors (1060)
+            }
         }
 
         // Auto-seed admin user if not exists
@@ -68,6 +72,15 @@ module.exports = async function handler(req, res) {
                 ['RamazanHoca', 'KimyaAdmin123', 'Ramazan Hoca', 'admin', null, '{}']
             );
             console.log('✅ Default admin hesabı Vercel üzerinde oluşturuldu.');
+        }
+
+        // Auto-seed VIP user if not exists
+        const [vipCheck] = await db.query('SELECT username FROM users WHERE role = "vip"');
+        if (vipCheck.length === 0) {
+            await db.query(
+                'INSERT INTO users (username, password, display_name, role, group_name, data_json) VALUES (?, ?, ?, ?, ?, ?)',
+                ['Kurucu1', 'VipPatron2025', '👑 Kurucu Patron', 'vip', null, '{}']
+            );
         }
 
         const [rows] = await db.query('SELECT username, password, display_name, role, banned, data_json FROM users WHERE username = ?', [username]);
