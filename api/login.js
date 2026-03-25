@@ -47,45 +47,46 @@ module.exports = async function handler(req, res) {
         `);
 
         // Upgrade existing table if columns are missing.
-        // Doing this column by column individually so if one exists, it won't abort the others.
         const columnsToAdd = [
             "ADD COLUMN password VARCHAR(255) DEFAULT NULL",
             "ADD COLUMN display_name VARCHAR(200) DEFAULT NULL",
-            "ADD COLUMN role ENUM('student','vip','admin') DEFAULT 'student'",
+            "ADD COLUMN role VARCHAR(50) DEFAULT 'student'",
             "ADD COLUMN group_name VARCHAR(100) DEFAULT NULL",
             "ADD COLUMN banned TINYINT(1) DEFAULT 0"
         ];
 
         for (const colDef of columnsToAdd) {
-            try {
-                await db.query(`ALTER TABLE users ${colDef}`);
-            } catch (e) {
-                // Ignore duplicate column errors (1060)
+            try { await db.query(`ALTER TABLE users ${colDef}`); } catch (e) {}
+        }
+        
+        // Ensure role is VARCHAR so 'admin' or 'ogretmen' don't crash ENUM strict modes
+        try { await db.query("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) DEFAULT 'student'"); } catch(e) {}
+
+        // Auto-seed admin user safely
+        try {
+            const [adminCheck] = await db.query('SELECT username FROM users WHERE role = "admin" OR role = "ogretmen"');
+            if (adminCheck.length === 0) {
+                await db.query(
+                    `INSERT INTO users (username, password, display_name, role, group_name, data_json) 
+                     VALUES (?, ?, ?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE role = VALUES(role), password = VALUES(password), display_name = VALUES(display_name)`,
+                    ['RamazanHoca', 'KimyaAdmin123', 'Ramazan Hoca', 'admin', null, '{}']
+                );
             }
-        }
+        } catch(e) { console.error("Admin seed error:", e); }
 
-        // Auto-seed admin user if not exists
-        const [adminCheck] = await db.query('SELECT username FROM users WHERE role = "admin"');
-        if (adminCheck.length === 0) {
-            await db.query(
-                `INSERT INTO users (username, password, display_name, role, group_name, data_json) 
-                 VALUES (?, ?, ?, ?, ?, ?)
-                 ON DUPLICATE KEY UPDATE role = VALUES(role), password = VALUES(password), display_name = VALUES(display_name)`,
-                ['RamazanHoca', 'KimyaAdmin123', 'Ramazan Hoca', 'admin', null, '{}']
-            );
-            console.log('✅ Default admin hesabı Vercel üzerinde oluşturuldu veya güncellendi.');
-        }
-
-        // Auto-seed VIP user if not exists
-        const [vipCheck] = await db.query('SELECT username FROM users WHERE role = "vip"');
-        if (vipCheck.length === 0) {
-            await db.query(
-                `INSERT INTO users (username, password, display_name, role, group_name, data_json) 
-                 VALUES (?, ?, ?, ?, ?, ?)
-                 ON DUPLICATE KEY UPDATE role = VALUES(role), password = VALUES(password), display_name = VALUES(display_name)`,
-                ['Kurucu1', 'VipPatron2025', '👑 Kurucu Patron', 'vip', null, '{}']
-            );
-        }
+        // Auto-seed VIP user safely
+        try {
+            const [vipCheck] = await db.query('SELECT username FROM users WHERE role = "vip"');
+            if (vipCheck.length === 0) {
+                await db.query(
+                    `INSERT INTO users (username, password, display_name, role, group_name, data_json) 
+                     VALUES (?, ?, ?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE role = VALUES(role), password = VALUES(password), display_name = VALUES(display_name)`,
+                    ['Kurucu1', 'VipPatron2025', '👑 Kurucu Patron', 'vip', null, '{}']
+                );
+            }
+        } catch(e) { console.error("VIP seed error:", e); }
 
         const [rows] = await db.query('SELECT username, password, display_name, role, banned, data_json FROM users WHERE username = ?', [username]);
 

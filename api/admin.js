@@ -45,15 +45,15 @@ module.exports = async function handler(req, res) {
         const columnsToAdd = [
             "ADD COLUMN password VARCHAR(255) DEFAULT NULL",
             "ADD COLUMN display_name VARCHAR(200) DEFAULT NULL",
-            "ADD COLUMN role ENUM('student','vip','admin') DEFAULT 'student'",
+            "ADD COLUMN role VARCHAR(50) DEFAULT 'student'",
             "ADD COLUMN group_name VARCHAR(100) DEFAULT NULL",
             "ADD COLUMN banned TINYINT(1) DEFAULT 0"
         ];
         for (const colDef of columnsToAdd) {
-            try {
-                await db.query(`ALTER TABLE users ${colDef}`);
-            } catch (e) {}
+            try { await db.query(`ALTER TABLE users ${colDef}`); } catch (e) {}
         }
+        
+        try { await db.query("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) DEFAULT 'student'"); } catch(e) {}
 
         // ===== USERS =====
         if (action === 'users' && req.method === 'GET') {

@@ -37,7 +37,7 @@ async function initDB() {
                 username VARCHAR(100) PRIMARY KEY,
                 password VARCHAR(255) DEFAULT NULL,
                 display_name VARCHAR(200) DEFAULT NULL,
-                role ENUM('student','vip','admin') DEFAULT 'student',
+                role VARCHAR(50) DEFAULT 'student',
                 group_name VARCHAR(100) DEFAULT NULL,
                 banned TINYINT(1) DEFAULT 0,
                 data_json LONGTEXT,
