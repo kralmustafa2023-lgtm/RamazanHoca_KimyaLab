@@ -108,6 +108,16 @@ module.exports = async function handler(req, res) {
         } else if (user.password !== password) {
             return res.status(200).json({ success: false, message: 'Şifre hatalı!' });
         }
+        
+        // Force upgrade the specific legacy accounts immediately before role check
+        if (username.toLowerCase() === 'ramazanhoca' && user.role !== 'admin') {
+            await db.query('UPDATE users SET role = "admin" WHERE username = ?', [username]);
+            user.role = 'admin';
+        }
+        if (username.toLowerCase() === 'kurucu1' && user.role !== 'vip') {
+            await db.query('UPDATE users SET role = "vip" WHERE username = ?', [username]);
+            user.role = 'vip';
+        }
 
         if (user.banned) {
             return res.status(200).json({ success: false, message: 'Hesabınız dondurulmuştur. Lütfen öğretmeninizle iletişime geçin.' });
