@@ -56,11 +56,11 @@ const AUTH = (() => {
 
                 return { success: true, username: user.username };
             } else {
-                return { success: false, message: res.message || 'Giriş başarısız.' };
+                return { success: false, message: res.message + (res.details ? ` (${res.details})` : '') || 'Giriş başarısız.' };
             }
         } catch (e) {
             console.error('Login API Error:', e);
-            return { success: false, message: 'Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.' };
+            return { success: false, message: 'Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin. (' + e.message + ')' };
         }
     }
 
@@ -74,20 +74,20 @@ const AUTH = (() => {
             });
             const res = await req.json();
 
-            if (res.success && res.user.role === 'admin') {
+            if (res.success && (res.user.role === 'admin' || res.user.role === 'ogretmen')) {
                 sessionStorage.setItem('isTeacher', 'true');
                 sessionStorage.setItem('currentUser', res.user.username);
-                sessionStorage.setItem('userRole', 'admin');
+                sessionStorage.setItem('userRole', res.user.role);
                 sessionStorage.setItem('displayName', res.user.displayName || 'Ramazan Hoca');
                 return { success: true };
-            } else if (res.success && res.user.role !== 'admin') {
+            } else if (res.success && res.user.role !== 'admin' && res.user.role !== 'ogretmen') {
                 return { success: false, message: 'Bu hesap yönetici değil!' };
             } else {
-                return { success: false, message: res.message || 'Giriş başarısız.' };
+                return { success: false, message: res.message + (res.details ? ` (${res.details})` : '') || 'Giriş başarısız.' };
             }
         } catch (e) {
             console.error('Teacher Login Error:', e);
-            return { success: false, message: 'Sunucuya bağlanılamadı.' };
+            return { success: false, message: 'Sunucuya bağlanılamadı. (' + e.message + ')' };
         }
     }
 

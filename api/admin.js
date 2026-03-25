@@ -178,9 +178,9 @@ module.exports = async function handler(req, res) {
         // ===== CHANGE ADMIN PASSWORD =====
         if (action === 'changeAdminPassword' && req.method === 'POST') {
             const { oldPassword, newPassword } = req.body;
-            const [rows] = await db.query('SELECT password FROM users WHERE role = "admin"');
+            const [rows] = await db.query('SELECT password FROM users WHERE role = "admin" OR role = "ogretmen"');
             if (rows.length > 0 && rows[0].password === oldPassword) {
-                await db.query('UPDATE users SET password = ? WHERE role = "admin"', [newPassword]);
+                await db.query('UPDATE users SET password = ? WHERE role = "admin" OR role = "ogretmen"', [newPassword]);
                 return res.status(200).json({ success: true });
             }
             return res.status(200).json({ success: false, message: 'Eski şifre yanlış.' });
