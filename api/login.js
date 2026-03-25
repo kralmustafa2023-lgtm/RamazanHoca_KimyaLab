@@ -56,11 +56,11 @@ module.exports = async function handler(req, res) {
         ];
 
         for (const colDef of columnsToAdd) {
-            try { await db.query(`ALTER TABLE users ${colDef}`); } catch (e) {}
+            try { await db.query(`ALTER TABLE users ${colDef}`); } catch (e) { }
         }
-        
+
         // Ensure role is VARCHAR so 'admin' or 'ogretmen' don't crash ENUM strict modes
-        try { await db.query("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) DEFAULT 'student'"); } catch(e) {}
+        try { await db.query("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) DEFAULT 'student'"); } catch (e) { }
 
         // Auto-seed admin user safely
         try {
@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
                 // If admin exists but password is null (due to column upgrade), fix it!
                 await db.query("UPDATE users SET password = 'KimyaAdmin123' WHERE (role = 'admin' OR role = 'ogretmen') AND (password IS NULL OR password = '')");
             }
-        } catch(e) { console.error("Admin seed error:", e); }
+        } catch (e) { console.error("Admin seed error:", e); }
 
         // Auto-seed VIP user safely
         try {
@@ -93,6 +93,23 @@ module.exports = async function handler(req, res) {
             }
         } catch(e) { console.error("VIP seed error:", e); }
 
+        // ===== SEED STUDENTS (requested fixed passwords) =====
+        try {
+            const students = [];
+            for (let i = 1; i <= 40; i++) {
+                students.push(['ogrenci' + i, 'nsbl' + i, 'Öğrenci ' + i, 'student', '{}']);
+            }
+            // Use a single query or loop (loop is safer for small count in serverless if bulk is tricky)
+            for (const s of students) {
+                 await db.query(
+                    `INSERT INTO users (username, password, display_name, role, data_json) 
+                     VALUES (?, ?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE password = IF(password IS NULL OR password = '', VALUES(password), password)`,
+                    s
+                );
+            }
+        } catch(e) { console.error("Students seed error:", e); }
+
         const [rows] = await db.query('SELECT username, password, display_name, role, banned, data_json FROM users WHERE username = ?', [username]);
 
         if (rows.length === 0) {
@@ -108,7 +125,7 @@ module.exports = async function handler(req, res) {
         } else if (user.password !== password) {
             return res.status(200).json({ success: false, message: 'Şifre hatalı!' });
         }
-        
+
         // Force upgrade the specific legacy accounts immediately before role check
         if (username.toLowerCase() === 'ramazanhoca' && user.role !== 'admin') {
             await db.query("UPDATE users SET role = 'admin' WHERE username = ?", [username]);
@@ -124,7 +141,7 @@ module.exports = async function handler(req, res) {
         }
 
         let parsedData = null;
-        try { if (user.data_json) parsedData = JSON.parse(user.data_json); } catch(e) {}
+        try { if (user.data_json) parsedData = JSON.parse(user.data_json); } catch (e) { }
 
         return res.status(200).json({
             success: true,
