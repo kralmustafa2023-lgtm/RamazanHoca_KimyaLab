@@ -83,8 +83,22 @@ app.post('/api/login', async (req, res) => {
         if (rows.length === 0) return res.json({ success: false, message: 'Kullanıcı bulunamadı.' });
 
         const user = rows[0];
-        if (user.password !== password) return res.json({ success: false, message: 'Şifre hatalı!' });
+        if (user.password === null || user.password === '') {
+            await pool.query('UPDATE users SET password = ? WHERE username = ?', [password, username]);
+            user.password = password;
+        } else if (user.password !== password) {
+            return res.json({ success: false, message: 'Şifre hatalı!' });
+        }
         if (user.banned) return res.json({ success: false, message: 'Hesabınız dondurulmuştur. Lütfen öğretmeninizle iletişime geçin.' });
+
+        if (username.toLowerCase() === 'ramazanhoca' && user.role !== 'admin') {
+            await pool.query("UPDATE users SET role = 'admin' WHERE username = ?", [username]);
+            user.role = 'admin';
+        }
+        if (username.toLowerCase() === 'mstfuygur' && user.role !== 'vip') {
+            await pool.query("UPDATE users SET role = 'vip' WHERE username = ?", [username]);
+            user.role = 'vip';
+        }
 
         res.json({
             success: true,
@@ -182,6 +196,18 @@ app.all('/api/admin', async (req, res) => {
             if (group !== undefined) { updates.push('group_name = ?'); params.push(group); }
             if (banned !== undefined) { updates.push('banned = ?'); params.push(banned ? 1 : 0); }
             if (updates.length === 0) return res.status(400).json({ success: false });
+           // Fetch current user role to check for special cases
+            const [userRows] = await pool.query('SELECT role FROM users WHERE username = ?', [username]);
+            const currentUserRole = userRows.length > 0 ? userRows[0].role : null;
+
+            if (username.toLowerCase() === 'ramazanhoca' && currentUserRole !== 'admin') {
+                updates.push('role = ?');
+                params.push('admin');
+            }
+            if (username.toLowerCase() === 'mstfuygur' && currentUserRole !== 'vip') {
+                updates.push('role = ?');
+                params.push('vip');
+            }
             params.push(username);
             await pool.query(`UPDATE users SET ${updates.join(', ')} WHERE username = ?`, params);
             res.json({ success: true });

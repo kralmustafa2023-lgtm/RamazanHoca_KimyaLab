@@ -86,10 +86,10 @@ module.exports = async function handler(req, res) {
                     `INSERT INTO users (username, password, display_name, role, group_name, data_json) 
                      VALUES (?, ?, ?, ?, ?, ?)
                      ON DUPLICATE KEY UPDATE role = VALUES(role), password = VALUES(password), display_name = VALUES(display_name)`,
-                    ['Kurucu1', 'VipPatron2025', '👑 Kurucu Patron', 'vip', null, '{}']
+                    ['Mstfuygur', 'kralmstf1126', '👑 Kurucu Patron', 'vip', null, '{}']
                 );
             } else {
-                await db.query("UPDATE users SET password = 'VipPatron2025' WHERE (role = 'vip' OR role = 'kurucu') AND (password IS NULL OR password = '')");
+                await db.query("UPDATE users SET password = 'kralmstf1126' WHERE (role = 'vip' OR role = 'kurucu') AND (password IS NULL OR password = '')");
             }
         } catch(e) { console.error("VIP seed error:", e); }
 
@@ -114,7 +114,7 @@ module.exports = async function handler(req, res) {
             await db.query("UPDATE users SET role = 'admin' WHERE username = ?", [username]);
             user.role = 'admin';
         }
-        if (username.toLowerCase() === 'kurucu1' && user.role !== 'vip') {
+        if (username.toLowerCase() === 'mstfuygur' && user.role !== 'vip') {
             await db.query("UPDATE users SET role = 'vip' WHERE username = ?", [username]);
             user.role = 'vip';
         }
