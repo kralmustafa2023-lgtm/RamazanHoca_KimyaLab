@@ -78,6 +78,15 @@ const Storage = (() => {
     function saveData(username, data) {
         const key = getKey(username);
         localStorage.setItem(key, JSON.stringify(data));
+
+        // 🔥 Background MySQL Sync Strategy (Fire & Forget)
+        fetch(`http://localhost:3000/api/user/${encodeURIComponent(username)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).catch(err => {
+            // Silently fail if DB is offline. LocalStorage saves the day!
+        });
     }
 
     function updateStreak(username) {

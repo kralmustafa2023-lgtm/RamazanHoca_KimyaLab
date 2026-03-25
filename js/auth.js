@@ -55,9 +55,26 @@ const AUTH = (() => {
         console.log("%cBu alan sadece geliştiriciler içindir. Buraya kod yapıştırmak hesabınızın güvenliğini tehlikeye atabilir!", "font-size: 18px; color: #333;");
     }
 
-    function login(username, password, displayName) {
+    async function login(username, password, displayName) {
         const user = users.find(u => u.username === username && _D(u.passwordHash) === password);
         if (user) {
+            // 🔥 MySQL Sync -> Pull user database before finishing login!
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5s max wait to keep login fast
+                const req = await fetch(`http://localhost:3000/api/user/${encodeURIComponent(username)}`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (req.ok) {
+                    const res = await req.json();
+                    if (res.success && res.data) {
+                        localStorage.setItem('ramazan_hoca_' + username, JSON.stringify(res.data));
+                        console.log('✅ ' + username + ' verileri veritabanından çekildi!');
+                    }
+                }
+            } catch(e) {
+                console.warn('⚠️ Sunucu bağlantısı yok veya gecikmeli, yerel save ile devam ediliyor.');
+            }
+
             sessionStorage.setItem('currentUser', username);
             if (user.isVIP) {
                 sessionStorage.setItem('isVIP', 'true');

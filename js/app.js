@@ -447,7 +447,7 @@ const APP = (() => {
         }
     }
 
-    function handleLogin(event) {
+    async function handleLogin(event) {
         event.preventDefault();
         const displayName = document.getElementById('login-displayname').value.trim();
         const username = document.getElementById('login-username').value.trim();
@@ -466,7 +466,7 @@ const APP = (() => {
             return;
         }
 
-        const result = AUTH.login(username, password, displayName);
+        const result = await AUTH.login(username, password, displayName);
         if (result.success) {
             window.location.reload();
         } else {
@@ -1762,7 +1762,7 @@ const APP = (() => {
         switchLoginTab('vip');
     }
 
-    function handleVIPLogin(e) {
+    async function handleVIPLogin(e) {
         if (e) e.preventDefault();
         const username = document.getElementById('vip-username').value.trim();
         const password = document.getElementById('vip-password').value.trim();
@@ -1773,7 +1773,7 @@ const APP = (() => {
             return;
         }
 
-        const result = AUTH.login(username, password, username);
+        const result = await AUTH.login(username, password, username);
         if (result.success && AUTH.isVIP()) {
             window.location.reload();
         } else {
