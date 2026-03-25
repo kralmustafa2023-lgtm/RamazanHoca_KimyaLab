@@ -57,7 +57,7 @@ module.exports = async function handler(req, res) {
 
         // ===== USERS =====
         if (action === 'users' && req.method === 'GET') {
-            const [rows] = await db.query('SELECT username, display_name, role, group_name, banned, data_json FROM users WHERE username NOT LIKE "\\_%%" ORDER BY username');
+            const [rows] = await db.query("SELECT username, display_name, role, group_name, banned, data_json FROM users WHERE username NOT LIKE '\\_%%' ORDER BY username");
             const users = rows.map(r => {
                 let pData = {};
                 try { pData = r.data_json ? JSON.parse(r.data_json) : {}; } catch(e) { pData = {}; }
@@ -129,7 +129,7 @@ module.exports = async function handler(req, res) {
             let whereClause = '';
             let params = [];
             if (targetType === 'all') {
-                whereClause = 'WHERE role = "student"';
+                whereClause = "WHERE role = 'student'";
             } else if (targetType === 'group') {
                 whereClause = 'WHERE group_name = ?';
                 params = [target];
@@ -178,9 +178,9 @@ module.exports = async function handler(req, res) {
         // ===== CHANGE ADMIN PASSWORD =====
         if (action === 'changeAdminPassword' && req.method === 'POST') {
             const { oldPassword, newPassword } = req.body;
-            const [rows] = await db.query('SELECT password FROM users WHERE role = "admin" OR role = "ogretmen"');
+            const [rows] = await db.query("SELECT password FROM users WHERE role = 'admin' OR role = 'ogretmen'");
             if (rows.length > 0 && rows[0].password === oldPassword) {
-                await db.query('UPDATE users SET password = ? WHERE role = "admin" OR role = "ogretmen"', [newPassword]);
+                await db.query("UPDATE users SET password = ? WHERE role = 'admin' OR role = 'ogretmen'", [newPassword]);
                 return res.status(200).json({ success: true });
             }
             return res.status(200).json({ success: false, message: 'Eski şifre yanlış.' });

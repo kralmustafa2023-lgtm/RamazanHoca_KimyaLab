@@ -55,7 +55,7 @@ async function initDB() {
         `);
 
         // Seed admin user if not exists
-        const [adminCheck] = await pool.query('SELECT username FROM users WHERE role = "admin"');
+        const [adminCheck] = await pool.query("SELECT username FROM users WHERE role = 'admin'");
         if (adminCheck.length === 0) {
             await pool.query(
                 `INSERT INTO users (username, password, display_name, role) 

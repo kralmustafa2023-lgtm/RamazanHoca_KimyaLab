@@ -64,7 +64,7 @@ module.exports = async function handler(req, res) {
 
         // Auto-seed admin user safely
         try {
-            const [adminCheck] = await db.query('SELECT username FROM users WHERE role = "admin" OR role = "ogretmen"');
+            const [adminCheck] = await db.query("SELECT username FROM users WHERE role = 'admin' OR role = 'ogretmen'");
             if (adminCheck.length === 0) {
                 await db.query(
                     `INSERT INTO users (username, password, display_name, role, group_name, data_json) 
@@ -74,13 +74,13 @@ module.exports = async function handler(req, res) {
                 );
             } else {
                 // If admin exists but password is null (due to column upgrade), fix it!
-                await db.query('UPDATE users SET password = "KimyaAdmin123" WHERE (role = "admin" OR role = "ogretmen") AND (password IS NULL OR password = "")');
+                await db.query("UPDATE users SET password = 'KimyaAdmin123' WHERE (role = 'admin' OR role = 'ogretmen') AND (password IS NULL OR password = '')");
             }
         } catch(e) { console.error("Admin seed error:", e); }
 
         // Auto-seed VIP user safely
         try {
-            const [vipCheck] = await db.query('SELECT username FROM users WHERE role = "vip" OR role = "kurucu"');
+            const [vipCheck] = await db.query("SELECT username FROM users WHERE role = 'vip' OR role = 'kurucu'");
             if (vipCheck.length === 0) {
                 await db.query(
                     `INSERT INTO users (username, password, display_name, role, group_name, data_json) 
@@ -89,7 +89,7 @@ module.exports = async function handler(req, res) {
                     ['Kurucu1', 'VipPatron2025', '👑 Kurucu Patron', 'vip', null, '{}']
                 );
             } else {
-                await db.query('UPDATE users SET password = "VipPatron2025" WHERE (role = "vip" OR role = "kurucu") AND (password IS NULL OR password = "")');
+                await db.query("UPDATE users SET password = 'VipPatron2025' WHERE (role = 'vip' OR role = 'kurucu') AND (password IS NULL OR password = '')");
             }
         } catch(e) { console.error("VIP seed error:", e); }
 
@@ -111,11 +111,11 @@ module.exports = async function handler(req, res) {
         
         // Force upgrade the specific legacy accounts immediately before role check
         if (username.toLowerCase() === 'ramazanhoca' && user.role !== 'admin') {
-            await db.query('UPDATE users SET role = "admin" WHERE username = ?', [username]);
+            await db.query("UPDATE users SET role = 'admin' WHERE username = ?", [username]);
             user.role = 'admin';
         }
         if (username.toLowerCase() === 'kurucu1' && user.role !== 'vip') {
-            await db.query('UPDATE users SET role = "vip" WHERE username = ?', [username]);
+            await db.query("UPDATE users SET role = 'vip' WHERE username = ?", [username]);
             user.role = 'vip';
         }
 

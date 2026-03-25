@@ -36,7 +36,7 @@ module.exports = async function handler(req, res) {
             )
         `);
 
-        const [rows] = await db.query('SELECT data_value FROM app_data WHERE data_key = "tables"');
+        const [rows] = await db.query("SELECT data_value FROM app_data WHERE data_key = 'tables'");
 
         if (rows.length > 0) {
             let pTables = null;
