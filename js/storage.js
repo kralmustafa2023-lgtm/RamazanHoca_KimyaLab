@@ -80,7 +80,7 @@ const Storage = (() => {
         localStorage.setItem(key, JSON.stringify(data));
 
         // 🔥 Background MySQL Sync Strategy (Fire & Forget)
-        fetch(`http://localhost:3000/api/user/${encodeURIComponent(username)}`, {
+        fetch(`/api/sync?username=${encodeURIComponent(username)}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)

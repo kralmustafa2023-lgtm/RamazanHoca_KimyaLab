@@ -62,7 +62,7 @@ const AUTH = (() => {
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5s max wait to keep login fast
-                const req = await fetch(`http://localhost:3000/api/user/${encodeURIComponent(username)}`, { signal: controller.signal });
+                const req = await fetch(`/api/sync?username=${encodeURIComponent(username)}`, { signal: controller.signal });
                 clearTimeout(timeoutId);
                 if (req.ok) {
                     const res = await req.json();

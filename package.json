@@ -1,0 +1,11 @@
+{
+  "name": "ramazan-hoca-kimyalab",
+  "version": "1.0.0",
+  "description": "Ramazan Hoca Vercel Integration",
+  "scripts": {
+    "start": "echo \"This is a Vercel deployment. Access via static front-end.\""
+  },
+  "dependencies": {
+    "mysql2": "^3.9.7"
+  }
+}
