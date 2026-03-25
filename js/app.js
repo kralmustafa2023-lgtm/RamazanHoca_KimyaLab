@@ -18,7 +18,7 @@ const APP = (() => {
         `;
     }
 
-    function init() {
+    async function init() {
         // Activate Security Shield
         if (typeof AUTH !== 'undefined' && AUTH.initShield) {
             AUTH.initShield();
@@ -32,6 +32,11 @@ const APP = (() => {
         const savedTheme = localStorage.getItem('kimyalab_theme');
         if (savedTheme) {
             document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        // Load dynamic question data from MySQL (non-blocking)
+        if (typeof loadTablesFromDB === 'function') {
+            loadTablesFromDB();
         }
 
         if (AUTH.isLoggedIn()) {
@@ -567,6 +572,27 @@ const APP = (() => {
         } else {
             errorEl.textContent = result.message;
             Animations.shake(document.getElementById('form-teacher'));
+        }
+    }
+
+    async function handleVIPLogin(event) {
+        if(event) event.preventDefault();
+        const username = document.getElementById('vip-username').value.trim();
+        const password = document.getElementById('vip-password').value.trim();
+        const errorEl = document.getElementById('vip-error');
+
+        if (!username || !password) {
+            errorEl.textContent = 'Kullanıcı adı ve şifre zorunludur!';
+            Animations.shake(document.getElementById('form-vip'));
+            return;
+        }
+
+        const result = await AUTH.login(username, password, "👑 VIP Kurucu");
+        if (result.success) {
+            window.location.reload();
+        } else {
+            errorEl.textContent = result.message;
+            Animations.shake(document.getElementById('form-vip'));
         }
     }
 
@@ -1883,123 +1909,41 @@ const APP = (() => {
         if (bottomNav) bottomNav.style.display = 'none';
         
         container.innerHTML = `
-            <div class="admin-layout">
-                <div class="admin-sidebar">
-                    <div class="admin-logo" style="margin-top:20px;">
-                        <div style="font-size: 50px; text-align: center; margin-bottom: 10px;">👨‍🏫</div>
-                        <h2>Admin Panel</h2>
+            <div class="admin-layout" style="flex-direction:column;">
+                <div class="admin-header" style="flex-wrap:wrap;gap:10px;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span style="font-size:30px;">👨‍🏫</span>
+                        <h1 style="margin:0;font-size:22px;">KimyaLab Kontrol Merkezi</h1>
                     </div>
-                    <div class="admin-menu">
-                        <div class="admin-menu-item active" onclick="APP.renderAdminDashboard()">
-                            <span class="admin-menu-icon">👥</span>
-                            Öğrenci Yönetimi
-                        </div>
-                        <div class="admin-menu-item" onclick="alert('Soru yönetimi yakında modül olarak eklenecek!')">
-                            <span class="admin-menu-icon">✏️</span>
-                            Soru CMS
-                        </div>
-                        <div class="admin-menu-item" onclick="document.getElementById('msg-modal').style.opacity=1; document.getElementById('msg-modal').style.pointerEvents='auto';">
-                            <span class="admin-menu-icon">📩</span>
-                            Mesaj Paneli
-                        </div>
-                        <div class="admin-menu-item" onclick="AUTH.logout()" style="margin-top:80px; color:#EE5D50;">
-                            <span class="admin-menu-icon">🚪</span>
-                            Güvenli Çıkış
-                        </div>
+                    <div style="display:flex;align-items:center;gap:15px;">
+                        <span style="font-weight:700;color:#2B3674;">Ramazan Hoca</span>
+                        <button class="admin-btn btn-danger" onclick="AUTH.logout()" style="padding:8px 15px;">🚪 Çıkış</button>
                     </div>
                 </div>
-                <div class="admin-content">
-                    <div class="admin-header">
-                        <h1>Kontrol Merkezi</h1>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span style="font-weight:700; color:#2B3674;">Ramazan Hoca</span>
-                        </div>
-                    </div>
-                    <div class="admin-body">
-                        <div class="admin-stats-grid">
-                            <div class="admin-stat-card">
-                                <div class="stat-icon" style="background:rgba(117,81,255,0.1); color:#7551FF;">👥</div>
-                                <div class="stat-info">
-                                    <div class="stat-value" id="admin-stat-total">0</div>
-                                    <div class="stat-label">Toplam Öğrenci</div>
-                                </div>
-                            </div>
-                            <div class="admin-stat-card">
-                                <div class="stat-icon" style="background:rgba(5,205,153,0.1); color:#05CD99;">🎮</div>
-                                <div class="stat-info">
-                                    <div class="stat-value" id="admin-stat-games">0</div>
-                                    <div class="stat-label">Oynanan Oyun</div>
-                                </div>
-                            </div>
-                            <div class="admin-stat-card">
-                                <div class="stat-icon" style="background:rgba(255,181,71,0.1); color:#FFB547;">👑</div>
-                                <div class="stat-info">
-                                    <div class="stat-value" id="admin-stat-top" style="font-size:18px;">-</div>
-                                    <div class="stat-label">En Yüksek Puan</div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="admin-table-container">
-                            <h3 style="margin-top:0; color:#2B3674; margin-bottom: 20px;">Kayıtlı Öğrenciler</h3>
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>Öğrenci Adı</th>
-                                        <th>Seviye</th>
-                                        <th>Puan</th>
-                                        <th>Altın</th>
-                                        <th>Durum</th>
-                                        <th>İşlemler</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-users-tbody">
-                                    <tr><td colspan="6" style="text-align:center;">Öğrenciler Yükleniyor...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                <div class="admin-tabs" style="display:flex;gap:0;background:#fff;border-bottom:2px solid #F4F7FE;padding:0 20px;overflow-x:auto;">
+                    <button class="admin-tab-btn active" data-tab="dashboard" onclick="ADMIN.switchTab('dashboard')">📊 Skor Tablosu</button>
+                    <button class="admin-tab-btn" data-tab="students" onclick="ADMIN.switchTab('students')">👥 Öğrenciler</button>
+                    <button class="admin-tab-btn" data-tab="messages" onclick="ADMIN.switchTab('messages')">📩 Mesajlar</button>
+                    <button class="admin-tab-btn" data-tab="questions" onclick="ADMIN.switchTab('questions')">📝 Sorular</button>
+                    <button class="admin-tab-btn" data-tab="preview" onclick="ADMIN.switchTab('preview')">👁️ Önizleme</button>
+                    <button class="admin-tab-btn" data-tab="settings" onclick="ADMIN.switchTab('settings')">⚙️ Ayarlar</button>
                 </div>
-            </div>
 
-            <div id="msg-modal" class="admin-modal-overlay" style="opacity:0; pointer-events:none;">
-                <div class="admin-modal">
-                    <h3>Yeni Mesaj / Görev Gönder</h3>
-                    <div class="admin-form-group">
-                        <label>Alıcı</label>
-                        <select id="msg-target" class="admin-select">
-                            <option value="all">Sınıftaki Herkes (Tüm Öğrenciler)</option>
-                        </select>
-                    </div>
-                    <div class="admin-form-group">
-                        <label>Başlık</label>
-                        <input type="text" id="msg-title" class="admin-input" placeholder="Örn: Hafta Sonu Ödevi">
-                    </div>
-                    <div class="admin-form-group">
-                        <label>Mesaj İçeriği</label>
-                        <textarea id="msg-body" class="admin-input admin-textarea" placeholder="Mesajınızı, ödevi veya iletmek istediğiniz linkleri buraya yazın..."></textarea>
-                    </div>
-                    <div style="display:flex; gap:10px; margin-top:20px;">
-                        <button class="admin-btn btn-success" style="flex:1; padding:12px; font-size:15px;" onclick="ADMIN.sendMessage(); document.getElementById('msg-modal').style.opacity=0; document.getElementById('msg-modal').style.pointerEvents='none';">Gönder 🚀</button>
-                        <button class="admin-btn btn-danger" style="flex:1; padding:12px; font-size:15px;" onclick="document.getElementById('msg-modal').style.opacity=0; document.getElementById('msg-modal').style.pointerEvents='none';">İptal</button>
+                <div class="admin-content" style="flex:1;">
+                    <div class="admin-body" id="admin-tab-content">
+                        <div style="text-align:center;padding:50px;color:#A3AED0;">Yükleniyor...</div>
                     </div>
                 </div>
             </div>
         `;
 
-        if (typeof ADMIN !== 'undefined') {
-            ADMIN.fetchAllUsers().then(() => {
-                const select = document.getElementById('msg-target');
-                if (select && ADMIN.getUsersData) {
-                    ADMIN.getUsersData().forEach(u => {
-                        const opt = document.createElement('option');
-                        opt.value = u.username;
-                        opt.textContent = AUTH.getDisplayName(u.username) || u.username;
-                        select.appendChild(opt);
-                    });
-                }
-            });
-        }
+        // Apply saved theme
+        const savedTheme = localStorage.getItem('admin_theme');
+        if (savedTheme === 'dark') ADMIN.setAdminTheme('dark');
+
+        // Fetch data and render first tab
+        ADMIN.fetchAllUsers();
     }
 
     return {
@@ -2009,7 +1953,7 @@ const APP = (() => {
         renderSidebar, renderBottomNav, renderMarket, renderPeriodicLab, showBigElementCard, showDailyChest,
         toggleTheme, toggleAudio, showSettingsModal, setTheme,
         setGroupCount, goToTournamentConfig, setTMode, setTDiff, setTTable, launchTournament,
-        showVIPLogin, handleVIPLogin, handleTeacherLogin, renderAdminDashboard
+        handleVIPLogin, handleTeacherLogin, renderAdminDashboard
     };
 })();
 

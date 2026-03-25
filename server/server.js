@@ -18,13 +18,11 @@ let pool;
 
 async function initDB() {
     try {
-        // First connect without database to create it if it doesn't exist
         const connection = await mysql.createConnection(dbConfig);
         await connection.query(`CREATE DATABASE IF NOT EXISTS \`${DBNAME}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
         console.log(`Veritabanı başarıyla kontrol edildi/oluşturuldu: ${DBNAME}`);
         await connection.end();
 
-        // Now connect with database and create connection pool
         pool = mysql.createPool({
             ...dbConfig,
             database: DBNAME,
@@ -33,114 +31,212 @@ async function initDB() {
             queueLimit: 0
         });
 
-        // Create users table if not exists (username acts as primary key ID)
+        // Create users table with full columns
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 username VARCHAR(100) PRIMARY KEY,
+                password VARCHAR(255) DEFAULT NULL,
+                display_name VARCHAR(200) DEFAULT NULL,
+                role ENUM('student','vip','admin') DEFAULT 'student',
+                group_name VARCHAR(100) DEFAULT NULL,
+                banned TINYINT(1) DEFAULT 0,
                 data_json LONGTEXT,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )
         `);
-        console.log('Kullanıcı tablosu kontrol edildi/oluşturuldu.');
+
+        // Create app_data table for questions/settings
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS app_data (
+                data_key VARCHAR(100) PRIMARY KEY,
+                data_value LONGTEXT,
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Seed admin user if not exists
+        const [adminCheck] = await pool.query('SELECT username FROM users WHERE role = "admin"');
+        if (adminCheck.length === 0) {
+            await pool.query(
+                'INSERT INTO users (username, password, display_name, role) VALUES (?, ?, ?, ?)',
+                ['RamazanHoca', 'KimyaAdmin123', 'Ramazan Hoca', 'admin']
+            );
+            console.log('Admin hesabı oluşturuldu: RamazanHoca / KimyaAdmin123');
+        }
+
+        console.log('Kullanıcı ve veri tabloları kontrol edildi/oluşturuldu.');
     } catch (err) {
-        console.error('🔴 Veritabanı başlatma hatası! MySQL çalışıyor mu ve şifre doğru mu kontrol et:', err.message);
+        console.error('🔴 Veritabanı başlatma hatası:', err.message);
         process.exit(1);
     }
 }
 
-// Get user data
-app.get('/api/user/:username', async (req, res) => {
+// ===== LOGIN API =====
+app.post('/api/login', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT data_json FROM users WHERE username = ?', [req.params.username]);
-        if (rows.length > 0) {
-            res.json({ success: true, data: JSON.parse(rows[0].data_json) });
-        } else {
-            res.json({ success: true, data: null }); // Yeni kullanıcı
-        }
+        const { username, password } = req.body;
+        if (!username || !password) return res.status(400).json({ success: false, message: 'Kullanıcı adı ve şifre gerekli.' });
+
+        const [rows] = await pool.query('SELECT username, password, display_name, role, banned, data_json FROM users WHERE username = ?', [username]);
+        if (rows.length === 0) return res.json({ success: false, message: 'Kullanıcı bulunamadı.' });
+
+        const user = rows[0];
+        if (user.password !== password) return res.json({ success: false, message: 'Şifre hatalı!' });
+        if (user.banned) return res.json({ success: false, message: 'Hesabınız dondurulmuştur. Lütfen öğretmeninizle iletişime geçin.' });
+
+        res.json({
+            success: true,
+            user: {
+                username: user.username,
+                displayName: user.display_name || user.username,
+                role: user.role,
+                data: user.data_json ? JSON.parse(user.data_json) : null
+            }
+        });
     } catch (err) {
-        console.error('🔴 Veri okuma hatası:', err);
+        console.error('Login hatası:', err);
         res.status(500).json({ success: false, message: 'Sunucu hatası' });
     }
 });
 
-// Save user data (Upsert: Insert or Update if exists)
-app.post('/api/user/:username', async (req, res) => {
+// ===== SYNC API (existing) =====
+app.get('/api/sync', async (req, res) => {
     try {
-        const username = req.params.username;
-        const dataJson = JSON.stringify(req.body);
+        const { username } = req.query;
+        if (!username) return res.status(400).json({ error: 'username gerekli' });
+        const [rows] = await pool.query('SELECT data_json FROM users WHERE username = ?', [username]);
+        if (rows.length > 0) {
+            res.json({ success: true, data: JSON.parse(rows[0].data_json || '{}') });
+        } else {
+            res.json({ success: true, data: null });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Sunucu hatası' });
+    }
+});
 
+app.post('/api/sync', async (req, res) => {
+    try {
+        const { username } = req.query;
+        if (!username) return res.status(400).json({ error: 'username gerekli' });
+        const dataJson = JSON.stringify(req.body);
         await pool.query(
-            `INSERT INTO users (username, data_json) VALUES (?, ?) 
+            `INSERT INTO users (username, data_json) VALUES (?, ?)
              ON DUPLICATE KEY UPDATE data_json = ?`,
             [username, dataJson, dataJson]
         );
-        res.json({ success: true, message: 'Veri MySQL e kaydedildi ✨' });
+        res.json({ success: true });
     } catch (err) {
-        console.error('🔴 Veri kaydetme hatası:', err);
         res.status(500).json({ success: false, message: 'Sunucu hatası' });
     }
 });
 
-// Admin API Logic
+// ===== QUESTIONS API =====
+app.get('/api/questions', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT data_value FROM app_data WHERE data_key = "tables"');
+        if (rows.length > 0) {
+            res.json({ success: true, tables: JSON.parse(rows[0].data_value) });
+        } else {
+            res.json({ success: true, tables: null });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Sunucu hatası' });
+    }
+});
+
+// ===== ADMIN API =====
 app.all('/api/admin', async (req, res) => {
     try {
         const action = req.query.action;
+
         if (action === 'users' && req.method === 'GET') {
-            const [rows] = await pool.query('SELECT username, data_json FROM users');
-            const usersData = rows.map(r => ({
+            const [rows] = await pool.query('SELECT username, display_name, role, group_name, banned, data_json FROM users WHERE username NOT LIKE "\\_%%" ORDER BY username');
+            const users = rows.map(r => ({
                 username: r.username,
-                data: JSON.parse(r.data_json)
+                displayName: r.display_name,
+                role: r.role,
+                group: r.group_name,
+                banned: !!r.banned,
+                data: r.data_json ? JSON.parse(r.data_json) : {}
             }));
-            res.json({ success: true, data: usersData });
-        } else if (action === 'toggleAccount' && req.method === 'POST') {
-            const { username, banned } = req.body;
-            const [rows] = await pool.query('SELECT data_json FROM users WHERE username = ?', [username]);
-            if(rows.length > 0) {
-                let data = JSON.parse(rows[0].data_json);
-                data.banned = banned;
-                await pool.query('UPDATE users SET data_json = ? WHERE username = ?', [JSON.stringify(data), username]);
-                res.json({ success: true });
-            } else {
-                res.status(404).json({ success: false, message: 'Kullanıcı bulunamadı' });
-            }
-        } else if (action === 'message' && req.method === 'POST') {
-            const { target, message } = req.body;
-            if (target === 'all') {
-                const [rows] = await pool.query('SELECT username, data_json FROM users');
-                for(let i=0; i<rows.length; i++) {
-                    let data = JSON.parse(rows[i].data_json);
-                    if(!data.inbox) data.inbox = [];
-                    data.inbox.push(message);
-                    await pool.query('UPDATE users SET data_json = ? WHERE username = ?', [JSON.stringify(data), rows[i].username]);
-                }
-            } else {
-                const [rows] = await pool.query('SELECT data_json FROM users WHERE username = ?', [target]);
-                if(rows.length > 0) {
-                    let data = JSON.parse(rows[0].data_json);
-                    if(!data.inbox) data.inbox = [];
-                    data.inbox.push(message);
-                    await pool.query('UPDATE users SET data_json = ? WHERE username = ?', [JSON.stringify(data), target]);
-                }
-            }
-            res.json({ success: true });
-        } else if (action === 'getSettings' && req.method === 'GET') {
-            const [rows] = await pool.query('SELECT data_json FROM users WHERE username = "__ADMIN_SETTINGS__"');
-            if (rows.length > 0) {
-                res.json({ success: true, data: JSON.parse(rows[0].data_json) });
-            } else {
-                res.json({ success: true, data: {} });
-            }
-        } else if (action === 'updateSettings' && req.method === 'POST') {
-            const newSettings = req.body;
-            const dataJson = JSON.stringify(newSettings);
+            res.json({ success: true, data: users });
+        }
+        else if (action === 'addUser' && req.method === 'POST') {
+            const { username, password, displayName, role, group } = req.body;
+            if (!username || !password) return res.status(400).json({ success: false, message: 'Gerekli alanlar: username, password' });
             await pool.query(
-                `INSERT INTO users (username, data_json) VALUES ('__ADMIN_SETTINGS__', ?) 
-                 ON DUPLICATE KEY UPDATE data_json = ?`,
+                'INSERT INTO users (username, password, display_name, role, group_name, data_json) VALUES (?, ?, ?, ?, ?, ?)',
+                [username, password, displayName || username, role || 'student', group || null, '{}']
+            );
+            res.json({ success: true });
+        }
+        else if (action === 'updateUser' && req.method === 'POST') {
+            const { username, password, displayName, group, banned } = req.body;
+            const updates = [];
+            const params = [];
+            if (password !== undefined) { updates.push('password = ?'); params.push(password); }
+            if (displayName !== undefined) { updates.push('display_name = ?'); params.push(displayName); }
+            if (group !== undefined) { updates.push('group_name = ?'); params.push(group); }
+            if (banned !== undefined) { updates.push('banned = ?'); params.push(banned ? 1 : 0); }
+            if (updates.length === 0) return res.status(400).json({ success: false });
+            params.push(username);
+            await pool.query(`UPDATE users SET ${updates.join(', ')} WHERE username = ?`, params);
+            res.json({ success: true });
+        }
+        else if (action === 'deleteUser' && req.method === 'POST') {
+            await pool.query('DELETE FROM users WHERE username = ?', [req.body.username]);
+            res.json({ success: true });
+        }
+        else if (action === 'getPassword' && req.method === 'POST') {
+            const [rows] = await pool.query('SELECT password FROM users WHERE username = ?', [req.body.username]);
+            if (rows.length > 0) res.json({ success: true, password: rows[0].password });
+            else res.status(404).json({ success: false });
+        }
+        else if (action === 'groups' && req.method === 'GET') {
+            const [rows] = await pool.query('SELECT DISTINCT group_name FROM users WHERE group_name IS NOT NULL AND group_name != ""');
+            res.json({ success: true, groups: rows.map(r => r.group_name) });
+        }
+        else if (action === 'message' && req.method === 'POST') {
+            const { target, targetType, message } = req.body;
+            let whereClause = '', params = [];
+            if (targetType === 'all') { whereClause = 'WHERE role = "student"'; }
+            else if (targetType === 'group') { whereClause = 'WHERE group_name = ?'; params = [target]; }
+            else { whereClause = 'WHERE username = ?'; params = [target]; }
+            const [rows] = await pool.query(`SELECT username, data_json FROM users ${whereClause}`, params);
+            for (const row of rows) {
+                let data = row.data_json ? JSON.parse(row.data_json) : {};
+                if (!data.inbox) data.inbox = [];
+                data.inbox.push(message);
+                await pool.query('UPDATE users SET data_json = ? WHERE username = ?', [JSON.stringify(data), row.username]);
+            }
+            res.json({ success: true, count: rows.length });
+        }
+        else if (action === 'getTables' && req.method === 'GET') {
+            const [rows] = await pool.query('SELECT data_value FROM app_data WHERE data_key = "tables"');
+            res.json({ success: true, tables: rows.length > 0 ? JSON.parse(rows[0].data_value) : null });
+        }
+        else if (action === 'saveTables' && req.method === 'POST') {
+            const dataJson = JSON.stringify(req.body.tables);
+            await pool.query(
+                `INSERT INTO app_data (data_key, data_value) VALUES ('tables', ?)
+                 ON DUPLICATE KEY UPDATE data_value = ?`,
                 [dataJson, dataJson]
             );
             res.json({ success: true });
-        } else {
-            res.status(400).json({ success: false, message: 'Geçersiz işlem veya HTTP metodu' });
+        }
+        else if (action === 'changeAdminPassword' && req.method === 'POST') {
+            const { oldPassword, newPassword } = req.body;
+            const [rows] = await pool.query('SELECT password FROM users WHERE role = "admin"');
+            if (rows.length > 0 && rows[0].password === oldPassword) {
+                await pool.query('UPDATE users SET password = ? WHERE role = "admin"', [newPassword]);
+                res.json({ success: true });
+            } else {
+                res.json({ success: false, message: 'Eski şifre yanlış.' });
+            }
+        }
+        else {
+            res.status(400).json({ success: false, message: 'Geçersiz action: ' + action });
         }
     } catch (err) {
         console.error('Admin API Hatası:', err);

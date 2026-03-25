@@ -1,9 +1,11 @@
 // ============================================
 // DATA.JS — All Chemistry Tables & Questions
-// Ramazan Hoca'nın Kimya Sınıfı
+// Ramazan Hoca'nın Kimya Sınıfı v3.0
+// TABLES are loaded from MySQL if available,
+// otherwise the hardcoded fallback below is used.
 // ============================================
 
-const TABLES = {
+let TABLES = {
     katyonlar: {
         name: "Katyonlar",
         icon: "⚡",
@@ -657,9 +659,39 @@ function getLevelProgress(points) {
 }
 
 // Generate all question banks
-const QUESTION_BANKS = {
+let QUESTION_BANKS = {
     katyonlar: generateKatyonQuestions(),
     anyonlar: generateAnyonQuestions(),
     metaller: generateMetallerQuestions(),
     ilk20: generateIlk20Questions()
 };
+
+// ============================================
+// DB-DRIVEN TABLE LOADER
+// Call this at app startup to override TABLES
+// with the latest data from MySQL if available.
+// ============================================
+async function loadTablesFromDB() {
+    try {
+        const req = await fetch('/api/questions');
+        if (req.ok) {
+            const res = await req.json();
+            if (res.success && res.tables) {
+                // Merge DB tables over defaults (preserves structure for missing keys)
+                Object.keys(res.tables).forEach(key => {
+                    TABLES[key] = res.tables[key];
+                });
+                // Regenerate question banks with new data
+                QUESTION_BANKS = {
+                    katyonlar: generateKatyonQuestions(),
+                    anyonlar: generateAnyonQuestions(),
+                    metaller: generateMetallerQuestions(),
+                    ilk20: generateIlk20Questions()
+                };
+                console.log('✅ Soru verileri MySQL veritabanından yüklendi!');
+            }
+        }
+    } catch (e) {
+        console.warn('⚠️ DB soru verisi yüklenemedi, yerel (fallback) veriler kullanılıyor.');
+    }
+}

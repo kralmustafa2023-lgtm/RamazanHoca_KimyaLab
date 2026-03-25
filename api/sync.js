@@ -25,6 +25,11 @@ async function getPool() {
             await conn.query(`
                 CREATE TABLE IF NOT EXISTS users (
                     username VARCHAR(100) PRIMARY KEY,
+                    password VARCHAR(255) DEFAULT NULL,
+                    display_name VARCHAR(200) DEFAULT NULL,
+                    role ENUM('student','vip','admin') DEFAULT 'student',
+                    group_name VARCHAR(100) DEFAULT NULL,
+                    banned TINYINT(1) DEFAULT 0,
                     data_json LONGTEXT,
                     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 )

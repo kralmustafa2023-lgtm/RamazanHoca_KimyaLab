@@ -1,11 +1,14 @@
 // ============================================
-// ADMIN.JS — Öğretmen Kontrol Paneli İşlevleri
+// ADMIN.JS — Ultra Kapsamlı Öğretmen Kontrol Paneli v3.0
 // Ramazan Hoca'nın Kimya Sınıfı
 // ============================================
 
 const ADMIN = (() => {
     let usersData = [];
+    let groupsList = [];
+    let currentTab = 'dashboard';
 
+    // ===== FETCH ALL USERS FROM DB =====
     async function fetchAllUsers() {
         try {
             const req = await fetch('/api/admin?action=users');
@@ -13,181 +16,338 @@ const ADMIN = (() => {
                 const res = await req.json();
                 if (res.success) {
                     usersData = res.data;
-                    renderUsersTable();
-                    renderStats();
                 }
-            } else {
-                console.warn('Backend bağlantısı yok, yerel test verisi üretiliyor.');
-                usersData = generateFallbackUsers();
-                renderUsersTable();
-                renderStats();
             }
         } catch (e) {
-            console.error('Kullanıcılar çekilemedi', e);
-            usersData = generateFallbackUsers();
-            renderUsersTable();
-            renderStats();
+            console.warn('Backend bağlantısı yok.', e);
         }
-    }
-
-    function generateFallbackUsers() {
-        const users = [];
-        for (let i = 1; i <= 30; i++) {
-            const raw = localStorage.getItem('ramazan_hoca_ogrenci' + i);
-            if (raw) {
-                users.push({ username: 'ogrenci' + i, data: JSON.parse(raw) });
+        // Also fetch groups
+        try {
+            const req = await fetch('/api/admin?action=groups');
+            if (req.ok) {
+                const res = await req.json();
+                if (res.success) groupsList = res.groups || [];
             }
-        }
-        return users;
+        } catch (e) {}
+
+        renderCurrentTab();
     }
 
-    function renderStats() {
-        document.getElementById('admin-stat-total').textContent = usersData.length;
-        
+    function getUsersData() { return usersData; }
+
+    // ===== TAB NAVIGATION =====
+    function switchTab(tab) {
+        currentTab = tab;
+        renderCurrentTab();
+    }
+
+    function renderCurrentTab() {
+        const body = document.getElementById('admin-tab-content');
+        if (!body) return;
+
+        // Update tab buttons
+        document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === currentTab);
+        });
+
+        switch (currentTab) {
+            case 'dashboard': renderDashboard(body); break;
+            case 'students': renderStudents(body); break;
+            case 'messages': renderMessages(body); break;
+            case 'questions': renderQuestions(body); break;
+            case 'preview': renderPreview(body); break;
+            case 'settings': renderSettings(body); break;
+        }
+    }
+
+    // ===== 1. DASHBOARD (Leaderboard) =====
+    function renderDashboard(container) {
+        const sorted = [...usersData].filter(u => u.role !== 'admin').sort((a, b) => (b.data.totalPoints || 0) - (a.data.totalPoints || 0));
         let totalGames = 0;
-        let highestPoint = 0;
-        let topUser = '-';
+        let totalStudents = sorted.length;
+        sorted.forEach(u => { totalGames += (u.data.gamesPlayed || 0); });
 
-        usersData.forEach(u => {
-            const d = u.data;
-            if (d.gamesPlayed) totalGames += d.gamesPlayed;
-            if (d.totalPoints > highestPoint) {
-                highestPoint = d.totalPoints;
-                topUser = AUTH.getDisplayName(u.username) || u.username;
-            }
-        });
+        let leaderboardRows = sorted.map((u, i) => {
+            const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+            const pts = u.data.totalPoints || 0;
+            const games = u.data.gamesPlayed || 0;
+            const accuracy = calcAccuracy(u.data);
+            return `<tr>
+                <td style="font-weight:800; font-size:18px;">${medal}</td>
+                <td><div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:22px;">${u.data.activeAvatar || '👤'}</span>
+                    <div><div style="font-weight:700;">${u.displayName || u.username}</div>
+                    <div style="font-size:11px; color:#A3AED0;">${u.username} ${u.group ? '• ' + u.group : ''}</div></div>
+                </div></td>
+                <td style="font-weight:800; color:#FFB547;">${pts} ⭐</td>
+                <td>${games}</td>
+                <td>%${accuracy}</td>
+                <td>${u.banned ? '<span class="status-badge status-banned">Kapalı</span>' : '<span class="status-badge status-active">Aktif</span>'}</td>
+            </tr>`;
+        }).join('');
 
-        document.getElementById('admin-stat-games').textContent = totalGames;
-        document.getElementById('admin-stat-top').textContent = `${highestPoint} (${topUser})`;
+        container.innerHTML = `
+            <div class="admin-stats-grid">
+                <div class="admin-stat-card">
+                    <div class="stat-icon" style="background:rgba(117,81,255,0.1);color:#7551FF;">👥</div>
+                    <div class="stat-info"><div class="stat-value">${totalStudents}</div><div class="stat-label">Toplam Öğrenci</div></div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon" style="background:rgba(5,205,153,0.1);color:#05CD99;">🎮</div>
+                    <div class="stat-info"><div class="stat-value">${totalGames}</div><div class="stat-label">Oynanan Oyun</div></div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon" style="background:rgba(255,181,71,0.1);color:#FFB547;">🏆</div>
+                    <div class="stat-info"><div class="stat-value" style="font-size:16px;">${sorted[0] ? (sorted[0].displayName || sorted[0].username) : '-'}</div><div class="stat-label">Sınıf Birincisi</div></div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon" style="background:rgba(238,93,80,0.1);color:#EE5D50;">📊</div>
+                    <div class="stat-info"><div class="stat-value">${groupsList.length}</div><div class="stat-label">Grup / Sınıf</div></div>
+                </div>
+            </div>
+            <div class="admin-table-container">
+                <h3 style="margin:0 0 15px 0;color:#2B3674;">📊 Skor Sıralaması</h3>
+                <table class="admin-table">
+                    <thead><tr><th>Sıra</th><th>Öğrenci</th><th>Puan</th><th>Oyun</th><th>Doğruluk</th><th>Durum</th></tr></thead>
+                    <tbody>${leaderboardRows || '<tr><td colspan="6" style="text-align:center;">Henüz öğrenci yok.</td></tr>'}</tbody>
+                </table>
+            </div>
+        `;
     }
 
-    function renderUsersTable() {
-        const tbody = document.getElementById('admin-users-tbody');
-        if (!tbody) return;
-        
-        tbody.innerHTML = '';
-        usersData.forEach(user => {
-            const d = user.data || {};
-            const level = d.level || 'Çaylak';
-            const coins = d.coins || 0;
-            const points = d.totalPoints || 0;
-            const displayName = AUTH.getDisplayName(user.username) || user.username;
-            const status = d.banned ? '<span class="status-badge status-banned">Donduruldu</span>' : '<span class="status-badge status-active">Aktif</span>';
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
+    // ===== 2. STUDENTS TAB =====
+    function renderStudents(container) {
+        let rows = usersData.filter(u => u.role !== 'admin').map(u => {
+            return `<tr>
+                <td><div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:20px;">${u.data.activeAvatar || '👤'}</span>
+                    <div><div style="font-weight:700;">${u.displayName || u.username}</div>
+                    <div style="font-size:11px;color:#A3AED0;">${u.username}</div></div>
+                </div></td>
+                <td>${u.group || '-'}</td>
+                <td style="color:#FFB547;font-weight:800;">${u.data.totalPoints || 0} ⭐</td>
+                <td style="color:#05CD99;font-weight:800;">${u.data.coins || 0} 💰</td>
+                <td>${u.banned ? '<span class="status-badge status-banned">Kapalı</span>' : '<span class="status-badge status-active">Aktif</span>'}</td>
                 <td>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="width:36px; height:36px; border-radius:50%; background:#F4F7FE; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                            ${d.activeAvatar ? d.activeAvatar : '👤'}
-                        </div>
-                        <div style="display:flex; flex-direction:column;">
-                            <span style="font-weight:700;">${displayName}</span>
-                            <span style="font-size:12px; color:#A3AED0;">${user.username}</span>
-                        </div>
-                    </div>
-                </td>
-                <td>${level}</td>
-                <td><span style="color:#FFB547; font-weight:800;">${points} ⭐</span></td>
-                <td><span style="color:#05CD99; font-weight:800;">${coins} 💰</span></td>
-                <td>${status}</td>
-                <td>
-                    <div style="display:flex; gap:8px;">
-                        <button class="admin-btn btn-edit" title="İstatistikleri Gör" onclick="ADMIN.viewUserStats('${user.username}')">İncele</button>
-                        ${d.banned ? 
-                            `<button class="admin-btn btn-success" onclick="ADMIN.toggleBan('${user.username}', false)">Aç</button>` :
-                            `<button class="admin-btn btn-danger" onclick="ADMIN.toggleBan('${user.username}', true)">Kapat</button>`
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <button class="admin-btn btn-edit" onclick="ADMIN.viewUserDetails('${u.username}')">Detay</button>
+                        <button class="admin-btn btn-edit" onclick="ADMIN.editUser('${u.username}')">✏️</button>
+                        <button class="admin-btn btn-edit" onclick="ADMIN.showPassword('${u.username}')">🔑</button>
+                        ${u.banned ? 
+                            `<button class="admin-btn btn-success" onclick="ADMIN.toggleBan('${u.username}',false)">Aç</button>` :
+                            `<button class="admin-btn btn-danger" onclick="ADMIN.toggleBan('${u.username}',true)">Kapat</button>`
                         }
+                        <button class="admin-btn btn-danger" onclick="ADMIN.deleteUser('${u.username}')">🗑️</button>
                     </div>
                 </td>
-            `;
-            tbody.appendChild(tr);
-        });
+            </tr>`;
+        }).join('');
+
+        let groupOptions = groupsList.map(g => `<option value="${g}">${g}</option>`).join('');
+
+        container.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+                <h3 style="margin:0;color:#2B3674;">👥 Öğrenci Yönetimi (${usersData.filter(u=>u.role!=='admin').length} Kişi)</h3>
+                <button class="admin-btn btn-success" style="padding:10px 20px;font-size:14px;" onclick="ADMIN.showAddUserModal()">+ Yeni Öğrenci Ekle</button>
+            </div>
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead><tr><th>Öğrenci</th><th>Grup</th><th>Puan</th><th>Altın</th><th>Durum</th><th>İşlemler</th></tr></thead>
+                    <tbody>${rows || '<tr><td colspan="6" style="text-align:center;">Henüz öğrenci yok.</td></tr>'}</tbody>
+                </table>
+            </div>
+
+            <!-- Add User Modal -->
+            <div id="add-user-modal" class="admin-modal-overlay" style="opacity:0;pointer-events:none;">
+                <div class="admin-modal">
+                    <h3>➕ Yeni Öğrenci Ekle</h3>
+                    <div class="admin-form-group"><label>Kullanıcı Adı</label><input type="text" id="new-username" class="admin-input" placeholder="ornek: ogrenci31"></div>
+                    <div class="admin-form-group"><label>Şifre</label><input type="text" id="new-password" class="admin-input" placeholder="Güçlü bir şifre"></div>
+                    <div class="admin-form-group"><label>Görünen Ad</label><input type="text" id="new-displayname" class="admin-input" placeholder="Ahmet Yılmaz"></div>
+                    <div class="admin-form-group"><label>Grup / Sınıf</label>
+                        <input type="text" id="new-group" class="admin-input" placeholder="9A, 10B veya boş bırakın" list="group-list">
+                        <datalist id="group-list">${groupOptions}</datalist>
+                    </div>
+                    <div style="display:flex;gap:10px;margin-top:20px;">
+                        <button class="admin-btn btn-success" style="flex:1;padding:12px;" onclick="ADMIN.addUser()">Kaydet ✅</button>
+                        <button class="admin-btn btn-danger" style="flex:1;padding:12px;" onclick="ADMIN.closeModal('add-user-modal')">İptal</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit User Modal -->
+            <div id="edit-user-modal" class="admin-modal-overlay" style="opacity:0;pointer-events:none;">
+                <div class="admin-modal">
+                    <h3>✏️ Öğrenci Düzenle</h3>
+                    <input type="hidden" id="edit-username-key">
+                    <div class="admin-form-group"><label>Yeni Şifre (boş bırakılırsa değişmez)</label><input type="text" id="edit-password" class="admin-input"></div>
+                    <div class="admin-form-group"><label>Görünen Ad</label><input type="text" id="edit-displayname" class="admin-input"></div>
+                    <div class="admin-form-group"><label>Grup / Sınıf</label>
+                        <input type="text" id="edit-group" class="admin-input" list="group-list-edit">
+                        <datalist id="group-list-edit">${groupOptions}</datalist>
+                    </div>
+                    <div style="display:flex;gap:10px;margin-top:20px;">
+                        <button class="admin-btn btn-success" style="flex:1;padding:12px;" onclick="ADMIN.saveEditUser()">Güncelle 💾</button>
+                        <button class="admin-btn btn-danger" style="flex:1;padding:12px;" onclick="ADMIN.closeModal('edit-user-modal')">İptal</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function showAddUserModal() { openModal('add-user-modal'); }
+
+    async function addUser() {
+        const username = document.getElementById('new-username').value.trim();
+        const password = document.getElementById('new-password').value.trim();
+        const displayName = document.getElementById('new-displayname').value.trim();
+        const group = document.getElementById('new-group').value.trim();
+        if (!username || !password) { alert('Kullanıcı adı ve şifre zorunlu!'); return; }
+        try {
+            const req = await fetch('/api/admin?action=addUser', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, displayName: displayName || username, group: group || null })
+            });
+            const res = await req.json();
+            if (res.success) { alert('Öğrenci eklendi! ✅'); closeModal('add-user-modal'); fetchAllUsers(); }
+            else alert(res.message || 'Hata oluştu.');
+        } catch (e) { alert('Sunucu bağlantı hatası.'); }
+    }
+
+    function editUser(username) {
+        const user = usersData.find(u => u.username === username);
+        if (!user) return;
+        document.getElementById('edit-username-key').value = username;
+        document.getElementById('edit-password').value = '';
+        document.getElementById('edit-displayname').value = user.displayName || '';
+        document.getElementById('edit-group').value = user.group || '';
+        openModal('edit-user-modal');
+    }
+
+    async function saveEditUser() {
+        const username = document.getElementById('edit-username-key').value;
+        const password = document.getElementById('edit-password').value.trim();
+        const displayName = document.getElementById('edit-displayname').value.trim();
+        const group = document.getElementById('edit-group').value.trim();
+        const body = { username };
+        if (password) body.password = password;
+        if (displayName) body.displayName = displayName;
+        body.group = group || null;
+
+        try {
+            const req = await fetch('/api/admin?action=updateUser', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            if ((await req.json()).success) { alert('Güncellendi ✅'); closeModal('edit-user-modal'); fetchAllUsers(); }
+        } catch (e) { alert('Sunucu hatası.'); }
+    }
+
+    async function showPassword(username) {
+        try {
+            const req = await fetch('/api/admin?action=getPassword', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+            const res = await req.json();
+            if (res.success) alert(`🔑 ${username} şifresi: ${res.password}`);
+            else alert('Şifre alınamadı.');
+        } catch (e) { alert('Sunucu hatası.'); }
     }
 
     async function toggleBan(username, banState) {
-        if (!confirm(`Bu kullanıcının hesabını ${banState ? 'kapatmak' : 'açmak'} istediğinize emin misiniz?`)) return;
-
-        // Perform via Backend API
+        if (!confirm(`${username} hesabını ${banState ? 'dondurmak' : 'açmak'} istediğinize emin misiniz?`)) return;
         try {
-            const formData = { username, banned: banState };
-            const req = await fetch('/api/admin?action=toggleAccount', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+            await fetch('/api/admin?action=updateUser', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, banned: banState })
             });
-            
-            if (req.ok) {
-                // local update as well
-                const userObj = usersData.find(u => u.username === username);
-                if (userObj) {
-                    userObj.data.banned = banState;
-                    localStorage.setItem('ramazan_hoca_' + username, JSON.stringify(userObj.data));
-                }
-                renderUsersTable();
-                alert('İşlem Başarılı!');
-            }
-        } catch (e) {
-            // Local mode
-            const userObj = usersData.find(u => u.username === username);
-            if (userObj) {
-                userObj.data.banned = banState;
-                localStorage.setItem('ramazan_hoca_' + username, JSON.stringify(userObj.data));
-                renderUsersTable();
-                alert('Hesap durumu güncellendi (Yerel). Senkronizasyon olmadı.');
-            }
-        }
+            fetchAllUsers();
+        } catch (e) { alert('Sunucu hatası.'); }
     }
 
-    function viewUserStats(username) {
-        const userObj = usersData.find(u => u.username === username);
-        if(!userObj) return;
-        const d = userObj.data;
-        
-        let worstElementText = "Henüz hata yok.";
+    async function deleteUser(username) {
+        if (!confirm(`${username} hesabı KALİCI olarak silinecek. Emin misiniz?`)) return;
+        try {
+            await fetch('/api/admin?action=deleteUser', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+            fetchAllUsers();
+        } catch (e) { alert('Sunucu hatası.'); }
+    }
+
+    function viewUserDetails(username) {
+        const u = usersData.find(x => x.username === username);
+        if (!u) return;
+        const d = u.data;
+        const accuracy = calcAccuracy(d);
+        let worstElements = 'Henüz hata yok.';
         if (d.wrongAnswers && d.wrongAnswers.length > 0) {
-            const worst = d.wrongAnswers.sort((a,b) => b.count - a.count)[0];
-            worstElementText = `${worst.correct} (Hatalı: ${worst.userAnswer}) - ${worst.count} Kez`;
+            const sorted = [...d.wrongAnswers].sort((a, b) => b.count - a.count).slice(0, 3);
+            worstElements = sorted.map(w => `${w.correct} (${w.count}x)`).join(', ');
         }
-
-        const info = `
-Öğrenci: ${AUTH.getDisplayName(username)}
-Puan: ${d.totalPoints} | Altın: ${d.coins || 0}
-Sürekli Oynama (Streak): ${d.streak || 0} Gün
-Genel Doğruluk Oranı: %${calculateAccuracy(d)}
-En Çok Yapılan Hata: ${worstElementText}
-Toplam Oynanan Oyun: ${d.gamesPlayed || 0}
+        alert(`📋 ${u.displayName || u.username} Karnesi
+━━━━━━━━━━━━━━━━━━
+Puan: ${d.totalPoints || 0} ⭐ | Altın: ${d.coins || 0} 💰
+Seviye: ${d.level || 'Çaylak'}
+Oynanan Oyun: ${d.gamesPlayed || 0}
 Max Kombo: ${d.maxCombo || 0}
-`;
-        alert(info);
-    }
-    
-    function calculateAccuracy(d) {
-        if(!d.stats) return 0;
-        let totalCorrect = 0, totalAttempted = 0;
-        Object.values(d.stats).forEach(s => {
-            totalCorrect += s.totalCorrect || 0;
-            totalAttempted += s.totalAttempted || 0;
-        });
-        if (totalAttempted === 0) return 0;
-        return Math.round((totalCorrect / totalAttempted) * 100);
+Sürekli Oynama: ${d.streak || 0} Gün
+Doğruluk Oranı: %${accuracy}
+En Çok Yanlış: ${worstElements}
+Grup: ${u.group || 'Yok'}`);
     }
 
-    // MESSAGES / HOMEWORK
+    // ===== 3. MESSAGES TAB =====
+    function renderMessages(container) {
+        let userOptions = usersData.filter(u => u.role !== 'admin').map(u =>
+            `<option value="${u.username}">${u.displayName || u.username}</option>`
+        ).join('');
+        let groupOptions = groupsList.map(g => `<option value="${g}">${g}</option>`).join('');
+
+        container.innerHTML = `
+            <div class="admin-table-container">
+                <h3 style="margin:0 0 20px 0;color:#2B3674;">📩 Mesaj & Görev Gönder</h3>
+                <div class="admin-form-group"><label>Gönderim Tipi</label>
+                    <select id="msg-type" class="admin-select" onchange="ADMIN.onMsgTypeChange()">
+                        <option value="all">🌍 Tüm Öğrenciler</option>
+                        <option value="group">📁 Gruba Gönder</option>
+                        <option value="individual">👤 Bireysel</option>
+                    </select>
+                </div>
+                <div id="msg-target-wrapper" class="admin-form-group" style="display:none;">
+                    <label>Alıcı</label>
+                    <select id="msg-target" class="admin-select">
+                        <optgroup label="Gruplar">${groupOptions}</optgroup>
+                        <optgroup label="Öğrenciler">${userOptions}</optgroup>
+                    </select>
+                </div>
+                <div class="admin-form-group"><label>Başlık</label><input type="text" id="msg-title" class="admin-input" placeholder="Örn: Hafta Sonu Ödevi"></div>
+                <div class="admin-form-group"><label>Mesaj İçeriği / Link / Dosya URL'i</label>
+                    <textarea id="msg-body" class="admin-input admin-textarea" placeholder="Mesajınızı, ödevleri veya link/dosya URL'lerini buraya yazın..."></textarea>
+                </div>
+                <button class="admin-btn btn-success" style="padding:14px 30px;font-size:15px;width:100%;" onclick="ADMIN.sendMessage()">Gönder 🚀</button>
+            </div>
+        `;
+    }
+
+    function onMsgTypeChange() {
+        const type = document.getElementById('msg-type').value;
+        const wrapper = document.getElementById('msg-target-wrapper');
+        wrapper.style.display = type === 'all' ? 'none' : 'block';
+    }
+
     async function sendMessage() {
-        const target = document.getElementById('msg-target').value;
-        const title = document.getElementById('msg-title').value;
-        const body = document.getElementById('msg-body').value;
-
-        if(!title || !body) {
-            alert('Lütfen başlık ve mesaj girin.');
-            return;
-        }
+        const targetType = document.getElementById('msg-type').value;
+        const target = document.getElementById('msg-target') ? document.getElementById('msg-target').value : '';
+        const title = document.getElementById('msg-title').value.trim();
+        const body = document.getElementById('msg-body').value.trim();
+        if (!title || !body) { alert('Başlık ve mesaj gerekli!'); return; }
 
         const msgObj = {
             id: 'msg-' + Date.now(),
-            title: title,
-            body: body,
+            title, body,
             date: new Date().toISOString(),
             read: false,
             sender: 'Ramazan Hoca'
@@ -195,48 +355,204 @@ Max Kombo: ${d.maxCombo || 0}
 
         try {
             const req = await fetch('/api/admin?action=message', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ target, message: msgObj })
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target, targetType, message: msgObj })
             });
-
-            if (req.ok) {
-                alert('Mesaj başarıyla gönderildi! 🚀');
+            const res = await req.json();
+            if (res.success) {
+                alert(`Mesaj ${res.count || ''} kişiye gönderildi! 🚀`);
                 document.getElementById('msg-title').value = '';
                 document.getElementById('msg-body').value = '';
             }
-        } catch(e) {
-            // Local fallback
-            if (target === 'all') {
-                usersData.forEach(u => deliverLocalMessage(u.username, msgObj));
-            } else {
-                deliverLocalMessage(target, msgObj);
+        } catch (e) { alert('Sunucu hatası.'); }
+    }
+
+    // ===== 4. QUESTIONS CMS =====
+    function renderQuestions(container) {
+        let tableCards = Object.keys(TABLES).map(key => {
+            const t = TABLES[key];
+            return `
+                <div class="admin-stat-card" style="cursor:pointer;flex-direction:column;align-items:flex-start;" onclick="ADMIN.editTable('${key}')">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                        <span style="font-size:30px;">${t.icon}</span>
+                        <div><div style="font-weight:800;color:#2B3674;">${t.name}</div>
+                        <div style="font-size:12px;color:#A3AED0;">${t.items.length} Element</div></div>
+                    </div>
+                    <button class="admin-btn btn-edit">Düzenle ✏️</button>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `
+            <h3 style="margin:0 0 20px 0;color:#2B3674;">📝 Soru Havuzu (CMS)</h3>
+            <p style="color:#A3AED0;margin-bottom:20px;">Bir tabloya tıklayarak element ekleme, silme veya düzenleme yapabilirsiniz. Değişiklikler anında MySQL'e kaydedilir.</p>
+            <div class="admin-stats-grid">${tableCards}</div>
+            <div id="table-editor" style="margin-top:20px;"></div>
+        `;
+    }
+
+    function editTable(tableKey) {
+        const t = TABLES[tableKey];
+        const editor = document.getElementById('table-editor');
+        if (!editor) return;
+
+        let rows = t.items.map((item, i) => `
+            <tr>
+                <td><input class="admin-input" style="width:80px;" value="${item.symbol}" data-field="symbol" data-idx="${i}"></td>
+                <td><input class="admin-input" style="width:120px;" value="${item.name}" data-field="name" data-idx="${i}"></td>
+                <td><input class="admin-input" style="width:60px;" value="${item.charge || (item.charges ? item.charges.join(',') : item.number || '')}" data-field="extra" data-idx="${i}"></td>
+                <td><button class="admin-btn btn-danger" onclick="ADMIN.removeElement('${tableKey}',${i})">🗑️</button></td>
+            </tr>
+        `).join('');
+
+        editor.innerHTML = `
+            <div class="admin-table-container">
+                <h3 style="margin:0 0 15px 0;color:#2B3674;">${t.icon} ${t.name} Düzenle</h3>
+                <table class="admin-table">
+                    <thead><tr><th>Sembol</th><th>Ad</th><th>Yük / Numara</th><th></th></tr></thead>
+                    <tbody id="table-editor-body">${rows}</tbody>
+                </table>
+                <div style="display:flex;gap:10px;margin-top:15px;">
+                    <button class="admin-btn btn-success" style="padding:10px 20px;" onclick="ADMIN.addElement('${tableKey}')">+ Element Ekle</button>
+                    <button class="admin-btn btn-edit" style="padding:10px 20px;" onclick="ADMIN.saveTable('${tableKey}')">💾 Kaydet (MySQL'e)</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function addElement(tableKey) {
+        const t = TABLES[tableKey];
+        t.items.push({ symbol: '?', name: 'Yeni Element', charge: '0', bio: '' });
+        editTable(tableKey);
+    }
+
+    function removeElement(tableKey, idx) {
+        TABLES[tableKey].items.splice(idx, 1);
+        editTable(tableKey);
+    }
+
+    async function saveTable(tableKey) {
+        // Read edited inputs
+        const inputs = document.querySelectorAll('#table-editor-body input');
+        const items = TABLES[tableKey].items;
+        inputs.forEach(inp => {
+            const idx = parseInt(inp.dataset.idx);
+            const field = inp.dataset.field;
+            if (field === 'symbol') items[idx].symbol = inp.value;
+            if (field === 'name') items[idx].name = inp.value;
+            if (field === 'extra') {
+                if (items[idx].charge !== undefined) items[idx].charge = inp.value;
+                else if (items[idx].charges !== undefined) items[idx].charges = inp.value.split(',');
+                else if (items[idx].number !== undefined) items[idx].number = parseInt(inp.value) || 0;
             }
-            alert('Mesaj Yerel (Local) olarak iletildi.');
-        }
+        });
+
+        try {
+            const req = await fetch('/api/admin?action=saveTables', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tables: TABLES })
+            });
+            if ((await req.json()).success) {
+                alert('Tablo MySQL\'e kaydedildi! ✅ Öğrenciler oyuna girdiklerinde yeni soruları görecek.');
+                // Regenerate local questions
+                if (typeof loadTablesFromDB === 'function') loadTablesFromDB();
+            }
+        } catch (e) { alert('Sunucu hatası.'); }
     }
 
-    function deliverLocalMessage(username, msgObj) {
-        const key = 'ramazan_hoca_' + username;
-        let dataStr = localStorage.getItem(key);
-        if (dataStr) {
-            let data = JSON.parse(dataStr);
-            if(!data.inbox) data.inbox = [];
-            data.inbox.push(msgObj);
-            localStorage.setItem(key, JSON.stringify(data));
-        }
+    // ===== 5. APP PREVIEW =====
+    function renderPreview(container) {
+        container.innerHTML = `
+            <h3 style="margin:0 0 15px 0;color:#2B3674;">👁️ Uygulama Önizleme</h3>
+            <p style="color:#A3AED0;margin-bottom:15px;">Uygulamanın öğrenci tarafını iframe içinde canlı olarak inceleyebilirsiniz.</p>
+            <div style="background:white;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+                <iframe src="/" style="width:100%;height:70vh;border:none;border-radius:20px;"></iframe>
+            </div>
+        `;
     }
 
-    // CHECK INBOX FOR STUDENT
+    // ===== 6. SETTINGS =====
+    function renderSettings(container) {
+        container.innerHTML = `
+            <div class="admin-table-container" style="max-width:500px;">
+                <h3 style="margin:0 0 20px 0;color:#2B3674;">⚙️ Sistem Ayarları</h3>
+                <div class="admin-form-group"><label>🔑 Admin Şifre Değiştir</label></div>
+                <div class="admin-form-group"><label style="font-size:13px;">Mevcut Şifre</label><input type="password" id="old-admin-pw" class="admin-input"></div>
+                <div class="admin-form-group"><label style="font-size:13px;">Yeni Şifre</label><input type="password" id="new-admin-pw" class="admin-input"></div>
+                <button class="admin-btn btn-success" style="padding:12px 24px;width:100%;" onclick="ADMIN.changeAdminPw()">Şifreyi Güncelle 🔒</button>
+
+                <hr style="margin:30px 0;border-color:#F4F7FE;">
+
+                <div class="admin-form-group"><label>🎨 Panel Teması</label></div>
+                <div style="display:flex;gap:10px;">
+                    <button class="admin-btn btn-edit" onclick="ADMIN.setAdminTheme('light')">☀️ Açık</button>
+                    <button class="admin-btn btn-edit" onclick="ADMIN.setAdminTheme('dark')">🌙 Koyu</button>
+                </div>
+            </div>
+        `;
+    }
+
+    async function changeAdminPw() {
+        const oldPw = document.getElementById('old-admin-pw').value;
+        const newPw = document.getElementById('new-admin-pw').value;
+        if (!oldPw || !newPw) { alert('Lütfen iki alanı da doldurun.'); return; }
+        try {
+            const req = await fetch('/api/admin?action=changeAdminPassword', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ oldPassword: oldPw, newPassword: newPw })
+            });
+            const res = await req.json();
+            if (res.success) alert('Şifre değiştirildi! ✅');
+            else alert(res.message || 'Eski şifre hatalı.');
+        } catch (e) { alert('Sunucu hatası.'); }
+    }
+
+    function setAdminTheme(theme) {
+        const layout = document.querySelector('.admin-layout');
+        if (!layout) return;
+        if (theme === 'dark') {
+            layout.style.background = '#0B1437';
+            layout.querySelectorAll('.admin-content').forEach(el => el.style.background = '#111C44');
+            layout.querySelectorAll('.admin-header').forEach(el => { el.style.background = '#0B1437'; el.style.color = '#fff'; });
+            layout.querySelectorAll('.admin-header h1').forEach(el => el.style.color = '#fff');
+            layout.querySelectorAll('.admin-body').forEach(el => el.style.color = '#fff');
+        } else {
+            layout.style.background = '#F4F7FE';
+            layout.querySelectorAll('.admin-content').forEach(el => el.style.background = '');
+            layout.querySelectorAll('.admin-header').forEach(el => { el.style.background = ''; el.style.color = ''; });
+            layout.querySelectorAll('.admin-header h1').forEach(el => el.style.color = '');
+        }
+        localStorage.setItem('admin_theme', theme);
+    }
+
+    // ===== HELPERS =====
+    function calcAccuracy(d) {
+        if (!d.stats) return 0;
+        let c = 0, t = 0;
+        Object.values(d.stats).forEach(s => { c += s.totalCorrect || 0; t += s.totalAttempted || 0; });
+        return t === 0 ? 0 : Math.round((c / t) * 100);
+    }
+
+    function openModal(id) {
+        const m = document.getElementById(id);
+        if (m) { m.style.opacity = '1'; m.style.pointerEvents = 'auto'; }
+    }
+
+    function closeModal(id) {
+        const m = document.getElementById(id);
+        if (m) { m.style.opacity = '0'; m.style.pointerEvents = 'none'; }
+    }
+
+    // ===== STUDENT INBOX CHECK =====
     function checkInboxForStudent() {
         const username = sessionStorage.getItem('currentUser');
-        if(!username) return;
-        if(sessionStorage.getItem('isTeacher') === 'true') return;
+        if (!username) return;
+        if (sessionStorage.getItem('isTeacher') === 'true') return;
 
         const dataStr = localStorage.getItem('ramazan_hoca_' + username);
         if (dataStr) {
             let data = JSON.parse(dataStr);
-            if(data.inbox && data.inbox.length > 0) {
+            if (data.inbox && data.inbox.length > 0) {
                 const unread = data.inbox.filter(m => !m.read);
                 if (unread.length > 0) {
                     showStudentMessage(unread[0], data, username);
@@ -246,41 +562,36 @@ Max Kombo: ${d.maxCombo || 0}
     }
 
     function showStudentMessage(msg, data, username) {
-        if(document.querySelector('.student-msg-overlay')) return;
-        
-        if (typeof AUDIO !== 'undefined') AUDIO.playSuccess(); // Attention sound
+        if (document.querySelector('.student-msg-overlay')) return;
+        if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
 
         const overlay = document.createElement('div');
         overlay.className = 'student-msg-overlay';
-        overlay.style.cssText = `
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
-            z-index: 10000; display: flex; align-items: center; justify-content: center;
-        `;
-        
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:10000;display:flex;align-items:center;justify-content:center;';
         overlay.innerHTML = `
-            <div style="background: white; border-radius: 20px; padding: 30px; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-                <div style="font-size: 50px; margin-bottom: 10px;">📩</div>
-                <h3 style="color:var(--text-primary); font-size:20px; margin-bottom:5px;">${msg.title}</h3>
-                <div style="font-size:12px; color:var(--text-muted); margin-bottom: 20px;">Gönderen: ${msg.sender}</div>
-                <div style="background:var(--bg-body); padding:20px; border-radius:15px; text-align:left; color:#333; font-weight:500; line-height:1.6; font-size:14px; margin-bottom:25px; border-left:4px solid var(--primary);">
-                    ${msg.body.replace(/\\n/g, '<br>')}
+            <div style="background:white;border-radius:20px;padding:30px;width:90%;max-width:450px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+                <div style="font-size:50px;margin-bottom:10px;">📩</div>
+                <h3 style="color:#2B3674;font-size:20px;margin-bottom:5px;">${msg.title}</h3>
+                <div style="font-size:12px;color:#A3AED0;margin-bottom:20px;">Gönderen: ${msg.sender}</div>
+                <div style="background:#F4F7FE;padding:20px;border-radius:15px;text-align:left;color:#333;font-weight:500;line-height:1.6;font-size:14px;margin-bottom:25px;border-left:4px solid #7551FF;">
+                    ${msg.body.replace(/\n/g, '<br>')}
                 </div>
-                <button class="btn" style="width:100%; background:var(--primary); color:white; padding:12px; font-weight:800; border-radius:12px; border:none;" onclick="this.closest('.student-msg-overlay').remove()">Anladım, Kapat</button>
+                <button style="width:100%;background:#7551FF;color:white;padding:12px;font-weight:800;border-radius:12px;border:none;cursor:pointer;" onclick="this.closest('.student-msg-overlay').remove()">Anladım, Kapat</button>
             </div>
         `;
         document.body.appendChild(overlay);
-
-        // Mark as read
         msg.read = true;
         localStorage.setItem('ramazan_hoca_' + username, JSON.stringify(data));
     }
 
-    function getUsersData() {
-        return usersData;
-    }
-
-    return { 
-        fetchAllUsers, renderStats, renderUsersTable, toggleBan, viewUserStats, 
-        sendMessage, checkInboxForStudent, getUsersData
+    return {
+        fetchAllUsers, getUsersData, switchTab, renderCurrentTab,
+        showAddUserModal, addUser, editUser, saveEditUser, showPassword,
+        toggleBan, deleteUser, viewUserDetails,
+        onMsgTypeChange, sendMessage,
+        editTable, addElement, removeElement, saveTable,
+        changeAdminPw, setAdminTheme,
+        openModal, closeModal,
+        checkInboxForStudent
     };
 })();
