@@ -87,6 +87,18 @@ const AUTH = (() => {
             // 🔥 MySQL Sync -> Pull user database before finishing login!
             await sync();
 
+            // 🛑 Ban & Account Lock Check
+            const lsData = localStorage.getItem('ramazan_hoca_' + username);
+            if (lsData) {
+                try {
+                    const parsed = JSON.parse(lsData);
+                    if (parsed.banned) {
+                        sessionStorage.removeItem('currentUser');
+                        return { success: false, message: "Hesabınız dondurulmuştur. Lütfen Ramazan Hoca ile iletişime geçin." };
+                    }
+                } catch(e) {}
+            }
+
             if (user.isVIP) {
                 sessionStorage.setItem('isVIP', 'true');
             } else {
@@ -142,5 +154,24 @@ const AUTH = (() => {
         }
     }
 
-    return { login, logout, sync, getCurrentUser, isLoggedIn, isVIP, getDisplayName, setDisplayName, initShield };
+    const _TEACHER = "RamazanHoca";
+    const _TEACHER_PW = "KimyaAdmin123";
+
+    async function teacherLogin(username, password) {
+        if (username === _TEACHER && password === _TEACHER_PW) {
+            sessionStorage.setItem('isTeacher', 'true');
+            sessionStorage.setItem('currentUser', username);
+            return { success: true };
+        }
+        return { success: false, message: "Kullanıcı adı veya şifre hatalı!" };
+    }
+
+    function isTeacher() {
+        return sessionStorage.getItem('isTeacher') === 'true';
+    }
+
+    return { 
+        login, teacherLogin, logout, sync, getCurrentUser, 
+        isLoggedIn, isVIP, isTeacher, getDisplayName, setDisplayName, initShield 
+    };
 })();

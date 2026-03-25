@@ -42,7 +42,12 @@ const APP = (() => {
                     navigate(currentScreen);
                 }
             });
-            navigate('dashboard');
+            if (AUTH.isTeacher()) {
+                navigate('adminDashboard');
+            } else {
+                navigate('dashboard');
+                setTimeout(() => { if (typeof ADMIN !== 'undefined') ADMIN.checkInboxForStudent(); }, 1500);
+            }
         } else {
             navigate('login');
         }
@@ -84,6 +89,7 @@ const APP = (() => {
                 case 'periodicLab': renderPeriodicLab(); break;
                 case 'tournamentSetup': renderTournamentSetup(); break;
                 case 'tournamentConfig': renderTournamentConfig(); break;
+                case 'adminDashboard': renderAdminDashboard(); break;
             }
         });
     }
@@ -274,11 +280,14 @@ const APP = (() => {
 
                         <!-- Login Tabs -->
                         <div style="display:flex; background: rgba(0,0,0,0.05); padding: 4px; border-radius: 10px; margin-bottom: 15px; gap: 4px;">
-                            <button id="tab-student" onclick="APP.switchLoginTab('student')" style="flex:1; padding: 8px; border-radius: 8px; border: none; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.3s; background: var(--bg-card); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <button id="tab-student" onclick="APP.switchLoginTab('student')" style="flex:1; padding: 6px; border-radius: 8px; border: none; font-weight: 700; font-size: 11.5px; cursor: pointer; transition: 0.3s; background: var(--bg-card); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
                                 Öğrenci Girişi
                             </button>
-                            <button id="tab-vip" onclick="APP.switchLoginTab('vip')" style="flex:1; padding: 8px; border-radius: 8px; border: none; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.3s; background: transparent; color: var(--text-muted);">
+                            <button id="tab-vip" onclick="APP.switchLoginTab('vip')" style="flex:1; padding: 6px; border-radius: 8px; border: none; font-weight: 700; font-size: 11.5px; cursor: pointer; transition: 0.3s; background: transparent; color: var(--text-muted);">
                                 👑 VIP Kurucu
+                            </button>
+                            <button id="tab-teacher" onclick="APP.switchLoginTab('teacher')" style="flex:1; padding: 6px; border-radius: 8px; border: none; font-weight: 700; font-size: 11.5px; cursor: pointer; transition: 0.3s; background: transparent; color: var(--text-muted);">
+                                👨‍🏫 Öğretmen
                             </button>
                         </div>
 
@@ -303,6 +312,24 @@ const APP = (() => {
                             <div id="login-error" class="login-error"></div>
                             <button type="submit" class="btn btn-primary btn-lg btn-login">
                                 Giriş Yap 🚀
+                            </button>
+                        </form>
+
+                        <!-- Teacher Form -->
+                        <form id="form-teacher" class="login-form" style="display: none;" onsubmit="APP.handleTeacherLogin(event)">
+                            <div class="input-group" style="background: rgba(117, 81, 255, 0.05); border: 2px solid #7551FF; box-shadow: 0 0 10px rgba(117, 81, 255, 0.2);">
+                                <span class="input-icon" style="color: #7551FF; filter: drop-shadow(0 0 5px rgba(117, 81, 255, 0.5));">👨‍🏫</span>
+                                <input type="text" id="teacher-username" placeholder="Öğretmen Kullanıcı Adı" 
+                                       class="input-field" autocomplete="off" style="color: #4318FF; font-weight: 700;">
+                            </div>
+                            <div class="input-group" style="background: rgba(117, 81, 255, 0.05); border: 2px solid #7551FF; box-shadow: 0 0 10px rgba(117, 81, 255, 0.2);">
+                                <span class="input-icon" style="color: #7551FF; filter: drop-shadow(0 0 5px rgba(117, 81, 255, 0.5));">🔑</span>
+                                <input type="password" id="teacher-password" placeholder="Yönetici Şifresi" 
+                                       class="input-field" autocomplete="off" style="color: #4318FF; font-weight: 700;">
+                            </div>
+                            <div id="teacher-error" class="login-error" style="color: #FF5252;"></div>
+                            <button type="submit" class="btn btn-lg btn-login" style="background: linear-gradient(135deg, #7551FF, #4318FF); color: #FFF; font-weight: 800; box-shadow: 0 0 15px rgba(117, 81, 255, 0.4); text-shadow: none;">
+                                KONTROL PANELİNE GİR ✨
                             </button>
                         </form>
 
@@ -385,8 +412,10 @@ const APP = (() => {
         if (typeof AUDIO !== 'undefined') AUDIO.playClick();
         const btnStudent = document.getElementById('tab-student');
         const btnVip = document.getElementById('tab-vip');
+        const btnTeacher = document.getElementById('tab-teacher');
         const formStudent = document.getElementById('form-student');
         const formVip = document.getElementById('form-vip');
+        const formTeacher = document.getElementById('form-teacher');
         const containerBox = document.getElementById('login-container-box');
         const previewGreeting = document.getElementById('preview-greeting');
         const previewSubtitle = document.querySelector('.preview-subtitle');
@@ -395,13 +424,19 @@ const APP = (() => {
             btnStudent.style.background = 'transparent';
             btnStudent.style.color = 'var(--text-muted)';
             btnStudent.style.boxShadow = 'none';
+            if (btnTeacher) {
+                btnTeacher.style.background = 'transparent';
+                btnTeacher.style.color = 'var(--text-muted)';
+                btnTeacher.style.boxShadow = 'none';
+            }
 
             btnVip.style.background = 'linear-gradient(135deg, #FFD700, #FF8C00)';
             btnVip.style.color = '#000';
             btnVip.style.boxShadow = '0 4px 15px rgba(255,215,0,0.4)';
 
             formStudent.style.display = 'none';
-            formVip.style.display = 'block'; // Block prevents horizontal layout bug
+            if (formTeacher) formTeacher.style.display = 'none';
+            formVip.style.display = 'block'; 
             
             if (previewGreeting) {
                 previewGreeting.innerHTML = `<div style="font-size: 38px; margin-bottom: 2px; animation: bounceFloat 2s ease-in-out infinite; filter: drop-shadow(0 0 15px rgba(255,215,0,0.8)); line-height: 1;">👑</div><span style="background: linear-gradient(135deg, #FFD700, #FF8C00); -webkit-background-clip: text; color: transparent; font-weight: 900; font-size: 26px; text-shadow: 0 0 20px rgba(255,215,0,0.2);">Hoş geldin Patron</span>`;
@@ -411,17 +446,49 @@ const APP = (() => {
             }
             
             setTimeout(() => document.getElementById('vip-username').focus(), 50);
+        } else if (tab === 'teacher') {
+            btnStudent.style.background = 'transparent';
+            btnStudent.style.color = 'var(--text-muted)';
+            btnStudent.style.boxShadow = 'none';
+            btnVip.style.background = 'transparent';
+            btnVip.style.color = 'var(--text-muted)';
+            btnVip.style.boxShadow = 'none';
+
+            if (btnTeacher) {
+                btnTeacher.style.background = 'linear-gradient(135deg, #7551FF, #4318FF)';
+                btnTeacher.style.color = '#FFF';
+                btnTeacher.style.boxShadow = '0 4px 15px rgba(117,121,255,0.4)';
+            }
+
+            formStudent.style.display = 'none';
+            formVip.style.display = 'none';
+            if (formTeacher) formTeacher.style.display = 'block';
+
+            if (previewGreeting) {
+                previewGreeting.innerHTML = `<div style="font-size: 38px; margin-bottom: 2px; animation: bounceFloat 2s ease-in-out infinite; filter: drop-shadow(0 0 15px rgba(117,81,255,0.6)); line-height: 1;">👨‍🏫</div><span style="background: linear-gradient(135deg, #7551FF, #4318FF); -webkit-background-clip: text; color: transparent; font-weight: 900; font-size: 26px; text-shadow: 0 0 20px rgba(117,81,255,0.2);">Yönetici Paneli</span>`;
+            }
+            if (previewSubtitle) {
+                previewSubtitle.innerHTML = `<span style="color: #7551FF; font-weight: 800; letter-spacing: 1px; text-shadow: 0 0 10px rgba(117,81,255,0.4);">⚙️ Tam Yetkili Erişim</span>`;
+            }
+            
+            setTimeout(() => document.getElementById('teacher-username').focus(), 50);
         } else {
             btnVip.style.background = 'transparent';
             btnVip.style.color = 'var(--text-muted)';
             btnVip.style.boxShadow = 'none';
+            if (btnTeacher) {
+                btnTeacher.style.background = 'transparent';
+                btnTeacher.style.color = 'var(--text-muted)';
+                btnTeacher.style.boxShadow = 'none';
+            }
 
             btnStudent.style.background = 'var(--bg-card)';
             btnStudent.style.color = 'var(--text-primary)';
             btnStudent.style.boxShadow = '0 4px 10px rgba(0,0,0,0.05)';
 
             formVip.style.display = 'none';
-            formStudent.style.display = 'block'; // Block prevents horizontal layout bug
+            if (formTeacher) formTeacher.style.display = 'none';
+            formStudent.style.display = 'block'; 
             
             if (previewSubtitle) {
                 previewSubtitle.textContent = "Ramazan Hoca'nın öğrencisi";
@@ -479,6 +546,27 @@ const APP = (() => {
         } else {
             errorEl.textContent = result.message;
             Animations.shake(document.querySelector('.login-form'));
+        }
+    }
+
+    async function handleTeacherLogin(event) {
+        if(event) event.preventDefault();
+        const username = document.getElementById('teacher-username').value.trim();
+        const password = document.getElementById('teacher-password').value.trim();
+        const errorEl = document.getElementById('teacher-error');
+
+        if (!username || !password) {
+            errorEl.textContent = 'Kullanıcı adı ve şifre zorunludur!';
+            Animations.shake(document.getElementById('form-teacher'));
+            return;
+        }
+
+        const result = await AUTH.teacherLogin(username, password);
+        if (result.success) {
+            window.location.reload();
+        } else {
+            errorEl.textContent = result.message;
+            Animations.shake(document.getElementById('form-teacher'));
         }
     }
 
@@ -1789,6 +1877,131 @@ const APP = (() => {
         }
     }
 
+    function renderAdminDashboard() {
+        const container = document.getElementById('main-content');
+        const bottomNav = document.getElementById('bottom-nav');
+        if (bottomNav) bottomNav.style.display = 'none';
+        
+        container.innerHTML = `
+            <div class="admin-layout">
+                <div class="admin-sidebar">
+                    <div class="admin-logo" style="margin-top:20px;">
+                        <div style="font-size: 50px; text-align: center; margin-bottom: 10px;">👨‍🏫</div>
+                        <h2>Admin Panel</h2>
+                    </div>
+                    <div class="admin-menu">
+                        <div class="admin-menu-item active" onclick="APP.renderAdminDashboard()">
+                            <span class="admin-menu-icon">👥</span>
+                            Öğrenci Yönetimi
+                        </div>
+                        <div class="admin-menu-item" onclick="alert('Soru yönetimi yakında modül olarak eklenecek!')">
+                            <span class="admin-menu-icon">✏️</span>
+                            Soru CMS
+                        </div>
+                        <div class="admin-menu-item" onclick="document.getElementById('msg-modal').style.opacity=1; document.getElementById('msg-modal').style.pointerEvents='auto';">
+                            <span class="admin-menu-icon">📩</span>
+                            Mesaj Paneli
+                        </div>
+                        <div class="admin-menu-item" onclick="AUTH.logout()" style="margin-top:80px; color:#EE5D50;">
+                            <span class="admin-menu-icon">🚪</span>
+                            Güvenli Çıkış
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-content">
+                    <div class="admin-header">
+                        <h1>Kontrol Merkezi</h1>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-weight:700; color:#2B3674;">Ramazan Hoca</span>
+                        </div>
+                    </div>
+                    <div class="admin-body">
+                        <div class="admin-stats-grid">
+                            <div class="admin-stat-card">
+                                <div class="stat-icon" style="background:rgba(117,81,255,0.1); color:#7551FF;">👥</div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="admin-stat-total">0</div>
+                                    <div class="stat-label">Toplam Öğrenci</div>
+                                </div>
+                            </div>
+                            <div class="admin-stat-card">
+                                <div class="stat-icon" style="background:rgba(5,205,153,0.1); color:#05CD99;">🎮</div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="admin-stat-games">0</div>
+                                    <div class="stat-label">Oynanan Oyun</div>
+                                </div>
+                            </div>
+                            <div class="admin-stat-card">
+                                <div class="stat-icon" style="background:rgba(255,181,71,0.1); color:#FFB547;">👑</div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="admin-stat-top" style="font-size:18px;">-</div>
+                                    <div class="stat-label">En Yüksek Puan</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="admin-table-container">
+                            <h3 style="margin-top:0; color:#2B3674; margin-bottom: 20px;">Kayıtlı Öğrenciler</h3>
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Öğrenci Adı</th>
+                                        <th>Seviye</th>
+                                        <th>Puan</th>
+                                        <th>Altın</th>
+                                        <th>Durum</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-tbody">
+                                    <tr><td colspan="6" style="text-align:center;">Öğrenciler Yükleniyor...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="msg-modal" class="admin-modal-overlay" style="opacity:0; pointer-events:none;">
+                <div class="admin-modal">
+                    <h3>Yeni Mesaj / Görev Gönder</h3>
+                    <div class="admin-form-group">
+                        <label>Alıcı</label>
+                        <select id="msg-target" class="admin-select">
+                            <option value="all">Sınıftaki Herkes (Tüm Öğrenciler)</option>
+                        </select>
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Başlık</label>
+                        <input type="text" id="msg-title" class="admin-input" placeholder="Örn: Hafta Sonu Ödevi">
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Mesaj İçeriği</label>
+                        <textarea id="msg-body" class="admin-input admin-textarea" placeholder="Mesajınızı, ödevi veya iletmek istediğiniz linkleri buraya yazın..."></textarea>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:20px;">
+                        <button class="admin-btn btn-success" style="flex:1; padding:12px; font-size:15px;" onclick="ADMIN.sendMessage(); document.getElementById('msg-modal').style.opacity=0; document.getElementById('msg-modal').style.pointerEvents='none';">Gönder 🚀</button>
+                        <button class="admin-btn btn-danger" style="flex:1; padding:12px; font-size:15px;" onclick="document.getElementById('msg-modal').style.opacity=0; document.getElementById('msg-modal').style.pointerEvents='none';">İptal</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        if (typeof ADMIN !== 'undefined') {
+            ADMIN.fetchAllUsers().then(() => {
+                const select = document.getElementById('msg-target');
+                if (select && ADMIN.getUsersData) {
+                    ADMIN.getUsersData().forEach(u => {
+                        const opt = document.createElement('option');
+                        opt.value = u.username;
+                        opt.textContent = AUTH.getDisplayName(u.username) || u.username;
+                        select.appendChild(opt);
+                    });
+                }
+            });
+        }
+    }
+
     return {
         init, navigate, handleLogin, updatePreview, togglePassword, switchLoginTab,
         switchTab, searchTable, showElementBio, speak,
@@ -1796,7 +2009,7 @@ const APP = (() => {
         renderSidebar, renderBottomNav, renderMarket, renderPeriodicLab, showBigElementCard, showDailyChest,
         toggleTheme, toggleAudio, showSettingsModal, setTheme,
         setGroupCount, goToTournamentConfig, setTMode, setTDiff, setTTable, launchTournament,
-        showVIPLogin, handleVIPLogin
+        showVIPLogin, handleVIPLogin, handleTeacherLogin, renderAdminDashboard
     };
 })();
 
