@@ -32,7 +32,7 @@ module.exports = async function handler(req, res) {
     try {
         const db = await getPool();
 
-        // Auto-init users table with new columns if needed
+        // Auto-init users table just in case it's a completely new DB
         await db.query(`
             CREATE TABLE IF NOT EXISTS users (
                 username VARCHAR(100) PRIMARY KEY,
@@ -45,6 +45,20 @@ module.exports = async function handler(req, res) {
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )
         `);
+
+        // Upgrade existing table if columns are missing (e.g. migrating from v2 to v3)
+        try {
+            await db.query(`
+                ALTER TABLE users 
+                ADD COLUMN password VARCHAR(255) DEFAULT NULL,
+                ADD COLUMN display_name VARCHAR(200) DEFAULT NULL,
+                ADD COLUMN role ENUM('student','vip','admin') DEFAULT 'student',
+                ADD COLUMN group_name VARCHAR(100) DEFAULT NULL,
+                ADD COLUMN banned TINYINT(1) DEFAULT 0
+            `);
+        } catch (e) {
+            // Error code 1060 means Duplicate column name, which is perfectly fine.
+        }
 
         // Auto-seed admin user if not exists
         const [adminCheck] = await db.query('SELECT username FROM users WHERE role = "admin"');

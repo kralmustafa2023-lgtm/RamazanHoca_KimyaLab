@@ -29,6 +29,30 @@ module.exports = async function handler(req, res) {
     try {
         const db = await getPool();
 
+        // Ensure table and columns exist
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                username VARCHAR(100) PRIMARY KEY,
+                password VARCHAR(255) DEFAULT NULL,
+                display_name VARCHAR(200) DEFAULT NULL,
+                role ENUM('student','vip','admin') DEFAULT 'student',
+                group_name VARCHAR(100) DEFAULT NULL,
+                banned TINYINT(1) DEFAULT 0,
+                data_json LONGTEXT,
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `);
+        try {
+            await db.query(`
+                ALTER TABLE users 
+                ADD COLUMN password VARCHAR(255) DEFAULT NULL,
+                ADD COLUMN display_name VARCHAR(200) DEFAULT NULL,
+                ADD COLUMN role ENUM('student','vip','admin') DEFAULT 'student',
+                ADD COLUMN group_name VARCHAR(100) DEFAULT NULL,
+                ADD COLUMN banned TINYINT(1) DEFAULT 0
+            `);
+        } catch (e) {}
+
         // ===== USERS =====
         if (action === 'users' && req.method === 'GET') {
             const [rows] = await db.query('SELECT username, display_name, role, group_name, banned, data_json FROM users WHERE username NOT LIKE "\\_%%" ORDER BY username');

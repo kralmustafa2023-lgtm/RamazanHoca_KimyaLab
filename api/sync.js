@@ -34,6 +34,17 @@ async function getPool() {
                     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 )
             `);
+            
+            try {
+                await conn.query(`
+                    ALTER TABLE users 
+                    ADD COLUMN password VARCHAR(255) DEFAULT NULL,
+                    ADD COLUMN display_name VARCHAR(200) DEFAULT NULL,
+                    ADD COLUMN role ENUM('student','vip','admin') DEFAULT 'student',
+                    ADD COLUMN group_name VARCHAR(100) DEFAULT NULL,
+                    ADD COLUMN banned TINYINT(1) DEFAULT 0
+                `);
+            } catch (e) {}
             conn.release();
             console.log('Database initialized successfully');
         } catch (err) {
