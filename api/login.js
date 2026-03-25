@@ -99,13 +99,16 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ success: false, message: 'Hesabınız dondurulmuştur. Lütfen öğretmeninizle iletişime geçin.' });
         }
 
+        let parsedData = null;
+        try { if (user.data_json) parsedData = JSON.parse(user.data_json); } catch(e) {}
+
         return res.status(200).json({
             success: true,
             user: {
                 username: user.username,
                 displayName: user.display_name || user.username,
                 role: user.role,
-                data: user.data_json ? JSON.parse(user.data_json) : null
+                data: parsedData
             }
         });
 

@@ -39,7 +39,9 @@ module.exports = async function handler(req, res) {
         const [rows] = await db.query('SELECT data_value FROM app_data WHERE data_key = "tables"');
 
         if (rows.length > 0) {
-            return res.status(200).json({ success: true, tables: JSON.parse(rows[0].data_value) });
+            let pTables = null;
+            try { pTables = JSON.parse(rows[0].data_value); } catch(e){}
+            return res.status(200).json({ success: true, tables: pTables });
         } else {
             // Return empty — frontend will use its fallback
             return res.status(200).json({ success: true, tables: null });

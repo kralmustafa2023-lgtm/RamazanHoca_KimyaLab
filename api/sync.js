@@ -83,7 +83,9 @@ module.exports = async function handler(req, res) {
         if (req.method === 'GET') {
             const [rows] = await dbPool.query('SELECT data_json FROM users WHERE username = ?', [username]);
             if (rows.length > 0) {
-                return res.status(200).json({ success: true, data: JSON.parse(rows[0].data_json) });
+                let pData = null;
+                try { if(rows[0].data_json) pData = JSON.parse(rows[0].data_json); } catch(e){}
+                return res.status(200).json({ success: true, data: pData });
             } else {
                 return res.status(200).json({ success: true, data: null });
             }

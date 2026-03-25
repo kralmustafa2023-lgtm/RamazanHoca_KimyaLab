@@ -58,14 +58,18 @@ module.exports = async function handler(req, res) {
         // ===== USERS =====
         if (action === 'users' && req.method === 'GET') {
             const [rows] = await db.query('SELECT username, display_name, role, group_name, banned, data_json FROM users WHERE username NOT LIKE "\\_%%" ORDER BY username');
-            const users = rows.map(r => ({
-                username: r.username,
-                displayName: r.display_name,
-                role: r.role,
-                group: r.group_name,
-                banned: !!r.banned,
-                data: r.data_json ? JSON.parse(r.data_json) : {}
-            }));
+            const users = rows.map(r => {
+                let pData = {};
+                try { pData = r.data_json ? JSON.parse(r.data_json) : {}; } catch(e) { pData = {}; }
+                return {
+                    username: r.username,
+                    displayName: r.display_name,
+                    role: r.role,
+                    group: r.group_name,
+                    banned: !!r.banned,
+                    data: pData
+                };
+            });
             return res.status(200).json({ success: true, data: users });
         }
 
@@ -135,7 +139,8 @@ module.exports = async function handler(req, res) {
             }
             const [rows] = await db.query(`SELECT username, data_json FROM users ${whereClause}`, params);
             for (const row of rows) {
-                let data = row.data_json ? JSON.parse(row.data_json) : {};
+                let data = {};
+                try { if (row.data_json) data = JSON.parse(row.data_json); } catch(e){}
                 if (!data.inbox) data.inbox = [];
                 data.inbox.push(message);
                 await db.query('UPDATE users SET data_json = ? WHERE username = ?', [JSON.stringify(data), row.username]);
