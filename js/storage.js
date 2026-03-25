@@ -68,12 +68,40 @@ const Storage = (() => {
     function getData(username) {
         const key = getKey(username);
         const raw = localStorage.getItem(key);
-        if (!raw) {
-            const data = getDefaultData();
-            data.username = username;
-            return data;
+        const def = getDefaultData();
+        def.username = username;
+
+        if (!raw) return def;
+
+        try {
+            const parsed = JSON.parse(raw);
+            
+            // Deep merge stats safely
+            if (!parsed.stats) parsed.stats = def.stats;
+            else {
+                for (let k in def.stats) {
+                    if (!parsed.stats[k]) parsed.stats[k] = def.stats[k];
+                }
+            }
+            
+            // Deep merge progress safely
+            if (!parsed.progress) parsed.progress = def.progress;
+            else {
+                for (let k in def.progress) {
+                    if (parsed.progress[k] === undefined) parsed.progress[k] = def.progress[k];
+                }
+            }
+
+            // Also ensure default structures for other nested objects if they were added later
+            if (!parsed.ownedAvatars) parsed.ownedAvatars = def.ownedAvatars;
+            if (!parsed.ownedThemes) parsed.ownedThemes = def.ownedThemes;
+            if (!parsed.weeklyStats) parsed.weeklyStats = def.weeklyStats;
+            
+            return Object.assign({}, def, parsed);
+        } catch (e) {
+            console.error("Storage parse error, falling back to defaults", e);
+            return def;
         }
-        return JSON.parse(raw);
     }
 
     function saveData(username, data) {
