@@ -45,7 +45,8 @@ const Storage = (() => {
             ownedAvatars: [],
             activeAvatar: null,
             ownedThemes: ['light', 'dark'],
-            activeTheme: 'light'
+            activeTheme: 'light',
+            aiSessions: []
         };
     }
 

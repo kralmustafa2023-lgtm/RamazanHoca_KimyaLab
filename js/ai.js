@@ -157,14 +157,18 @@ const AI = (() => {
 
     function saveHistory() {
         if (!currentSessionId) currentSessionId = Date.now();
+        const username = sessionStorage.getItem('currentUser');
+        if (!username) return;
+
+        const data = Storage.getData(username);
+        if (!data.aiSessions) data.aiSessions = [];
         
-        let session = allSessions.find(s => s.id === currentSessionId);
+        let session = data.aiSessions.find(s => s.id === currentSessionId);
         if (!session) {
             session = { id: currentSessionId, title: 'Yeni Sohbet' };
-            allSessions.unshift(session);
+            data.aiSessions.unshift(session);
         }
         
-        // Pick title from first user message if exists
         const firstUserMsg = chatHistory.find(m => m.role === 'user');
         if (firstUserMsg) {
             let t = firstUserMsg.parts[0].text;
@@ -173,30 +177,38 @@ const AI = (() => {
 
         session.messages = chatHistory;
         session.date = new Date().toLocaleDateString('tr-TR');
-        localStorage.setItem(getStorageKey(), JSON.stringify(allSessions));
+        Storage.saveData(username, data);
     }
 
     function loadHistory() {
         try {
-            const key = getStorageKey();
-            let saved = localStorage.getItem(key);
+            const username = sessionStorage.getItem('currentUser');
+            if (!username) { 
+                startNewChat();
+                return;
+            }
+
+            const data = Storage.getData(username);
             
-            // Legacy göçü
-            if (!saved) {
-                const legacy = localStorage.getItem('nova_sessions_v2');
-                if (legacy) {
-                    saved = legacy;
-                    localStorage.setItem(key, legacy);
+            // Migration from standalone local storage (v3) or others
+            if (!data.aiSessions || data.aiSessions.length === 0) {
+                const legacyKey = `nova_sessions_v3_${username}`;
+                const legacyData = localStorage.getItem(legacyKey);
+                if (legacyData) {
+                    try {
+                        data.aiSessions = JSON.parse(legacyData);
+                        Storage.saveData(username, data);
+                        // Optional: localStorage.removeItem(legacyKey); 
+                    } catch(e) {}
                 }
             }
 
-            if (saved) {
-                allSessions = JSON.parse(saved);
-                if (allSessions.length > 0) {
-                    loadSession(allSessions[0].id);
-                    return;
-                }
+            if (data.aiSessions && data.aiSessions.length > 0) {
+                allSessions = data.aiSessions;
+                loadSession(allSessions[0].id);
+                return;
             }
+            
             startNewChat();
         } catch(e) { console.error('History load error', e); startNewChat(); }
     }
@@ -241,8 +253,14 @@ const AI = (() => {
     }
 
     function deleteSession(id) {
-        allSessions = allSessions.filter(s => s.id !== id);
-        localStorage.setItem(getStorageKey(), JSON.stringify(allSessions));
+        const username = sessionStorage.getItem('currentUser');
+        if (!username) return;
+
+        const data = Storage.getData(username);
+        data.aiSessions = (data.aiSessions || []).filter(s => s.id !== id);
+        allSessions = data.aiSessions;
+        Storage.saveData(username, data);
+
         if (currentSessionId === id && isPanelOpen) {
             startNewChat();
         }
