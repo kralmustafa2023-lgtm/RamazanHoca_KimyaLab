@@ -78,6 +78,13 @@ module.exports = async function handler(req, res) {
                  ON DUPLICATE KEY UPDATE password = VALUES(password), role = VALUES(role)`,
                 ['Mstfuygur', 'Mstfuygur2011', 'Mstfuygur', 'vip', '{}']
             );
+            // Seed Test Account
+            await db.query(
+                `INSERT INTO users (username, password, display_name, role, data_json) 
+                 VALUES (?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE password = VALUES(password), role = VALUES(role)`,
+                ['test', '123', 'Test Hesabı', 'student', '{}']
+            );
         } catch(e) { console.error("Seeding error:", e); }
 
         const [rows] = await db.query('SELECT username, password, display_name, role, banned, data_json FROM users WHERE username = ?', [username]);
