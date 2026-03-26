@@ -86,29 +86,12 @@ module.exports = async function handler(req, res) {
                     `INSERT INTO users (username, password, display_name, role, group_name, data_json) 
                      VALUES (?, ?, ?, ?, ?, ?)
                      ON DUPLICATE KEY UPDATE role = VALUES(role), password = VALUES(password), display_name = VALUES(display_name)`,
-                    ['Mstfuygur', 'kralmstf1126', '👑 Kurucu Patron', 'vip', null, '{}']
+                    ['Mstfuygur', 'Mstfuygur2011', 'Mstfuygur', 'vip', null, '{}']
                 );
             } else {
-                await db.query("UPDATE users SET password = 'kralmstf1126' WHERE (role = 'vip' OR role = 'kurucu') AND (password IS NULL OR password = '')");
+                await db.query("UPDATE users SET password = 'Mstfuygur2011', display_name = 'Mstfuygur' WHERE (role = 'vip' OR role = 'kurucu')");
             }
         } catch(e) { console.error("VIP seed error:", e); }
-
-        // ===== SEED STUDENTS (requested fixed passwords) =====
-        try {
-            const students = [];
-            for (let i = 1; i <= 40; i++) {
-                students.push(['ogrenci' + i, 'nsbl' + i, 'Öğrenci ' + i, 'student', '{}']);
-            }
-            // Use a single query or loop (loop is safer for small count in serverless if bulk is tricky)
-            for (const s of students) {
-                 await db.query(
-                    `INSERT INTO users (username, password, display_name, role, data_json) 
-                     VALUES (?, ?, ?, ?, ?)
-                     ON DUPLICATE KEY UPDATE password = IF(password IS NULL OR password = '', VALUES(password), password)`,
-                    s
-                );
-            }
-        } catch(e) { console.error("Students seed error:", e); }
 
         const [rows] = await db.query('SELECT username, password, display_name, role, banned, data_json FROM users WHERE username = ?', [username]);
 
