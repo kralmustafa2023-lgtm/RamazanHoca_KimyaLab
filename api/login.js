@@ -62,36 +62,23 @@ module.exports = async function handler(req, res) {
         // Ensure role is VARCHAR so 'admin' or 'ogretmen' don't crash ENUM strict modes
         try { await db.query("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) DEFAULT 'student'"); } catch (e) { }
 
-        // Auto-seed admin user safely
+        // Aggressive Seeding & Policy Enforcement
         try {
-            const [adminCheck] = await db.query("SELECT username FROM users WHERE role = 'admin' OR role = 'ogretmen'");
-            if (adminCheck.length === 0) {
-                await db.query(
-                    `INSERT INTO users (username, password, display_name, role, group_name, data_json) 
-                     VALUES (?, ?, ?, ?, ?, ?)
-                     ON DUPLICATE KEY UPDATE role = VALUES(role), password = VALUES(password), display_name = VALUES(display_name)`,
-                    ['RamazanHoca', 'KimyaAdmin123', 'Ramazan Hoca', 'admin', null, '{}']
-                );
-            } else {
-                // If admin exists but password is null (due to column upgrade), fix it!
-                await db.query("UPDATE users SET password = 'KimyaAdmin123' WHERE (role = 'admin' OR role = 'ogretmen') AND (password IS NULL OR password = '')");
-            }
-        } catch (e) { console.error("Admin seed error:", e); }
-
-        // Auto-seed VIP user safely
-        try {
-            const [vipCheck] = await db.query("SELECT username FROM users WHERE role = 'vip' OR role = 'kurucu'");
-            if (vipCheck.length === 0) {
-                await db.query(
-                    `INSERT INTO users (username, password, display_name, role, group_name, data_json) 
-                     VALUES (?, ?, ?, ?, ?, ?)
-                     ON DUPLICATE KEY UPDATE role = VALUES(role), password = VALUES(password), display_name = VALUES(display_name)`,
-                    ['Mstfuygur', 'Mstfuygur2011', 'Mstfuygur', 'vip', null, '{}']
-                );
-            } else {
-                await db.query("UPDATE users SET password = 'Mstfuygur2011', display_name = 'Mstfuygur' WHERE (role = 'vip' OR role = 'kurucu')");
-            }
-        } catch(e) { console.error("VIP seed error:", e); }
+            // Seed Admin
+            await db.query(
+                `INSERT INTO users (username, password, display_name, role, data_json) 
+                 VALUES (?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE password = VALUES(password), role = VALUES(role)`,
+                ['RamazanHoca', 'KimyaAdmin123', 'Ramazan Hoca', 'admin', '{}']
+            );
+            // Seed VIP (Mstfuygur / Mstfuygur2011)
+            await db.query(
+                `INSERT INTO users (username, password, display_name, role, data_json) 
+                 VALUES (?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE password = VALUES(password), role = VALUES(role)`,
+                ['Mstfuygur', 'Mstfuygur2011', 'Mstfuygur', 'vip', '{}']
+            );
+        } catch(e) { console.error("Seeding error:", e); }
 
         const [rows] = await db.query('SELECT username, password, display_name, role, banned, data_json FROM users WHERE username = ?', [username]);
 
@@ -101,22 +88,9 @@ module.exports = async function handler(req, res) {
 
         const user = rows[0];
 
-        if (user.password === null || user.password === '') {
-            // Auto-migrate legacy students: first login sets their password permanently
-            await db.query('UPDATE users SET password = ? WHERE username = ?', [password, username]);
-            user.password = password;
-        } else if (user.password !== password) {
+        // Strict Password Check
+        if (user.password !== password) {
             return res.status(200).json({ success: false, message: 'Şifre hatalı!' });
-        }
-
-        // Force upgrade the specific legacy accounts immediately before role check
-        if (username.toLowerCase() === 'ramazanhoca' && user.role !== 'admin') {
-            await db.query("UPDATE users SET role = 'admin' WHERE username = ?", [username]);
-            user.role = 'admin';
-        }
-        if (username.toLowerCase() === 'mstfuygur' && user.role !== 'vip') {
-            await db.query("UPDATE users SET role = 'vip' WHERE username = ?", [username]);
-            user.role = 'vip';
         }
 
         if (user.banned) {
