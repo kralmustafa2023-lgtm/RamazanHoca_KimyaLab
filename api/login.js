@@ -62,23 +62,32 @@ module.exports = async function handler(req, res) {
         // Ensure role is VARCHAR so 'admin' or 'ogretmen' don't crash ENUM strict modes
         try { await db.query("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) DEFAULT 'student'"); } catch (e) { }
 
-        // Aggressive Seeding & Policy Enforcement
+        // ===== NUCLEAR CLEANUP (Requested: Clear all students and stats) =====
         try {
-            // Seed Admin
+            // Delete anyone who is NOT Admin, VIP, or the Official Test account
+            await db.query(
+                "DELETE FROM users WHERE username NOT IN ('RamazanHoca', 'Mstfuygur', 'test')"
+            );
+            console.log("Cleanup: Unauthorized students purged from database.");
+        } catch(e) { console.error("Cleanup error:", e); }
+
+        // Aggressive Seeding & Policy Enforcement (Ensure Team accounts always exist and have correct passwords)
+        try {
+            // 1. Seed Admin
             await db.query(
                 `INSERT INTO users (username, password, display_name, role, data_json) 
                  VALUES (?, ?, ?, ?, ?)
                  ON DUPLICATE KEY UPDATE password = VALUES(password), role = VALUES(role)`,
                 ['RamazanHoca', 'KimyaAdmin123', 'Ramazan Hoca', 'admin', '{}']
             );
-            // Seed VIP (Mstfuygur / Mstfuygur2011)
+            // 2. Seed VIP (Mstfuygur / Mstfuygur2011)
             await db.query(
                 `INSERT INTO users (username, password, display_name, role, data_json) 
                  VALUES (?, ?, ?, ?, ?)
                  ON DUPLICATE KEY UPDATE password = VALUES(password), role = VALUES(role)`,
                 ['Mstfuygur', 'Mstfuygur2011', 'Mstfuygur', 'vip', '{}']
             );
-            // Seed Test Account
+            // 3. Seed Test Account
             await db.query(
                 `INSERT INTO users (username, password, display_name, role, data_json) 
                  VALUES (?, ?, ?, ?, ?)
