@@ -1926,8 +1926,13 @@ const APP = (() => {
 
     function renderAdminDashboard() {
         const container = document.getElementById('main-content');
+        const sidebar = document.getElementById('sidebar');
         const bottomNav = document.getElementById('bottom-nav');
+        
+        // Hide Student UI Elements
+        if (sidebar) sidebar.style.display = 'none';
         if (bottomNav) bottomNav.style.display = 'none';
+        document.body.classList.remove('has-sidebar');
         
         container.innerHTML = `
             <div class="admin-layout" style="flex-direction:column;">

@@ -463,10 +463,10 @@ Grup: ${u.group || 'Yok'}`);
     // ===== 5. APP PREVIEW =====
     function renderPreview(container) {
         container.innerHTML = `
-            <h3 style="margin:0 0 15px 0;color:#2B3674;">👁️ Uygulama Önizleme</h3>
-            <p style="color:#A3AED0;margin-bottom:15px;">Uygulamanın öğrenci tarafını iframe içinde canlı olarak inceleyebilirsiniz.</p>
-            <div style="background:white;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1);">
-                <iframe src="/" style="width:100%;height:70vh;border:none;border-radius:20px;"></iframe>
+            <h3 style="margin:0 0 15px 0;color:#2B3674;">👁️ Uygulama Önizleme (Öğrenci Gözüyle)</h3>
+            <p style="color:#A3AED0;margin-bottom:15px;">Öğrencilerin gördüğü giriş ekranını ve oyun arayüzünü buradan test edebilirsiniz.</p>
+            <div style="background:white;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1); border: 8px solid #F4F7FE;">
+                <iframe src="/?session_clear=true" style="width:100%;height:70vh;border:none;border-radius:12px;"></iframe>
             </div>
         `;
     }
