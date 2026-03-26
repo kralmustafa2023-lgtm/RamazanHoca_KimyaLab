@@ -24,6 +24,10 @@ const APP = (() => {
             AUTH.initShield();
         }
 
+        // Activate "Suni Teneffüs" (Server Keep-Alive)
+        // This pings the server periodically to prevent Aiven Sleep Mode
+        startKeepAlive();
+
         // Global error logging for debugging "invisible" errors
         window.onerror = function(msg, url, line) {
             console.error(`Global Error: ${msg} at ${url}:${line}`);
@@ -56,6 +60,23 @@ const APP = (() => {
         } else {
             navigate('login');
         }
+    }
+
+    // ===== SUNİ TENEFFÜS (Keep-Alive) =====
+    function startKeepAlive() {
+        const ping = async () => {
+            try {
+                // Ping basic endpoints to keep the DB connection pooling active
+                await fetch('/api/questions'); 
+                console.log('💓 Sunucuya suni teneffüs yapıldı (Keep-alive)');
+            } catch (e) {
+                // Silently fail if server is waking up
+            }
+        };
+        // Ping once immediately
+        ping();
+        // Ping every 5 minutes (well within Aiven's timeout)
+        setInterval(ping, 5 * 60 * 1000);
     }
 
     function navigate(screen, data) {
