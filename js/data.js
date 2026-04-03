@@ -621,14 +621,41 @@ const RESULT_MESSAGES = {
 // ============================================
 
 const BADGES = [
-    { id: "first_game", name: "İlk Oyun", icon: "🥇", description: "İlk oyununu oyna", requirement: "İlk oyununu tamamla", check: (stats) => stats.gamesPlayed >= 1 },
+    // ===== BAŞLANGIÇ =====
+    { id: "first_game", name: "İlk Adım", icon: "🥇", description: "İlk oyununu oyna", requirement: "İlk oyununu tamamla", check: (stats) => stats.gamesPlayed >= 1 },
+    { id: "five_games", name: "Isınma Turu", icon: "🎮", description: "5 oyun oyna", requirement: "5 oyunu tamamla", check: (stats) => stats.gamesPlayed >= 5 },
+    { id: "ten_games", name: "Oyun Canavarı", icon: "👾", description: "10 oyun oyna", requirement: "10 oyunu tamamla", check: (stats) => stats.gamesPlayed >= 10 },
+    { id: "twenty_five_games", name: "Bağımlı", icon: "🕹️", description: "25 oyun oyna", requirement: "25 oyunu tamamla", check: (stats) => stats.gamesPlayed >= 25 },
+
+    // ===== KOMBO =====
     { id: "combo_master", name: "Kombo Ustası", icon: "🔥", description: "5 kombo yap", requirement: "5 ardışık doğru cevap ver", check: (stats) => stats.maxCombo >= 5 },
     { id: "super_combo", name: "Süper Kombo", icon: "⚡", description: "10 kombo yap", requirement: "10 ardışık doğru cevap ver", check: (stats) => stats.maxCombo >= 10 },
-    { id: "legend", name: "Efsane", icon: "👑", description: "Efsanevi kombo yap", requirement: "15 ardışık doğru cevap ver", check: (stats) => stats.maxCombo >= 15 },
-    { id: "perfect", name: "Mükemmel", icon: "💯", description: "%100 puan al", requirement: "Bir oyunda tam puan al", check: (stats) => stats.hasPerfectScore },
+    { id: "legend", name: "Efsane Kombo", icon: "👑", description: "15 kombo yap", requirement: "15 ardışık doğru cevap ver", check: (stats) => stats.maxCombo >= 15 },
+
+    // ===== PUAN =====
+    { id: "hundred_points", name: "Çaylak Mezunu", icon: "📖", description: "100 puan topla", requirement: "100 puana ulaş", check: (stats) => stats.totalPoints >= 100 },
+    { id: "three_hundred", name: "Kimyager", icon: "🔬", description: "300 puan topla", requirement: "300 puana ulaş", check: (stats) => stats.totalPoints >= 300 },
+    { id: "professor", name: "Profesör", icon: "👨‍🔬", description: "Profesör seviyesine ulaş", requirement: "601+ puan topla", check: (stats) => stats.totalPoints >= 601 },
+    { id: "thousand_points", name: "Efsane Kimyacı", icon: "🧙‍♂️", description: "1000 puan topla", requirement: "1000 puana ulaş", check: (stats) => stats.totalPoints >= 1000 },
+
+    // ===== MÜKEMMEL =====
+    { id: "perfect", name: "Mükemmeliyetçi", icon: "💯", description: "%100 puan al", requirement: "Bir oyunda tam puan al", check: (stats) => stats.hasPerfectScore },
+
+    // ===== TABLO =====
+    { id: "one_table", name: "Tablo Avcısı", icon: "📗", description: "1 tabloyu bitir", requirement: "Herhangi bir tabloyu %100'e ulaştır", check: (stats) => stats.tablesCompleted >= 1 },
     { id: "table_conqueror", name: "Tablo Fatihi", icon: "🏆", description: "Tüm tabloları tamamla", requirement: "4 tabloyu da bitir", check: (stats) => stats.tablesCompleted >= 4 },
+
+    // ===== SERİ =====
     { id: "consistent", name: "Kararlı", icon: "📅", description: "3 gün üst üste oyna", requirement: "3 günlük seri yap", check: (stats) => stats.streak >= 3 },
-    { id: "professor", name: "Profesör", icon: "👨‍🔬", description: "Profesör seviyesine ulaş", requirement: "601+ puan topla", check: (stats) => stats.totalPoints >= 601 }
+    { id: "weekly_warrior", name: "Haftalık Savaşçı", icon: "🗓️", description: "7 gün üst üste oyna", requirement: "7 günlük seri yap", check: (stats) => stats.streak >= 7 },
+    { id: "monthly_legend", name: "Ay Efsanesi", icon: "🌙", description: "30 gün üst üste oyna", requirement: "30 günlük seri yap", check: (stats) => stats.streak >= 30 },
+
+    // ===== ALTIN =====
+    { id: "gold_collector", name: "Altın Avcısı", icon: "🪙", description: "500 altın topla", requirement: "500 altın biriktir", check: (stats) => (stats.coins || 0) >= 500 },
+    { id: "gold_king", name: "Altın Kralı", icon: "💰", description: "5000 altın topla", requirement: "5000 altın biriktir", check: (stats) => (stats.coins || 0) >= 5000 },
+
+    // ===== ÖZEL =====
+    { id: "night_owl", name: "Gece Kuşu", icon: "🦉", description: "Gece 23:00'ten sonra oyna", requirement: "Gece yarısında çalış", check: (stats) => new Date().getHours() >= 23 && stats.gamesPlayed >= 1 }
 ];
 
 // ============================================
@@ -673,25 +700,23 @@ let QUESTION_BANKS = {
 // ============================================
 async function loadTablesFromDB() {
     try {
-        const req = await fetch('/api/questions');
-        if (req.ok) {
-            const res = await req.json();
-            if (res.success && res.tables) {
-                // Merge DB tables over defaults (preserves structure for missing keys)
-                Object.keys(res.tables).forEach(key => {
-                    TABLES[key] = res.tables[key];
-                });
-                // Regenerate question banks with new data
-                QUESTION_BANKS = {
-                    katyonlar: generateKatyonQuestions(),
-                    anyonlar: generateAnyonQuestions(),
-                    metaller: generateMetallerQuestions(),
-                    ilk20: generateIlk20Questions()
-                };
-                console.log('✅ Soru verileri MySQL veritabanından yüklendi!');
-            }
+        const val = await DB.get('appData/tables');
+        if (val) {
+            const dbTables = val;
+            // Merge DB tables over defaults (preserves structure for missing keys)
+            Object.keys(dbTables).forEach(key => {
+                TABLES[key] = dbTables[key];
+            });
+            // Regenerate question banks with new data
+            QUESTION_BANKS = {
+                katyonlar: generateKatyonQuestions(),
+                anyonlar: generateAnyonQuestions(),
+                metaller: generateMetallerQuestions(),
+                ilk20: generateIlk20Questions()
+            };
+            console.log("✅ Soru verileri Firebase'den yüklendi!");
         }
     } catch (e) {
-        console.warn('⚠️ DB soru verisi yüklenemedi, yerel (fallback) veriler kullanılıyor.');
+        console.warn("⚠️ Firebase soru verisi yüklenemedi, yerel (fallback) veriler kullanılıyor.");
     }
 }

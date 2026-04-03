@@ -62,21 +62,21 @@ const APP = (() => {
         }
     }
 
-    // ===== SUNİ TENEFFÜS (Keep-Alive) =====
+    // ===== FIREBASE KEEP-ALIVE CHECK =====
     function startKeepAlive() {
         const ping = async () => {
             try {
-                // Ping basic endpoints to keep the DB connection pooling active
-                await fetch('/api/questions'); 
-                console.log('💓 Sunucuya suni teneffüs yapıldı (Keep-alive)');
+                // Simple DB read/write to verify connectivity
+                if (typeof DB !== 'undefined') await DB.update('appData', { lastPing: new Date().toISOString() });
+                console.log('💓 Firebase bağlantısı aktif (Keep-alive)');
             } catch (e) {
-                // Silently fail if server is waking up
+                // Silently fail
             }
         };
         // Ping once immediately
         ping();
-        // Ping every 5 minutes (well within Aiven's timeout)
-        setInterval(ping, 5 * 60 * 1000);
+        // Ping every 10 minutes
+        setInterval(ping, 10 * 60 * 1000);
     }
 
     function navigate(screen, data) {
@@ -113,6 +113,7 @@ const APP = (() => {
                 case 'badges': renderBadges(); break;
                 case 'market': renderMarket(); break;
                 case 'periodicLab': renderPeriodicLab(); break;
+                case 'notifications': renderNotifications(); break;
                 case 'tournamentSetup': renderTournamentSetup(); break;
                 case 'tournamentConfig': renderTournamentConfig(); break;
                 case 'adminDashboard': renderAdminDashboard(); break;
@@ -330,6 +331,11 @@ const APP = (() => {
                                        class="input-field" autocomplete="off">
                             </div>
                             <div class="input-group">
+                                <span class="input-icon">📧</span>
+                                <input type="email" id="login-email" placeholder="E-posta adresiniz" 
+                                       class="input-field" autocomplete="off">
+                            </div>
+                            <div class="input-group">
                                 <span class="input-icon">🔒</span>
                                 <input type="password" id="login-password" placeholder="Şifre" 
                                        class="input-field" autocomplete="off">
@@ -339,6 +345,10 @@ const APP = (() => {
                             <button type="submit" class="btn btn-primary btn-lg btn-login">
                                 Giriş Yap 🚀
                             </button>
+                            <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:12px;">
+                                <a href="javascript:void(0)" onclick="APP.handleRegister()" style="color:var(--teal); font-weight:700; cursor:pointer; text-decoration:none;">📝 Kayıt Ol</a>
+                                <a href="javascript:void(0)" onclick="APP.showForgotPassword()" style="color:var(--orange); font-weight:700; cursor:pointer; text-decoration:none;">🔑 Şifremi Unuttum</a>
+                            </div>
                         </form>
 
                         <!-- Teacher Form -->
@@ -405,7 +415,7 @@ const APP = (() => {
                                     <span>📊</span> 600+ Soru
                                 </div>
                                 <div class="preview-stat">
-                                    <span>🏆</span> 8 Rozet
+                                    <span>🏆</span> 20 Rozet
                                 </div>
                             </div>
                         </div>
@@ -617,6 +627,132 @@ const APP = (() => {
         }
     }
 
+    // ============ REGISTER (Kayıt Ol) ============
+    async function handleRegister() {
+        const displayName = document.getElementById('login-displayname').value.trim();
+        const username = document.getElementById('login-username').value.trim();
+        const email = document.getElementById('login-email') ? document.getElementById('login-email').value.trim() : '';
+        const password = document.getElementById('login-password').value.trim();
+        const errorEl = document.getElementById('login-error');
+
+        if (!displayName || !username || !password || !email) {
+            errorEl.textContent = 'Kayıt için tüm alanları doldurun! (Ad, Kullanıcı Adı, E-posta, Şifre)';
+            Animations.shake(document.querySelector('.login-form'));
+            return;
+        }
+
+        if (password.length < 4) {
+            errorEl.textContent = 'Şifre en az 4 karakter olmalıdır!';
+            Animations.shake(document.querySelector('.login-form'));
+            return;
+        }
+
+        if (!email.includes('@')) {
+            errorEl.textContent = 'Geçerli bir e-posta adresi girin!';
+            Animations.shake(document.querySelector('.login-form'));
+            return;
+        }
+
+        errorEl.textContent = '⏳ Kayıt yapılıyor...';
+        const result = await AUTH.register(username, password, email, displayName);
+
+        if (result.success) {
+            errorEl.style.color = 'var(--teal)';
+            errorEl.textContent = '✅ ' + result.message;
+            if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
+        } else {
+            errorEl.style.color = 'var(--red)';
+            errorEl.textContent = '❌ ' + result.message;
+            Animations.shake(document.querySelector('.login-form'));
+        }
+    }
+
+    // ============ FORGOT PASSWORD (Şifremi Unuttum) ============
+    function showForgotPassword() {
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+
+        const overlay = document.createElement('div');
+        overlay.className = 'forgot-pw-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:10000;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;';
+
+        overlay.innerHTML = `
+            <div style="background:var(--bg-card);border-radius:24px;padding:30px;width:90%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.5);transform:translateY(20px) scale(0.95);transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div style="font-size:50px; margin-bottom:10px;">🔑</div>
+                    <h3 style="color:var(--text-primary); font-size:22px; font-weight:800; margin-bottom:5px;">Şifremi Unuttum</h3>
+                    <p style="color:var(--text-muted); font-size:13px;">Kullanıcı adınızı ve e-posta adresinizi girerek şifrenizi sıfırlayabilirsiniz.</p>
+                </div>
+                <div class="input-group" style="margin-bottom:12px;">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="forgot-username" placeholder="Kullanıcı Adınız" class="input-field" autocomplete="off">
+                </div>
+                <div class="input-group" style="margin-bottom:12px;">
+                    <span class="input-icon">📧</span>
+                    <input type="email" id="forgot-email" placeholder="Kayıtlı E-posta Adresiniz" class="input-field" autocomplete="off">
+                </div>
+                <div class="input-group" style="margin-bottom:12px;">
+                    <span class="input-icon">🔐</span>
+                    <input type="password" id="forgot-newpassword" placeholder="Yeni Şifreniz (en az 4 karakter)" class="input-field" autocomplete="off">
+                </div>
+                <div id="forgot-error" style="font-size:13px; font-weight:700; text-align:center; min-height:20px; margin-bottom:12px;"></div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn" style="flex:1; padding:14px; border-radius:12px; font-weight:800; background:var(--teal); color:white; border:none; box-shadow:0 4px 15px rgba(0,191,165,0.4);" onclick="APP.handleForgotPassword()">
+                        Şifreyi Sıfırla ✅
+                    </button>
+                    <button class="btn" style="flex:1; padding:14px; border-radius:12px; font-weight:700; background:var(--bg-card); color:var(--text-muted); border:2px solid var(--text-muted);" onclick="this.closest('.forgot-pw-overlay').remove()">
+                        İptal
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            overlay.children[0].style.transform = 'translateY(0) scale(1)';
+        }, 10);
+
+        setTimeout(() => document.getElementById('forgot-username').focus(), 300);
+    }
+
+    async function handleForgotPassword() {
+        const username = document.getElementById('forgot-username').value.trim();
+        const email = document.getElementById('forgot-email').value.trim();
+        const newPassword = document.getElementById('forgot-newpassword').value.trim();
+        const errorEl = document.getElementById('forgot-error');
+
+        if (!username || !email || !newPassword) {
+            errorEl.style.color = 'var(--red)';
+            errorEl.textContent = 'Tüm alanları doldurun!';
+            return;
+        }
+
+        if (newPassword.length < 4) {
+            errorEl.style.color = 'var(--red)';
+            errorEl.textContent = 'Yeni şifre en az 4 karakter olmalı!';
+            return;
+        }
+
+        errorEl.style.color = 'var(--orange)';
+        errorEl.textContent = '⏳ Doğrulanıyor...';
+
+        const result = await AUTH.resetPassword(username, email, newPassword);
+
+        if (result.success) {
+            errorEl.style.color = 'var(--teal)';
+            errorEl.textContent = '✅ ' + result.message;
+            if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
+            setTimeout(() => {
+                const overlay = document.querySelector('.forgot-pw-overlay');
+                if (overlay) overlay.remove();
+            }, 2500);
+        } else {
+            errorEl.style.color = 'var(--red)';
+            errorEl.textContent = '❌ ' + result.message;
+            if (typeof Animations !== 'undefined') Animations.shake(document.getElementById('forgot-username').parentElement);
+        }
+    }
+
     // ============ SIDEBAR ============
     function renderSidebar() {
         const sidebar = document.getElementById('sidebar');
@@ -630,6 +766,9 @@ const APP = (() => {
         const sidebarClass = vip ? 'sidebar-content vip-sidebar' : 'sidebar-content';
         const userBadge = vip ? '<span style="background:linear-gradient(135deg,#FFD700,#FF8C00);color:#000;font-size:9px;font-weight:900;padding:2px 6px;border-radius:6px;margin-left:4px;animation:vipPulse 2s infinite;">👑 VIP</span>' : '';
         const avatarBorder = vip ? 'border: 3px solid gold; box-shadow: 0 0 20px rgba(255,215,0,0.5);' : 'border: 2.5px solid var(--white); box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+
+        // Check unread notifications count
+        const unreadCount = getUnreadNotificationCount(data);
 
         sidebar.innerHTML = `
             <div class="${sidebarClass}">
@@ -663,14 +802,15 @@ const APP = (() => {
                         <span class="nav-text" style="color:var(--orange); font-weight:700;">Oyun Modları</span>
                     </a>
                     
-                    <a class="nav-item ${currentScreen === 'tables' ? 'active' : ''}" style="border: 2px solid #2196F3; background: rgba(33, 150, 243, 0.1); box-shadow: 0 0 12px rgba(33, 150, 243, 0.3); border-radius: 12px; margin-bottom: 8px;" onclick="APP.navigate('tables')">
-                        <span class="nav-icon">📖</span>
-                        <span class="nav-text" style="color:#2196F3; font-weight:700;">Tablolar</span>
-                    </a>
-                    
                     <a class="nav-item ${currentScreen === 'periodicLab' ? 'active' : ''}" style="border: 2px solid var(--purple); background: rgba(124, 77, 255, 0.1); box-shadow: 0 0 12px rgba(124, 77, 255, 0.3); border-radius: 12px; margin-bottom: 8px;" onclick="APP.navigate('periodicLab')">
                         <span class="nav-icon">🔬</span>
                         <span class="nav-text" style="color:var(--purple); font-weight:700;">P. Tablo Lab.</span>
+                    </a>
+
+                    <a class="nav-item ${currentScreen === 'notifications' ? 'active' : ''}" style="border: 2px solid #FF9800; background: rgba(255, 152, 0, 0.1); box-shadow: 0 0 12px rgba(255, 152, 0, 0.3); border-radius: 12px; margin-bottom: 8px; position:relative;" onclick="APP.navigate('notifications')">
+                        <span class="nav-icon">🔔</span>
+                        <span class="nav-text" style="color:#FF9800; font-weight:700;">Bildirimler</span>
+                        ${unreadCount > 0 ? `<span style="position:absolute;top:6px;right:10px;background:#F44336;color:white;font-size:10px;font-weight:900;min-width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;animation:pulse 2s infinite;">${unreadCount}</span>` : ''}
                     </a>
                     
                     <div class="nav-section-title" style="margin-top: 10px;">İSTATİSTİKLER</div>
@@ -699,13 +839,15 @@ const APP = (() => {
                             ${data.totalPoints} Puan - <b style="color:#FFC107; display:flex; align-items:center; gap:4px;">${data.coins || 0} ${getGoldIcon(16)} Altın</b>
                         </span>
                     </div>
-                    <a class="nav-item nav-logout" onclick="AUTH.logout()" style="margin-top:20px;">
-                        <span class="nav-icon">🚪</span>
-                        <span class="nav-text">Çıkış Yap</span>
-                    </a>
                 </div>
             </div>
         `;
+    }
+
+    // Helper: Count unread notifications
+    function getUnreadNotificationCount(data) {
+        if (!data.inbox) return 0;
+        return data.inbox.filter(m => !m.read).length;
     }
 
     function showSettingsModal() {
@@ -751,7 +893,10 @@ const APP = (() => {
                     <button class="btn" style="width:100%; padding:10px; font-size:12px; background:rgba(0,0,0,0.05); color:var(--text-muted); border:1px dashed var(--text-muted); border-radius:10px;" onclick="if(typeof AUDIO!=='undefined'){AUDIO.init(); this.textContent='✅ Çözüldü'; setTimeout(()=>this.textContent='🔊 Tıklama Sesi Gelmiyorsa Tıkla', 2000);}">🔊 Tıklama Sesi Gelmiyorsa Tıkla</button>
                 </div>
                 
-                <button class="btn" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; background: var(--red); color: white; border: none; box-shadow: 0 4px 15px rgba(244,67,54,0.3);" onclick="this.closest('.settings-overlay').remove()">
+                <button class="btn" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; background: var(--red); color: white; border: none; box-shadow: 0 4px 15px rgba(244,67,54,0.3); margin-bottom: 10px;" onclick="AUTH.logout()">
+                    🚪 Çıkış Yap
+                </button>
+                <button class="btn" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; background: var(--bg-card); color: var(--text-muted); border: 2px solid var(--text-muted);" onclick="this.closest('.settings-overlay').remove()">
                     KAPAT
                 </button>
             </div>
@@ -786,9 +931,9 @@ const APP = (() => {
                 <span class="bottom-nav-icon">🔬</span>
                 <span class="bottom-nav-text">P. Tablo</span>
             </a>
-            <a class="bottom-nav-item ${currentScreen === 'tables' ? 'active' : ''}" onclick="APP.navigate('tables')">
-                <span class="bottom-nav-icon">📖</span>
-                <span class="bottom-nav-text">Tablolar</span>
+            <a class="bottom-nav-item ${currentScreen === 'notifications' ? 'active' : ''}" onclick="APP.navigate('notifications')">
+                <span class="bottom-nav-icon">🔔</span>
+                <span class="bottom-nav-text">Bildirimler</span>
             </a>
         `;
 
@@ -1003,8 +1148,10 @@ const APP = (() => {
 
                     <!-- Navigation Buttons -->
                     <div class="dash-nav-buttons">
-                        <button class="btn btn-outline btn-lg" onclick="APP.navigate('tables')">
-                            📖 Tablolara Bak
+                    <!-- Navigation Buttons -->
+                    <div class="dash-nav-buttons">
+                        <button class="btn btn-outline btn-lg" onclick="APP.navigate('notifications')">
+                            🔔 Bildirimler
                         </button>
                         <button class="btn btn-outline btn-lg" onclick="APP.navigate('statistics')">
                             📊 İstatistikler
@@ -1021,6 +1168,124 @@ const APP = (() => {
         const cards = container.querySelectorAll('.dash-card, .mode-card, .quick-stat, .badge-mini');
         Animations.staggeredEntrance(Array.from(cards), 80);
         Animations.initRipples();
+    }
+
+    // ============ NOTIFICATIONS SCREEN ============
+    function renderNotifications() {
+        const container = document.getElementById('main-content');
+        const username = AUTH.getCurrentUser();
+        const data = Storage.getData(username);
+        const inbox = data.inbox || [];
+
+        // Sort newest first
+        const sortedInbox = [...inbox].reverse();
+
+        let notifCards = '';
+        if (sortedInbox.length === 0) {
+            notifCards = `
+                <div style="text-align:center; padding: 60px 20px;">
+                    <div style="font-size:80px; margin-bottom:15px; opacity:0.5;">🔔</div>
+                    <h3 style="color:var(--text-muted); font-weight:700;">Henüz bildirim yok</h3>
+                    <p style="color:var(--text-muted); font-size:14px; margin-top:8px;">Ramazan Hoca mesaj gönderdiğinde burada görünecek.</p>
+                </div>
+            `;
+        } else {
+            notifCards = sortedInbox.map((msg, idx) => {
+                const isRead = msg.read;
+                const date = msg.date ? new Date(msg.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+                return `
+                    <div class="dash-card" style="margin-bottom:15px; border-left: 4px solid ${isRead ? 'var(--text-muted)' : '#7551FF'}; opacity: ${isRead ? '0.75' : '1'}; cursor:pointer; transition: all 0.3s;" onclick="APP.openNotification(${inbox.length - 1 - idx})">
+                        <div style="display:flex; align-items:flex-start; gap:15px;">
+                            <div style="font-size:30px; flex-shrink:0;">${isRead ? '📭' : '📩'}</div>
+                            <div style="flex:1; min-width:0;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px;">
+                                    <h4 style="margin:0; font-weight:800; color:var(--text-primary); font-size:16px;">${msg.title || 'Bildirim'}</h4>
+                                    ${!isRead ? '<span style="background:#F44336;color:white;font-size:9px;font-weight:900;padding:2px 8px;border-radius:10px;">YENİ</span>' : ''}
+                                </div>
+                                <p style="margin:8px 0 0 0; color:var(--text-muted); font-size:13px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${(msg.body || '').substring(0, 100)}...</p>
+                                <div style="margin-top:8px; font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:8px;">
+                                    <span>👨‍🏫 ${msg.sender || 'Ramazan Hoca'}</span>
+                                    <span>•</span>
+                                    <span>${date}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        container.innerHTML = `
+            <div class="notifications-screen" style="padding:20px; max-width:800px; margin:0 auto;">
+                <div class="screen-header" style="margin-bottom:25px;">
+                    <h2 class="screen-title">🔔 Bildirimler</h2>
+                    <p class="screen-subtitle">Ramazan Hoca'dan gelen mesajlar ve duyurular</p>
+                </div>
+                ${inbox.length > 0 ? `
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
+                        <button class="btn btn-ghost btn-sm" onclick="APP.markAllNotificationsRead()" style="font-size:12px; color:var(--teal);">
+                            ✅ Tümünü okundu işaretle
+                        </button>
+                    </div>
+                ` : ''}
+                ${notifCards}
+            </div>
+        `;
+
+        const cards = container.querySelectorAll('.dash-card');
+        Animations.staggeredEntrance(Array.from(cards), 60);
+    }
+
+    function openNotification(index) {
+        const username = AUTH.getCurrentUser();
+        const data = Storage.getData(username);
+        if (!data.inbox || !data.inbox[index]) return;
+
+        const msg = data.inbox[index];
+        msg.read = true;
+        Storage.saveData(username, data);
+
+        if (typeof AUDIO !== 'undefined') AUDIO.playClick();
+
+        const overlay = document.createElement('div');
+        overlay.className = 'notif-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:10000;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;';
+        
+        const date = msg.date ? new Date(msg.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+        
+        overlay.innerHTML = `
+            <div style="background:var(--bg-card);border-radius:24px;padding:30px;width:90%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,0.5);transform:translateY(20px) scale(0.95);transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div style="font-size:50px; margin-bottom:10px;">📩</div>
+                    <h3 style="color:var(--text-primary); font-size:22px; font-weight:800; margin-bottom:5px;">${msg.title || 'Bildirim'}</h3>
+                    <div style="font-size:12px; color:var(--text-muted);">👨‍🏫 ${msg.sender || 'Ramazan Hoca'} • ${date}</div>
+                </div>
+                <div style="background:rgba(117,81,255,0.05); padding:20px; border-radius:16px; border-left:4px solid #7551FF; color:var(--text-primary); font-weight:500; line-height:1.7; font-size:14px; margin-bottom:25px; white-space:pre-wrap;">
+                    ${(msg.body || '').replace(/\n/g, '<br>')}
+                </div>
+                <button class="btn" style="width:100%; padding:14px; border-radius:12px; font-weight:800; background:#7551FF; color:white; border:none; box-shadow:0 4px 15px rgba(117,81,255,0.4);" onclick="this.closest('.notif-overlay').remove(); APP.navigate('notifications')">
+                    Anladım, Kapat ✓
+                </button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            overlay.children[0].style.transform = 'translateY(0) scale(1)';
+        }, 10);
+
+        renderSidebar(); // Update badge count
+    }
+
+    function markAllNotificationsRead() {
+        const username = AUTH.getCurrentUser();
+        const data = Storage.getData(username);
+        if (data.inbox) {
+            data.inbox.forEach(m => m.read = true);
+            Storage.saveData(username, data);
+        }
+        renderNotifications();
+        renderSidebar();
     }
 
     // ============ TABLES SCREEN ============
@@ -1979,7 +2244,9 @@ const APP = (() => {
         renderSidebar, renderBottomNav, renderMarket, renderPeriodicLab, showBigElementCard, showDailyChest,
         toggleTheme, toggleAudio, showSettingsModal, setTheme,
         setGroupCount, goToTournamentConfig, setTMode, setTDiff, setTTable, launchTournament,
-        handleVIPLogin, handleTeacherLogin, renderAdminDashboard
+        handleVIPLogin, handleTeacherLogin, renderAdminDashboard,
+        openNotification, markAllNotificationsRead,
+        handleRegister, handleForgotPassword, showForgotPassword
     };
 })();
 

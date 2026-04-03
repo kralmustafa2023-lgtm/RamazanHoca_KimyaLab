@@ -108,14 +108,12 @@ const Storage = (() => {
         const key = getKey(username);
         localStorage.setItem(key, JSON.stringify(data));
 
-        // 🔥 Background MySQL Sync Strategy (Fire & Forget)
-        fetch(`/api/sync?username=${encodeURIComponent(username)}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        }).catch(err => {
-            // Silently fail if DB is offline. LocalStorage saves the day!
-        });
+        // 🔥 Background Firebase Sync (Fire & Forget)
+        if (typeof DB !== 'undefined') {
+            DB.update('users/' + username, { data: data }).catch(err => {
+                // Silently fail if offline
+            });
+        }
     }
 
     function updateStreak(username) {

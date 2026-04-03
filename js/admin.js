@@ -1,5 +1,5 @@
 // ============================================
-// ADMIN.JS — Ultra Kapsamlı Öğretmen Kontrol Paneli v3.0
+// ADMIN.JS — Firebase-Powered Öğretmen Kontrol Paneli v4.0
 // Ramazan Hoca'nın Kimya Sınıfı
 // ============================================
 
@@ -8,27 +8,34 @@ const ADMIN = (() => {
     let groupsList = [];
     let currentTab = 'dashboard';
 
-    // ===== FETCH ALL USERS FROM DB =====
+    // ===== FETCH ALL USERS FROM FIREBASE =====
     async function fetchAllUsers() {
         try {
-            const req = await fetch('/api/admin?action=users');
-            if (req.ok) {
-                const res = await req.json();
-                if (res.success) {
-                    usersData = res.data;
-                }
+            const val = await DB.get('users');
+            usersData = [];
+            const groupSet = new Set();
+
+            if (val) {
+                Object.keys(val).forEach(key => {
+                    const d = val[key];
+                    if (!d.username || d.username.startsWith('_')) return;
+                    usersData.push({
+                        username: d.username,
+                        displayName: d.displayName,
+                        role: d.role || 'student',
+                        group: d.group || null,
+                        banned: !!d.banned,
+                        email: d.email || '',
+                        data: d.data || {}
+                    });
+                    if (d.group) groupSet.add(d.group);
+                });
             }
+
+            groupsList = Array.from(groupSet);
         } catch (e) {
-            console.warn('Backend bağlantısı yok.', e);
+            console.warn('Firebase bağlantısı yok.', e);
         }
-        // Also fetch groups
-        try {
-            const req = await fetch('/api/admin?action=groups');
-            if (req.ok) {
-                const res = await req.json();
-                if (res.success) groupsList = res.groups || [];
-            }
-        } catch (e) {}
 
         renderCurrentTab();
     }
@@ -163,6 +170,7 @@ const ADMIN = (() => {
                     <h3>➕ Yeni Öğrenci Ekle</h3>
                     <div class="admin-form-group"><label>Kullanıcı Adı</label><input type="text" id="new-username" class="admin-input" placeholder="ornek: ogrenci31"></div>
                     <div class="admin-form-group"><label>Şifre</label><input type="text" id="new-password" class="admin-input" placeholder="Güçlü bir şifre"></div>
+                    <div class="admin-form-group"><label>E-posta</label><input type="email" id="new-email" class="admin-input" placeholder="ogrenci@email.com"></div>
                     <div class="admin-form-group"><label>Görünen Ad</label><input type="text" id="new-displayname" class="admin-input" placeholder="Ahmet Yılmaz"></div>
                     <div class="admin-form-group"><label>Grup / Sınıf</label>
                         <input type="text" id="new-group" class="admin-input" placeholder="9A, 10B veya boş bırakın" list="group-list">
@@ -200,18 +208,28 @@ const ADMIN = (() => {
     async function addUser() {
         const username = document.getElementById('new-username').value.trim();
         const password = document.getElementById('new-password').value.trim();
+        const email = document.getElementById('new-email') ? document.getElementById('new-email').value.trim() : '';
         const displayName = document.getElementById('new-displayname').value.trim();
         const group = document.getElementById('new-group').value.trim();
         if (!username || !password) { alert('Kullanıcı adı ve şifre zorunlu!'); return; }
         try {
-            const req = await fetch('/api/admin?action=addUser', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password, displayName: displayName || username, group: group || null })
+            const existing = await DB.get('users/' + username);
+            if (existing) { alert('Bu kullanıcı adı zaten mevcut!'); return; }
+
+            await DB.set('users/' + username, {
+                username: username,
+                password: password,
+                email: email || '',
+                displayName: displayName || username,
+                role: 'student',
+                group: group || null,
+                banned: false,
+                data: {}
             });
-            const res = await req.json();
-            if (res.success) { alert('Öğrenci eklendi! ✅'); closeModal('add-user-modal'); fetchAllUsers(); }
-            else alert(res.message || 'Hata oluştu.');
-        } catch (e) { alert('Sunucu bağlantı hatası.'); }
+            alert('Öğrenci eklendi! ✅');
+            closeModal('add-user-modal');
+            fetchAllUsers();
+        } catch (e) { alert('Firebase hatası: ' + e.message); }
     }
 
     function editUser(username) {
@@ -229,52 +247,44 @@ const ADMIN = (() => {
         const password = document.getElementById('edit-password').value.trim();
         const displayName = document.getElementById('edit-displayname').value.trim();
         const group = document.getElementById('edit-group').value.trim();
-        const body = { username };
-        if (password) body.password = password;
-        if (displayName) body.displayName = displayName;
-        body.group = group || null;
+        const updates = {};
+        if (password) updates.password = password;
+        if (displayName) updates.displayName = displayName;
+        updates.group = group || null;
 
         try {
-            const req = await fetch('/api/admin?action=updateUser', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            if ((await req.json()).success) { alert('Güncellendi ✅'); closeModal('edit-user-modal'); fetchAllUsers(); }
-        } catch (e) { alert('Sunucu hatası.'); }
+            await DB.update('users/' + username, updates);
+            alert('Güncellendi ✅');
+            closeModal('edit-user-modal');
+            fetchAllUsers();
+        } catch (e) { alert('Firebase hatası: ' + e.message); }
     }
 
     async function showPassword(username) {
         try {
-            const req = await fetch('/api/admin?action=getPassword', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
-            });
-            const res = await req.json();
-            if (res.success) alert(`🔑 ${username} şifresi: ${res.password}`);
-            else alert('Şifre alınamadı.');
-        } catch (e) { alert('Sunucu hatası.'); }
+            const doc = await DB.get('users/' + username);
+            if (doc) {
+                alert(`🔑 ${username} şifresi: ${doc.password}`);
+            } else {
+                alert('Kullanıcı bulunamadı.');
+            }
+        } catch (e) { alert('Firebase hatası: ' + e.message); }
     }
 
     async function toggleBan(username, banState) {
         if (!confirm(`${username} hesabını ${banState ? 'dondurmak' : 'açmak'} istediğinize emin misiniz?`)) return;
         try {
-            await fetch('/api/admin?action=updateUser', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, banned: banState })
-            });
+            await DB.update('users/' + username, { banned: banState });
             fetchAllUsers();
-        } catch (e) { alert('Sunucu hatası.'); }
+        } catch (e) { alert('Firebase hatası: ' + e.message); }
     }
 
     async function deleteUser(username) {
         if (!confirm(`${username} hesabı KALİCI olarak silinecek. Emin misiniz?`)) return;
         try {
-            await fetch('/api/admin?action=deleteUser', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
-            });
+            await DB.remove('users/' + username);
             fetchAllUsers();
-        } catch (e) { alert('Sunucu hatası.'); }
+        } catch (e) { alert('Firebase hatası: ' + e.message); }
     }
 
     function viewUserDetails(username) {
@@ -296,6 +306,7 @@ Max Kombo: ${d.maxCombo || 0}
 Sürekli Oynama: ${d.streak || 0} Gün
 Doğruluk Oranı: %${accuracy}
 En Çok Yanlış: ${worstElements}
+E-posta: ${u.email || 'Yok'}
 Grup: ${u.group || 'Yok'}`);
     }
 
@@ -346,25 +357,40 @@ Grup: ${u.group || 'Yok'}`);
         if (!title || !body) { alert('Başlık ve mesaj gerekli!'); return; }
 
         const msgObj = {
-            id: 'msg-' + Date.now(),
-            title, body,
+            title: title,
+            body: body,
             date: new Date().toISOString(),
-            read: false,
-            sender: 'Ramazan Hoca'
+            sender: 'Ramazan Hoca',
+            targetType: targetType,
+            target: target || 'all'
         };
 
         try {
-            const req = await fetch('/api/admin?action=message', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ target, targetType, message: msgObj })
-            });
-            const res = await req.json();
-            if (res.success) {
-                alert(`Mesaj ${res.count || ''} kişiye gönderildi! 🚀`);
-                document.getElementById('msg-title').value = '';
-                document.getElementById('msg-body').value = '';
+            // Save notification to Firebase notifications collection
+            await DB.push('notifications', msgObj);
+
+            // Also push to individual user inboxes for backward compatibility
+            let targetUsers = [];
+            if (targetType === 'all') {
+                targetUsers = usersData.filter(u => u.role !== 'admin');
+            } else if (targetType === 'group') {
+                targetUsers = usersData.filter(u => u.group === target);
+            } else {
+                targetUsers = usersData.filter(u => u.username === target);
             }
-        } catch (e) { alert('Sunucu hatası.'); }
+
+            for (const user of targetUsers) {
+                const inbox = user.data.inbox || [];
+                inbox.push({ ...msgObj, id: 'msg-' + Date.now(), read: false });
+                await DB.update('users/' + user.username, {
+                    'data/inbox': inbox
+                });
+            }
+
+            alert(`Mesaj ${targetUsers.length} kişiye gönderildi! 🚀`);
+            document.getElementById('msg-title').value = '';
+            document.getElementById('msg-body').value = '';
+        } catch (e) { alert('Firebase hatası: ' + e.message); }
     }
 
     // ===== 4. QUESTIONS CMS =====
@@ -385,7 +411,7 @@ Grup: ${u.group || 'Yok'}`);
 
         container.innerHTML = `
             <h3 style="margin:0 0 20px 0;color:#2B3674;">📝 Soru Havuzu (CMS)</h3>
-            <p style="color:#A3AED0;margin-bottom:20px;">Bir tabloya tıklayarak element ekleme, silme veya düzenleme yapabilirsiniz. Değişiklikler anında MySQL'e kaydedilir.</p>
+            <p style="color:#A3AED0;margin-bottom:20px;">Bir tabloya tıklayarak element ekleme, silme veya düzenleme yapabilirsiniz. Değişiklikler Firebase'e kaydedilir.</p>
             <div class="admin-stats-grid">${tableCards}</div>
             <div id="table-editor" style="margin-top:20px;"></div>
         `;
@@ -414,7 +440,7 @@ Grup: ${u.group || 'Yok'}`);
                 </table>
                 <div style="display:flex;gap:10px;margin-top:15px;">
                     <button class="admin-btn btn-success" style="padding:10px 20px;" onclick="ADMIN.addElement('${tableKey}')">+ Element Ekle</button>
-                    <button class="admin-btn btn-edit" style="padding:10px 20px;" onclick="ADMIN.saveTable('${tableKey}')">💾 Kaydet (MySQL'e)</button>
+                    <button class="admin-btn btn-edit" style="padding:10px 20px;" onclick="ADMIN.saveTable('${tableKey}')">💾 Kaydet (Firebase'e)</button>
                 </div>
             </div>
         `;
@@ -448,16 +474,11 @@ Grup: ${u.group || 'Yok'}`);
         });
 
         try {
-            const req = await fetch('/api/admin?action=saveTables', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tables: TABLES })
-            });
-            if ((await req.json()).success) {
-                alert('Tablo MySQL\'e kaydedildi! ✅ Öğrenciler oyuna girdiklerinde yeni soruları görecek.');
-                // Regenerate local questions
-                if (typeof loadTablesFromDB === 'function') loadTablesFromDB();
-            }
-        } catch (e) { alert('Sunucu hatası.'); }
+            await DB.update('appData/tables', { tables: TABLES });
+            alert('Tablo Firebase\'e kaydedildi! ✅ Öğrenciler oyuna girdiklerinde yeni soruları görecek.');
+            // Regenerate local questions
+            if (typeof loadTablesFromDB === 'function') loadTablesFromDB();
+        } catch (e) { alert('Firebase hatası: ' + e.message); }
     }
 
     // ===== 5. APP PREVIEW =====
@@ -497,14 +518,19 @@ Grup: ${u.group || 'Yok'}`);
         const newPw = document.getElementById('new-admin-pw').value;
         if (!oldPw || !newPw) { alert('Lütfen iki alanı da doldurun.'); return; }
         try {
-            const req = await fetch('/api/admin?action=changeAdminPassword', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ oldPassword: oldPw, newPassword: newPw })
-            });
-            const res = await req.json();
-            if (res.success) alert('Şifre değiştirildi! ✅');
-            else alert(res.message || 'Eski şifre hatalı.');
-        } catch (e) { alert('Sunucu hatası.'); }
+            const adminUsers = usersData.filter(u => u.role === 'admin' || u.role === 'ogretmen');
+            if (adminUsers.length === 0) { alert('Admin bulunamadı.'); return; }
+
+            const doc = await DB.get('users/' + adminUsers[0].username);
+            if (doc && doc.password === oldPw) {
+                for (const admin of adminUsers) {
+                    await DB.update('users/' + admin.username, { password: newPw });
+                }
+                alert('Şifre değiştirildi! ✅');
+            } else {
+                alert('Eski şifre hatalı.');
+            }
+        } catch (e) { alert('Firebase hatası: ' + e.message); }
     }
 
     function setAdminTheme(theme) {
