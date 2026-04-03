@@ -331,11 +331,6 @@ const APP = (() => {
                                        class="input-field" autocomplete="off">
                             </div>
                             <div class="input-group">
-                                <span class="input-icon">📧</span>
-                                <input type="email" id="login-email" placeholder="E-posta adresiniz" 
-                                       class="input-field" autocomplete="off">
-                            </div>
-                            <div class="input-group">
                                 <span class="input-icon">🔒</span>
                                 <input type="password" id="login-password" placeholder="Şifre" 
                                        class="input-field" autocomplete="off">
@@ -345,10 +340,6 @@ const APP = (() => {
                             <button type="submit" class="btn btn-primary btn-lg btn-login">
                                 Giriş Yap 🚀
                             </button>
-                            <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:12px;">
-                                <a href="javascript:void(0)" onclick="APP.handleRegister()" style="color:var(--teal); font-weight:700; cursor:pointer; text-decoration:none;">📝 Kayıt Ol</a>
-                                <a href="javascript:void(0)" onclick="APP.showForgotPassword()" style="color:var(--orange); font-weight:700; cursor:pointer; text-decoration:none;">🔑 Şifremi Unuttum</a>
-                            </div>
                         </form>
 
                         <!-- Teacher Form -->
