@@ -1,0 +1,1 @@
+{ "name": "kimyalab", "version": "1.0.0", "scripts": { "build": "mkdir -p public && cp -r css js images index.html public/" } }
