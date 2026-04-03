@@ -4,3 +4,5 @@ node_modules/
 testdb.js
 server/
 package-lock.json
+db-test.js
+package.json
