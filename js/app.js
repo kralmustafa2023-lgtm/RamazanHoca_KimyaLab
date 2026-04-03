@@ -557,22 +557,29 @@ const APP = (() => {
 
         if (!username || !password) {
             errorEl.textContent = 'Lütfen kullanıcı adı ve şifre giriniz!';
-            Animations.shake(document.querySelector('.login-form'));
+            if (typeof Animations !== 'undefined') Animations.shake(document.querySelector('.login-form'));
             return;
         }
 
         if (!displayName) {
             errorEl.textContent = 'Lütfen adınızı girin!';
-            Animations.shake(document.querySelector('.login-form'));
+            if (typeof Animations !== 'undefined') Animations.shake(document.querySelector('.login-form'));
             return;
         }
 
-        const result = await AUTH.login(username, password, displayName);
-        if (result.success) {
-            window.location.reload();
-        } else {
-            errorEl.textContent = result.message;
-            Animations.shake(document.querySelector('.login-form'));
+        errorEl.textContent = '⏳ Giriş yapılıyor...';
+
+        try {
+            const result = await AUTH.login(username, password, displayName);
+            if (result.success) {
+                window.location.reload();
+            } else {
+                errorEl.textContent = result.message;
+                if (typeof Animations !== 'undefined') Animations.shake(document.querySelector('.login-form'));
+            }
+        } catch (e) {
+            errorEl.textContent = 'HATA: ' + e.message;
+            alert('Giriş Hatası: ' + e.message);
         }
     }
 
@@ -584,16 +591,23 @@ const APP = (() => {
 
         if (!username || !password) {
             errorEl.textContent = 'Kullanıcı adı ve şifre zorunludur!';
-            Animations.shake(document.getElementById('form-teacher'));
+            if (typeof Animations !== 'undefined') Animations.shake(document.getElementById('form-teacher'));
             return;
         }
 
-        const result = await AUTH.teacherLogin(username, password);
-        if (result.success) {
-            window.location.reload();
-        } else {
-            errorEl.textContent = result.message;
-            Animations.shake(document.getElementById('form-teacher'));
+        errorEl.textContent = '⏳ Giriş yapılıyor...';
+
+        try {
+            const result = await AUTH.teacherLogin(username, password);
+            if (result.success) {
+                window.location.reload();
+            } else {
+                errorEl.textContent = result.message;
+                if (typeof Animations !== 'undefined') Animations.shake(document.getElementById('form-teacher'));
+            }
+        } catch (e) {
+            errorEl.textContent = 'HATA: ' + e.message;
+            alert('Öğretmen Giriş Hatası: ' + e.message);
         }
     }
 

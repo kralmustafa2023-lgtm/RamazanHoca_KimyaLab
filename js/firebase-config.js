@@ -99,7 +99,7 @@ async function seedDefaultUsers() {
     }
 }
 
-// Run seed on first load
-seedDefaultUsers();
+// Run seed on first load (non-blocking)
+try { seedDefaultUsers(); } catch(e) { console.warn('Seed error:', e); }
 
 console.log('🔥 Firebase Realtime Database başarıyla başlatıldı!');
