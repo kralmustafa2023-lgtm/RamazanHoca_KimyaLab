@@ -23,25 +23,42 @@ const db = firebase.database();
 
 // ===== FIREBASE DB HELPERS =====
 const DB = {
-    // Read a path
+    // Read a path with timeout
     async get(path) {
-        const snap = await db.ref(path).once('value');
-        return snap.val();
+        console.log('📡 Fetching from DB:', path);
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Firebase bağlantı zaman aşımı! (Bağlantı çok yavaş veya veritabanı URL hatası)')), 7000)
+        );
+        try {
+            const snap = await Promise.race([
+                db.ref(path).once('value'),
+                timeoutPromise
+            ]);
+            console.log('✅ Received from DB:', path, snap.val() ? 'Data exists' : 'No data');
+            return snap.val();
+        } catch (e) {
+            console.error('❌ DB Get Error:', e.message);
+            throw e;
+        }
     },
     // Write to a path
     async set(path, data) {
+        console.log('📡 Setting to DB:', path);
         await db.ref(path).set(data);
     },
     // Update specific fields
     async update(path, data) {
+        console.log('📡 Updating DB:', path);
         await db.ref(path).update(data);
     },
     // Delete a path
     async remove(path) {
+        console.log('📡 Removing from DB:', path);
         await db.ref(path).remove();
     },
     // Get all children
     async getAll(path) {
+        console.log('📡 Fetching all from DB:', path);
         const snap = await db.ref(path).once('value');
         const val = snap.val();
         if (!val) return [];
@@ -49,11 +66,13 @@ const DB = {
     },
     // Push (auto-id)
     async push(path, data) {
+        console.log('📡 Pushing to DB:', path);
         const ref = await db.ref(path).push(data);
         return ref.key;
     },
     // Query by child value
     async queryByChild(path, child, value) {
+        console.log('📡 Querying DB:', path, child, value);
         const snap = await db.ref(path).orderByChild(child).equalTo(value).once('value');
         const val = snap.val();
         if (!val) return [];
