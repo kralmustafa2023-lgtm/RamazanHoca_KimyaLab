@@ -298,64 +298,59 @@ const ADMIN = (() => {
         
         const overlay = document.createElement('div');
         overlay.className = 'user-detail-overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(15px);z-index:10000;display:flex;align-items:center;justify-content:center;opacity:0;transition:all 0.4s ease; perspective:1000px; padding:20px; box-sizing:border-box;';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(15px);z-index:10000;display:flex;align-items:center;justify-content:center;opacity:0;transition:all 0.4s ease; perspective:1000px; padding:10px; box-sizing:border-box; overflow-y:auto;';
         
         overlay.innerHTML = `
-            <div class="user-detail-card" style="background:var(--bg-card);border-radius:28px;padding:0;width:100%;max-width:420px;box-shadow:0 30px 80px rgba(0,0,0,0.6);transform:rotateX(15deg) translateY(30px);transition:all 0.5s cubic-bezier(0.175,0.885,0.32,1.275);overflow:hidden;border:1px solid rgba(255,255,255,0.1);">
-                <!-- Header Gradient Part -->
-                <div style="background:linear-gradient(135deg, var(--teal, #00BFA5), #7C4DFF); padding:35px 20px 25px; text-align:center; position:relative;">
-                    <div style="font-size:65px; margin-bottom:10px; filter:drop-shadow(0 8px 16px rgba(0,0,0,0.3)); line-height:1;">${d.activeAvatar || '👤'}</div>
-                    <h3 style="color:white; font-size:24px; font-weight:800; margin:0 0 8px; font-family:'Poppins',sans-serif; text-shadow:0 2px 4px rgba(0,0,0,0.2);">${u.displayName || u.username}</h3>
-                    <div style="font-size:12px; color:rgba(255,255,255,0.9); background:rgba(0,0,0,0.2); display:inline-block; padding:6px 16px; border-radius:20px; font-weight:600; font-family:'Inter',sans-serif; letter-spacing:0.5px; border:1px solid rgba(255,255,255,0.2); box-shadow:0 4px 10px rgba(0,0,0,0.1);">Sınıf: <strong style="color:white;">${u.group || 'Yok'}</strong></div>
+            <div class="user-detail-card" style="margin:auto; background:var(--bg-card);border-radius:24px;padding:0;width:100%;max-width:400px;box-shadow:0 30px 60px rgba(0,0,0,0.6);transform:rotateX(15deg) translateY(30px);transition:all 0.5s cubic-bezier(0.175,0.885,0.32,1.275);overflow:hidden;border:1px solid rgba(255,255,255,0.1); display:flex; flex-direction:column; max-height:95vh;">
+                
+                <!-- Header Component -->
+                <div style="flex-shrink:0; background:linear-gradient(135deg, var(--teal, #00BFA5), #7C4DFF); padding:20px 15px 15px; text-align:center; position:relative;">
+                    <button style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.2); border:none; color:white; width:30px; height:30px; border-radius:50%; font-weight:bold; cursor:pointer;" onclick="const o=this.closest('.user-detail-overlay'); o.style.opacity='0'; o.querySelector('.user-detail-card').style.transform='rotateX(-15deg) translateY(30px)'; setTimeout(()=>o.remove(),400);">✕</button>
+                    <div style="font-size:50px; margin-bottom:5px; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.3)); line-height:1;">${d.activeAvatar || '👤'}</div>
+                    <h3 style="color:white; font-size:20px; font-weight:800; margin:0 0 5px; font-family:'Poppins',sans-serif; text-shadow:0 2px 4px rgba(0,0,0,0.2);">${u.displayName || u.username}</h3>
+                    <div style="font-size:11px; color:rgba(255,255,255,1); background:rgba(0,0,0,0.25); display:inline-block; padding:4px 12px; border-radius:15px; font-weight:700; border:1px solid rgba(255,255,255,0.2);">Sınıf: <strong style="text-shadow:none; color:#FFD700;">${u.group || 'Yok'}</strong></div>
                 </div>
                 
-                <!-- Body Part -->
-                <div style="padding:25px 30px 30px;">
-                    <table style="width:100%; border-collapse:separate; border-spacing:0 8px; margin-top:-15px; margin-bottom:25px; font-size:14px; text-align:left; font-family:'Inter', sans-serif;">
+                <!-- Scrollable Body Component -->
+                <div style="padding:15px 20px 20px; overflow-y:auto; flex-shrink:1;">
+                    <table style="width:100%; border-collapse:separate; border-spacing:0 4px; margin-top:-5px; margin-bottom:15px; font-size:13px; text-align:left; font-family:'Inter', sans-serif;">
                         <tbody>
-                            <tr style="background:rgba(0,0,0,0.02); border-radius:12px;">
-                                <td style="padding:12px 15px; color:var(--text-muted); font-weight:600; border-radius:12px 0 0 12px;"><span style="display:inline-block; width:26px; font-size:16px;">⭐</span> Puan</td>
-                                <td style="padding:12px 15px; font-weight:900; color:#FF9100; text-align:right; font-size:16px; border-radius:0 12px 12px 0;">${d.totalPoints || 0}</td>
+                            <tr style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                <td style="padding:10px 12px; color:var(--text-muted); font-weight:600; border-radius:10px 0 0 10px;"><span style="display:inline-block; width:22px; font-size:15px;">⭐</span> Puan</td>
+                                <td style="padding:10px 12px; font-weight:900; color:#FF9100; text-align:right; font-size:14px; border-radius:0 10px 10px 0;">${d.totalPoints || 0}</td>
                             </tr>
-                            <tr><td colspan="2" style="height:1px; background:rgba(0,0,0,0.03);"></td></tr>
-                            <tr style="background:rgba(0,0,0,0.02); border-radius:12px;">
-                                <td style="padding:12px 15px; color:var(--text-muted); font-weight:600; border-radius:12px 0 0 12px;"><span style="display:inline-block; width:26px; font-size:16px;">💰</span> Altın</td>
-                                <td style="padding:12px 15px; font-weight:900; color:var(--teal, #00BFA5); text-align:right; font-size:16px; border-radius:0 12px 12px 0;">${d.coins || 0}</td>
+                            <tr style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                <td style="padding:10px 12px; color:var(--text-muted); font-weight:600; border-radius:10px 0 0 10px;"><span style="display:inline-block; width:22px; font-size:15px;">💰</span> Altın</td>
+                                <td style="padding:10px 12px; font-weight:900; color:var(--teal, #00BFA5); text-align:right; font-size:14px; border-radius:0 10px 10px 0;">${d.coins || 0}</td>
                             </tr>
-                            <tr><td colspan="2" style="height:1px; background:rgba(0,0,0,0.03);"></td></tr>
-                            <tr style="background:rgba(0,0,0,0.02); border-radius:12px;">
-                                <td style="padding:12px 15px; color:var(--text-muted); font-weight:600; border-radius:12px 0 0 12px;"><span style="display:inline-block; width:26px; font-size:16px;">🎖️</span> Seviye</td>
-                                <td style="padding:12px 15px; font-weight:800; color:var(--text-primary); text-align:right; border-radius:0 12px 12px 0;">${d.level || 'Çaylak'}</td>
+                            <tr style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                <td style="padding:10px 12px; color:var(--text-muted); font-weight:600; border-radius:10px 0 0 10px;"><span style="display:inline-block; width:22px; font-size:15px;">🎖️</span> Seviye</td>
+                                <td style="padding:10px 12px; font-weight:800; color:var(--text-primary); text-align:right; border-radius:0 10px 10px 0;">${d.level || 'Çaylak'}</td>
                             </tr>
-                            <tr><td colspan="2" style="height:1px; background:rgba(0,0,0,0.03);"></td></tr>
-                            <tr style="background:rgba(0,0,0,0.02); border-radius:12px;">
-                                <td style="padding:12px 15px; color:var(--text-muted); font-weight:600; border-radius:12px 0 0 12px;"><span style="display:inline-block; width:26px; font-size:16px;">🎮</span> Oynanan Oyun</td>
-                                <td style="padding:12px 15px; font-weight:800; color:var(--text-primary); text-align:right; border-radius:0 12px 12px 0;">${d.gamesPlayed || 0}</td>
+                            <tr style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                <td style="padding:10px 12px; color:var(--text-muted); font-weight:600; border-radius:10px 0 0 10px;"><span style="display:inline-block; width:22px; font-size:15px;">🎮</span> Oynanan Oyun</td>
+                                <td style="padding:10px 12px; font-weight:800; color:var(--text-primary); text-align:right; border-radius:0 10px 10px 0;">${d.gamesPlayed || 0}</td>
                             </tr>
-                            <tr><td colspan="2" style="height:1px; background:rgba(0,0,0,0.03);"></td></tr>
-                            <tr style="background:rgba(0,0,0,0.02); border-radius:12px;">
-                                <td style="padding:12px 15px; color:var(--text-muted); font-weight:600; border-radius:12px 0 0 12px;"><span style="display:inline-block; width:26px; font-size:16px;">🔥</span> Max Kombo</td>
-                                <td style="padding:12px 15px; font-weight:800; color:var(--text-primary); text-align:right; border-radius:0 12px 12px 0;">${d.maxCombo || 0}</td>
+                            <tr style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                <td style="padding:10px 12px; color:var(--text-muted); font-weight:600; border-radius:10px 0 0 10px;"><span style="display:inline-block; width:22px; font-size:15px;">🔥</span> Max Kombo</td>
+                                <td style="padding:10px 12px; font-weight:800; color:var(--text-primary); text-align:right; border-radius:0 10px 10px 0;">${d.maxCombo || 0}</td>
                             </tr>
-                            <tr><td colspan="2" style="height:1px; background:rgba(0,0,0,0.03);"></td></tr>
-                            <tr style="background:rgba(0,0,0,0.02); border-radius:12px;">
-                                <td style="padding:12px 15px; color:var(--text-muted); font-weight:600; border-radius:12px 0 0 12px;"><span style="display:inline-block; width:26px; font-size:16px;">📅</span> Sürekli Görev</td>
-                                <td style="padding:12px 15px; font-weight:800; color:var(--text-primary); text-align:right; border-radius:0 12px 12px 0;">${d.streak || 0} Gün</td>
+                            <tr style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                <td style="padding:10px 12px; color:var(--text-muted); font-weight:600; border-radius:10px 0 0 10px;"><span style="display:inline-block; width:22px; font-size:15px;">📅</span> Sürekli Görev</td>
+                                <td style="padding:10px 12px; font-weight:800; color:var(--text-primary); text-align:right; border-radius:0 10px 10px 0;">${d.streak || 0} Gün</td>
                             </tr>
-                            <tr><td colspan="2" style="height:1px; background:rgba(0,0,0,0.03);"></td></tr>
-                            <tr style="background:rgba(0,0,0,0.02); border-radius:12px;">
-                                <td style="padding:12px 15px; color:var(--text-muted); font-weight:600; border-radius:12px 0 0 12px;"><span style="display:inline-block; width:26px; font-size:16px;">🎯</span> Başarı Oranı</td>
-                                <td style="padding:12px 15px; font-weight:800; color:var(--text-primary); text-align:right; border-radius:0 12px 12px 0;">%${accuracy}</td>
+                            <tr style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                <td style="padding:10px 12px; color:var(--text-muted); font-weight:600; border-radius:10px 0 0 10px;"><span style="display:inline-block; width:22px; font-size:15px;">🎯</span> Başarı Oranı</td>
+                                <td style="padding:10px 12px; font-weight:800; color:var(--text-primary); text-align:right; border-radius:0 10px 10px 0;">%${accuracy}</td>
                             </tr>
-                            <tr><td colspan="2" style="height:1px; background:rgba(0,0,0,0.03);"></td></tr>
-                            <tr style="background:rgba(255,82,82,0.05); border-radius:12px;">
-                                <td style="padding:15px 15px; color:#FF5252; font-weight:700; vertical-align:middle; border-radius:12px 0 0 12px;"><span style="display:inline-block; width:26px; font-size:16px;">❌</span> Hatalar</td>
-                                <td style="padding:15px 15px; text-align:right; max-width:160px; line-height:1.8; border-radius:0 12px 12px 0;">${worstElements}</td>
+                            <tr style="background:rgba(255,82,82,0.05); border-radius:10px;">
+                                <td style="padding:12px 12px; color:#FF5252; font-weight:700; vertical-align:middle; border-radius:10px 0 0 10px;"><span style="display:inline-block; width:22px; font-size:15px;">❌</span> Hatalar</td>
+                                <td style="padding:12px 12px; text-align:right; max-width:140px; line-height:1.6; border-radius:0 10px 10px 0;">${worstElements}</td>
                             </tr>
                         </tbody>
                     </table>
                     
-                    <button style="width:100%; padding:16px; border-radius:16px; font-weight:800; font-size:15px; font-family:'Poppins',sans-serif; background:rgba(0,0,0,0.06); color:var(--text-primary); border:none; cursor:pointer; transition:all 0.3s;" onmouseover="this.style.background='var(--teal)'; this.style.color='white'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(0,0,0,0.06)'; this.style.color='var(--text-primary)'; this.style.transform='translateY(0)';" onclick="const o=this.closest('.user-detail-overlay'); o.style.opacity='0'; o.querySelector('.user-detail-card').style.transform='rotateX(-15deg) translateY(30px)'; setTimeout(()=>o.remove(),400);">
+                    <button style="width:100%; padding:14px; border-radius:14px; font-weight:800; font-size:14px; font-family:'Poppins',sans-serif; background:rgba(0,0,0,0.06); color:var(--text-primary); border:none; cursor:pointer; transition:all 0.3s; flex-shrink:0;" onmouseover="this.style.background='var(--teal)'; this.style.color='white'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(0,0,0,0.06)'; this.style.color='var(--text-primary)'; this.style.transform='translateY(0)';" onclick="const o=this.closest('.user-detail-overlay'); o.style.opacity='0'; o.querySelector('.user-detail-card').style.transform='rotateX(-15deg) translateY(30px)'; setTimeout(()=>o.remove(),400);">
                         İncelemeyi Kapat
                     </button>
                 </div>
