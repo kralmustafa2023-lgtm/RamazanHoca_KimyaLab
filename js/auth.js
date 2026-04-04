@@ -127,18 +127,35 @@ const AUTH = (() => {
     }
 
     // ===== SYNC =====
-    async function sync() {
+    async function sync(isPeriodic = false) {
         const username = getCurrentUser();
         if (!username) return false;
         try {
             const user = await DB.get('users/' + username);
             if (user && user.data && Object.keys(user.data).length > 0) {
+                // Check for new notifications
+                const oldDataStr = localStorage.getItem('ramazan_hoca_' + username);
+                const oldData = oldDataStr ? JSON.parse(oldDataStr) : {};
+                const oldInboxCount = oldData.inbox ? oldData.inbox.length : 0;
+                
                 localStorage.setItem('ramazan_hoca_' + username, JSON.stringify(user.data));
-                console.log('✅ Veriler Firebase\'den güncellendi!');
+                
+                const newInboxCount = user.data.inbox ? user.data.inbox.length : 0;
+                if (newInboxCount > oldInboxCount && isPeriodic) {
+                    if (typeof AUDIO !== 'undefined') AUDIO.playNotification();
+                    if (typeof ADMIN !== 'undefined' && ADMIN.checkInboxForStudent) {
+                        ADMIN.checkInboxForStudent();
+                    }
+                    if (typeof APP !== 'undefined' && APP.renderSidebar) {
+                        APP.renderSidebar(); 
+                    }
+                }
+                
+                if (!isPeriodic) console.log('✅ Veriler Firebase\'den güncellendi!');
                 return true;
             }
         } catch (e) {
-            console.warn('⚠️ Senkronizasyon başarısız.');
+            if (!isPeriodic) console.warn('⚠️ Senkronizasyon başarısız.');
         }
         return false;
     }

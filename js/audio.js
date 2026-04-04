@@ -103,6 +103,12 @@ const AUDIO = (() => {
         if (enabled && navigator.vibrate) navigator.vibrate([30, 50, 30, 50, 100]);
     }
 
+    function playNotification() {
+        playTone(523.25, 'sine', 0.1, 0.2); // C5
+        setTimeout(() => playTone(880.00, 'sine', 0.25, 0.25), 100); // A5
+        if (enabled && navigator.vibrate) navigator.vibrate([30, 50, 30]);
+    }
+
     function toggleSound() {
         enabled = !enabled;
         if (enabled) playClick();
@@ -113,5 +119,5 @@ const AUDIO = (() => {
         return enabled;
     }
 
-    return { init, playClick, playCorrect, playWrong, playSuccess, toggleSound, isEnabled };
+    return { init, playClick, playCorrect, playWrong, playSuccess, playNotification, toggleSound, isEnabled };
 })();

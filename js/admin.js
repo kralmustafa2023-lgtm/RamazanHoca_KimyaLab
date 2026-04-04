@@ -589,23 +589,38 @@ Grup: ${u.group || 'Yok'}`);
 
     function showStudentMessage(msg, data, username) {
         if (document.querySelector('.student-msg-overlay')) return;
-        if (typeof AUDIO !== 'undefined') AUDIO.playSuccess();
+        if (typeof AUDIO !== 'undefined') {
+            if (AUDIO.playNotification) AUDIO.playNotification();
+            else AUDIO.playSuccess();
+        }
+
+        const date = msg.date ? new Date(msg.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
 
         const overlay = document.createElement('div');
         overlay.className = 'student-msg-overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:10000;display:flex;align-items:center;justify-content:center;';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:10000;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;';
         overlay.innerHTML = `
-            <div style="background:white;border-radius:20px;padding:30px;width:90%;max-width:450px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+            <div style="background:var(--bg-card);border-radius:24px;padding:30px;width:90%;max-width:450px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.5);transform:translateY(20px) scale(0.95);transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);">
                 <div style="font-size:50px;margin-bottom:10px;">📩</div>
-                <h3 style="color:#2B3674;font-size:20px;margin-bottom:5px;">${msg.title}</h3>
-                <div style="font-size:12px;color:#A3AED0;margin-bottom:20px;">Gönderen: ${msg.sender}</div>
-                <div style="background:#F4F7FE;padding:20px;border-radius:15px;text-align:left;color:#333;font-weight:500;line-height:1.6;font-size:14px;margin-bottom:25px;border-left:4px solid #7551FF;">
-                    ${msg.body.replace(/\n/g, '<br>')}
+                <h3 style="color:var(--text-primary);font-size:20px;margin-bottom:5px;font-weight:800;">${msg.title}</h3>
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">Gönderen: ${msg.sender}</div>
+                <div style="background:rgba(117,81,255,0.05);padding:20px;border-radius:15px;text-align:left;color:var(--text-primary);font-weight:500;line-height:1.6;font-size:14px;margin-bottom:25px;border-left:4px solid #7551FF;position:relative;">
+                    <div style="min-height:40px; margin-bottom:15px;">
+                        ${msg.body.replace(/\n/g, '<br>')}
+                    </div>
+                    <div style="text-align:right; font-size:10px; color:var(--text-muted); font-weight:700; opacity:0.8;">
+                        ⏱️ ${date}
+                    </div>
                 </div>
-                <button style="width:100%;background:#7551FF;color:white;padding:12px;font-weight:800;border-radius:12px;border:none;cursor:pointer;" onclick="this.closest('.student-msg-overlay').remove()">Anladım, Kapat</button>
+                <button class="btn" style="width:100%;background:#7551FF;color:white;padding:14px;font-weight:800;border-radius:12px;border:none;cursor:pointer;box-shadow:0 4px 15px rgba(117,81,255,0.4);" onclick="this.closest('.student-msg-overlay').style.opacity='0'; setTimeout(()=>this.closest('.student-msg-overlay').remove(),300)">Anladım, Kapat</button>
             </div>
         `;
         document.body.appendChild(overlay);
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            overlay.children[0].style.transform = 'translateY(0) scale(1)';
+        }, 10);
+        
         msg.read = true;
         localStorage.setItem('ramazan_hoca_' + username, JSON.stringify(data));
     }

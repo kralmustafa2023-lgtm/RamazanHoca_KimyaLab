@@ -62,21 +62,25 @@ const APP = (() => {
         }
     }
 
-    // ===== FIREBASE KEEP-ALIVE CHECK =====
+    // ===== FIREBASE KEEP-ALIVE & SYNC CHECK =====
     function startKeepAlive() {
         const ping = async () => {
             try {
                 // Simple DB read/write to verify connectivity
                 if (typeof DB !== 'undefined') await DB.update('appData', { lastPing: new Date().toISOString() });
-                console.log('💓 Firebase bağlantısı aktif (Keep-alive)');
+                
+                // Periodically check for new messages
+                if (AUTH.isLoggedIn() && typeof AUTH.sync === 'function') {
+                    await AUTH.sync(true); // isPeriodic = true
+                }
             } catch (e) {
                 // Silently fail
             }
         };
         // Ping once immediately
         ping();
-        // Ping every 10 minutes
-        setInterval(ping, 10 * 60 * 1000);
+        // Check every 30 seconds for quick message delivery
+        setInterval(ping, 30 * 1000);
     }
 
     function navigate(screen, data) {
@@ -1303,10 +1307,15 @@ const APP = (() => {
                     <h3 style="color:var(--text-primary); font-size:22px; font-weight:800; margin-bottom:5px;">${msg.title || 'Bildirim'}</h3>
                     <div style="font-size:12px; color:var(--text-muted);">👨‍🏫 ${msg.sender || 'Ramazan Hoca'} • ${date}</div>
                 </div>
-                <div style="background:rgba(117,81,255,0.05); padding:20px; border-radius:16px; border-left:4px solid #7551FF; color:var(--text-primary); font-weight:500; line-height:1.7; font-size:14px; margin-bottom:25px; white-space:pre-wrap;">
-                    ${(msg.body || '').replace(/\n/g, '<br>')}
+                <div style="background:rgba(117,81,255,0.05); padding:20px; border-radius:16px; border-left:4px solid #7551FF; color:var(--text-primary); font-weight:500; line-height:1.7; font-size:14px; margin-bottom:25px; white-space:pre-wrap; position:relative;">
+                    <div style="min-height:40px; margin-bottom:15px;">
+                        ${(msg.body || '').replace(/\n/g, '<br>')}
+                    </div>
+                    <div style="text-align:right; font-size:10px; color:var(--text-muted); font-weight:700; opacity:0.8;">
+                        ⏱️ ${date}
+                    </div>
                 </div>
-                <button class="btn" style="width:100%; padding:14px; border-radius:12px; font-weight:800; background:#7551FF; color:white; border:none; box-shadow:0 4px 15px rgba(117,81,255,0.4);" onclick="this.closest('.notif-overlay').remove(); APP.navigate('notifications')">
+                <button class="btn" style="width:100%; padding:14px; border-radius:12px; font-weight:800; background:#7551FF; color:white; border:none; box-shadow:0 4px 15px rgba(117,81,255,0.4);" onclick="this.closest('.notif-overlay').style.opacity='0'; setTimeout(()=>this.closest('.notif-overlay').remove(),300); APP.navigate('notifications')">
                     Anladım, Kapat ✓
                 </button>
             </div>
