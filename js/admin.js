@@ -499,7 +499,11 @@ const ADMIN = (() => {
                 if (user.data.inbox && user.data.inbox.length > 0) {
                     const newInbox = user.data.inbox.filter(m => m.id !== msgId && m.firebaseKey !== firebaseKey);
                     if (newInbox.length !== user.data.inbox.length) {
-                        await DB.update('users/' + user.username, { 'data/inbox': newInbox });
+                        if (newInbox.length > 0) {
+                            await DB.set('users/' + user.username + '/data/inbox', newInbox);
+                        } else {
+                            await DB.remove('users/' + user.username + '/data/inbox');
+                        }
                     }
                 }
             }
