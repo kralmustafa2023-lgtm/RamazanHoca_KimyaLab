@@ -2269,7 +2269,6 @@ const APP = (() => {
                     <button class="admin-tab-btn" data-tab="students" onclick="ADMIN.switchTab('students')">👥 Öğrenciler</button>
                     <button class="admin-tab-btn" data-tab="messages" onclick="ADMIN.switchTab('messages')">📩 Mesajlar</button>
                     <button class="admin-tab-btn" data-tab="questions" onclick="ADMIN.switchTab('questions')">📝 Sorular</button>
-                    <button class="admin-tab-btn" data-tab="preview" onclick="ADMIN.switchTab('preview')">👁️ Önizleme</button>
                     <button class="admin-tab-btn" data-tab="settings" onclick="ADMIN.switchTab('settings')">⚙️ Ayarlar</button>
                 </div>
 

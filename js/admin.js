@@ -62,7 +62,6 @@ const ADMIN = (() => {
             case 'students': renderStudents(body); break;
             case 'messages': renderMessages(body); break;
             case 'questions': renderQuestions(body); break;
-            case 'preview': renderPreview(body); break;
             case 'settings': renderSettings(body); break;
         }
     }
@@ -170,7 +169,6 @@ const ADMIN = (() => {
                     <h3>➕ Yeni Öğrenci Ekle</h3>
                     <div class="admin-form-group"><label>Kullanıcı Adı</label><input type="text" id="new-username" class="admin-input" placeholder="ornek: ogrenci31"></div>
                     <div class="admin-form-group"><label>Şifre</label><input type="text" id="new-password" class="admin-input" placeholder="Güçlü bir şifre"></div>
-                    <div class="admin-form-group"><label>E-posta</label><input type="email" id="new-email" class="admin-input" placeholder="ogrenci@email.com"></div>
                     <div class="admin-form-group"><label>Görünen Ad</label><input type="text" id="new-displayname" class="admin-input" placeholder="Ahmet Yılmaz"></div>
                     <div class="admin-form-group"><label>Grup / Sınıf</label>
                         <input type="text" id="new-group" class="admin-input" placeholder="9A, 10B veya boş bırakın" list="group-list">
@@ -292,22 +290,69 @@ const ADMIN = (() => {
         if (!u) return;
         const d = u.data;
         const accuracy = calcAccuracy(d);
-        let worstElements = 'Henüz hata yok.';
+        let worstElements = '<span style="color:var(--text-muted);">Henüz hata yok.</span>';
         if (d.wrongAnswers && d.wrongAnswers.length > 0) {
             const sorted = [...d.wrongAnswers].sort((a, b) => b.count - a.count).slice(0, 3);
-            worstElements = sorted.map(w => `${w.correct} (${w.count}x)`).join(', ');
+            worstElements = sorted.map(w => `<span style="background:rgba(255,82,82,0.15); color:#FF5252; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:800; display:inline-block; margin-bottom:4px;">${w.correct} (${w.count}x)</span>`).join(' ');
         }
-        alert(`📋 ${u.displayName || u.username} Karnesi
-━━━━━━━━━━━━━━━━━━
-Puan: ${d.totalPoints || 0} ⭐ | Altın: ${d.coins || 0} 💰
-Seviye: ${d.level || 'Çaylak'}
-Oynanan Oyun: ${d.gamesPlayed || 0}
-Max Kombo: ${d.maxCombo || 0}
-Sürekli Oynama: ${d.streak || 0} Gün
-Doğruluk Oranı: %${accuracy}
-En Çok Yanlış: ${worstElements}
-E-posta: ${u.email || 'Yok'}
-Grup: ${u.group || 'Yok'}`);
+        
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:10000;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;';
+        
+        overlay.innerHTML = `
+            <div style="background:var(--bg-card);border-radius:24px;padding:30px;width:90%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.5);transform:translateY(20px) scale(0.95);transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);">
+                <div style="text-align:center; padding-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:20px;">
+                    <div style="font-size:55px; margin-bottom:5px; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.2));">${d.activeAvatar || '👤'}</div>
+                    <h3 style="color:var(--text-primary); font-size:20px; font-weight:800; margin-bottom:8px;">${u.displayName || u.username}</h3>
+                    <div style="font-size:12px; color:var(--text-muted); background:rgba(0,0,0,0.05); display:inline-block; padding:5px 14px; border-radius:15px; border:1px solid rgba(0,0,0,0.05);">Sınıf/Grup: <strong style="color:var(--text-primary);">${u.group || 'Yok'}</strong></div>
+                </div>
+                
+                <table style="width:100%; border-collapse:collapse; margin-bottom:25px; font-size:14px; text-align:left;">
+                    <tbody>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:12px 0; color:var(--text-muted); font-weight:600;"><span style="display:inline-block; width:24px;">⭐</span> Puan</td>
+                            <td style="padding:12px 0; font-weight:800; color:#FFB547; text-align:right;">${d.totalPoints || 0}</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:12px 0; color:var(--text-muted); font-weight:600;"><span style="display:inline-block; width:24px;">💰</span> Altın</td>
+                            <td style="padding:12px 0; font-weight:800; color:#05CD99; text-align:right;">${d.coins || 0}</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:12px 0; color:var(--text-muted); font-weight:600;"><span style="display:inline-block; width:24px;">🎖️</span> Seviye</td>
+                            <td style="padding:12px 0; font-weight:800; color:var(--text-primary); text-align:right;">${d.level || 'Çaylak'}</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:12px 0; color:var(--text-muted); font-weight:600;"><span style="display:inline-block; width:24px;">🎮</span> Oynanan Oyun</td>
+                            <td style="padding:12px 0; font-weight:800; color:var(--text-primary); text-align:right;">${d.gamesPlayed || 0}</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:12px 0; color:var(--text-muted); font-weight:600;"><span style="display:inline-block; width:24px;">🔥</span> Max Kombo</td>
+                            <td style="padding:12px 0; font-weight:800; color:var(--text-primary); text-align:right;">${d.maxCombo || 0}</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:12px 0; color:var(--text-muted); font-weight:600;"><span style="display:inline-block; width:24px;">📅</span> Sürekli Görev</td>
+                            <td style="padding:12px 0; font-weight:800; color:var(--text-primary); text-align:right;">${d.streak || 0} Gün</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:12px 0; color:var(--text-muted); font-weight:600;"><span style="display:inline-block; width:24px;">🎯</span> Başarı Oranı</td>
+                            <td style="padding:12px 0; font-weight:800; color:var(--text-primary); text-align:right;">%${accuracy}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:12px 0; color:var(--text-muted); font-weight:600; vertical-align:top;"><span style="display:inline-block; width:24px;">❌</span> Zorlanılanlar</td>
+                            <td style="padding:12px 0; text-align:right; max-width: 150px;">${worstElements}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn" style="width:100%; padding:14px; border-radius:14px; font-weight:800; background:#7551FF; color:white; border:none; box-shadow:0 4px 15px rgba(117,81,255,0.4); cursor:pointer;" onclick="this.closest('div[style*=\\'position:fixed\\']').style.opacity='0'; setTimeout(()=>this.closest('div[style*=\\'position:fixed\\']').remove(),300);">
+                    Kapat
+                </button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            overlay.children[0].style.transform = 'translateY(0) scale(1)';
+        }, 10);
     }
 
     // ===== 3. MESSAGES TAB =====
@@ -479,17 +524,6 @@ Grup: ${u.group || 'Yok'}`);
             // Regenerate local questions
             if (typeof loadTablesFromDB === 'function') loadTablesFromDB();
         } catch (e) { alert('Firebase hatası: ' + e.message); }
-    }
-
-    // ===== 5. APP PREVIEW =====
-    function renderPreview(container) {
-        container.innerHTML = `
-            <h3 style="margin:0 0 15px 0;color:#2B3674;">👁️ Uygulama Önizleme (Öğrenci Gözüyle)</h3>
-            <p style="color:#A3AED0;margin-bottom:15px;">Öğrencilerin gördüğü giriş ekranını ve oyun arayüzünü buradan test edebilirsiniz.</p>
-            <div style="background:white;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1); border: 8px solid #F4F7FE;">
-                <iframe src="/?session_clear=true" style="width:100%;height:70vh;border:none;border-radius:12px;"></iframe>
-            </div>
-        `;
     }
 
     // ===== 6. SETTINGS =====
