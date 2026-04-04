@@ -4,7 +4,7 @@
 // MEB FIREWALL BYPASS - USING FIREBASE REST API
 // ============================================
 
-const FIREBASE_DB_URL = "https://kimyalab-67c90-default-rtdb.europe-west1.firebasedatabase.app";
+const FIREBASE_DB_URL = "https://kimyalab-67c90-default-rtdb.firebaseio.com";
 
 // ===== FIREBASE DB HELPERS (REST API OVER HTTPS) =====
 // Bu sistem MEB internetindeki WebSocket engellerini aşmak için
