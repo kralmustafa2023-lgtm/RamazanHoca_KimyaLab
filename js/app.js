@@ -303,6 +303,12 @@ const APP = (() => {
                             <img src="images/logo.png" alt="NSBL Logo" class="logo-image">
                             <h1 class="login-title">Ramazan Hoca'nın<br>KimyaLab</h1>
                             <p class="login-subtitle">Kimyayı Fethedelim! ⚗️</p>
+                            
+                            <!-- Bulut Sunucu Durumu -->
+                            <div id="cloud-status-indicator" onclick="APP.checkCloudStatus()" style="margin-top: 10px; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: all 0.3s ease; background: rgba(0,0,0,0.05); color: var(--text-muted); border: 2px solid transparent;">
+                                <span class="cloud-icon" style="font-size: 14px;">☁️</span>
+                                <span id="cloud-status-text">Bulut Sunucu: Kontrol Ediliyor...</span>
+                            </div>
                         </div>
 
                         <!-- Login Tabs -->
@@ -432,6 +438,38 @@ const APP = (() => {
             vipPw.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') APP.handleVIPLogin();
             });
+        }
+        
+        setTimeout(() => checkCloudStatus(false), 500);
+    }
+
+    async function checkCloudStatus(isClick = true) {
+        const indicator = document.getElementById('cloud-status-indicator');
+        const text = document.getElementById('cloud-status-text');
+        if (!indicator || !text) return;
+
+        if (isClick && text.textContent.includes('AKTİF DEĞİL')) {
+            window.location.reload();
+            return;
+        }
+
+        indicator.style.background = 'rgba(0,0,0,0.05)';
+        indicator.style.color = 'var(--text-muted)';
+        indicator.style.borderColor = 'transparent';
+        text.textContent = 'Bağlanılıyor...';
+
+        try {
+            await DB.get('users/RamazanHoca');
+            indicator.style.background = 'rgba(0, 191, 165, 0.1)';
+            indicator.style.color = '#00BFA5';
+            indicator.style.borderColor = 'rgba(0, 191, 165, 0.3)';
+            text.textContent = 'Bulut Sunucu: AKTİF';
+        } catch (e) {
+            indicator.style.background = 'rgba(255, 82, 82, 0.1)';
+            indicator.style.color = '#FF5252';
+            indicator.style.borderColor = 'rgba(255, 82, 82, 0.4)';
+            text.textContent = 'Bulut Sunucu: AKTİF DEĞİL (Yenile)';
+            if (isClick && typeof Animations !== 'undefined') Animations.shake(indicator);
         }
     }
 
@@ -2250,7 +2288,7 @@ const APP = (() => {
         toggleTheme, toggleAudio, showSettingsModal, setTheme,
         setGroupCount, goToTournamentConfig, setTMode, setTDiff, setTTable, launchTournament,
         handleVIPLogin, handleTeacherLogin, renderAdminDashboard,
-        openNotification, markAllNotificationsRead,
+        openNotification, markAllNotificationsRead, checkCloudStatus,
         handleRegister, handleForgotPassword, showForgotPassword
     };
 })();
