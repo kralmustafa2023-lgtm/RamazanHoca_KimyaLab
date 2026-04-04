@@ -64,15 +64,6 @@ const AUTH = (() => {
     // ===== TEACHER LOGIN =====
     async function teacherLogin(username, password) {
         try {
-            // FIREBASE BYPASS FOR ADMIN
-            if (username === 'RamazanHoca' && password === 'KimyaAdmin123') {
-                sessionStorage.setItem('isTeacher', 'true');
-                sessionStorage.setItem('currentUser', username);
-                sessionStorage.setItem('userRole', 'admin');
-                sessionStorage.setItem('displayName', 'Ramazan Hoca');
-                return { success: true };
-            }
-
             const user = await DB.get('users/' + username);
             if (!user) return { success: false, message: 'Kullanıcı bulunamadı.' };
             if (user.password !== password) return { success: false, message: 'Şifre hatalı!' };
