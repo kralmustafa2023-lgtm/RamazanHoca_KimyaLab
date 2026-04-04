@@ -6,6 +6,7 @@
 const ADMIN = (() => {
     let usersData = [];
     let groupsList = [];
+    let notificationsData = [];
     let currentTab = 'dashboard';
 
     // ===== FETCH ALL USERS FROM FIREBASE =====
@@ -33,6 +34,20 @@ const ADMIN = (() => {
             }
 
             groupsList = Array.from(groupSet);
+
+            // Fetch notifications
+            const notifs = await DB.get('notifications');
+            notificationsData = [];
+            if (notifs) {
+                Object.keys(notifs).forEach(key => {
+                    const n = notifs[key];
+                    n.firebaseKey = key;
+                    if (!n.id) n.id = key;
+                    notificationsData.push(n);
+                });
+                notificationsData.sort((a,b) => new Date(b.date) - new Date(a.date));
+            }
+
         } catch (e) {
             console.warn('Firebase bağlantısı yok.', e);
         }
@@ -377,7 +392,7 @@ const ADMIN = (() => {
 
         container.innerHTML = `
             <div class="admin-table-container">
-                <h3 style="margin:0 0 20px 0;color:#2B3674;">📩 Mesaj & Görev Gönder</h3>
+                <h3 style="margin:0 0 20px 0;color:#2B3674;">📩 Yeni Mesaj & Görev Gönder</h3>
                 <div class="admin-form-group"><label>Gönderim Tipi</label>
                     <select id="msg-type" class="admin-select" onchange="ADMIN.onMsgTypeChange()">
                         <option value="all">🌍 Tüm Öğrenciler</option>
@@ -393,10 +408,30 @@ const ADMIN = (() => {
                     </select>
                 </div>
                 <div class="admin-form-group"><label>Başlık</label><input type="text" id="msg-title" class="admin-input" placeholder="Örn: Hafta Sonu Ödevi"></div>
-                <div class="admin-form-group"><label>Mesaj İçeriği / Link / Dosya URL'i</label>
-                    <textarea id="msg-body" class="admin-input admin-textarea" placeholder="Mesajınızı, ödevleri veya link/dosya URL'lerini buraya yazın..."></textarea>
+                <div class="admin-form-group"><label>Mesaj İçeriği</label>
+                    <textarea id="msg-body" class="admin-input admin-textarea" placeholder="Mesajınızı..."></textarea>
                 </div>
-                <button class="admin-btn btn-success" style="padding:14px 30px;font-size:15px;width:100%;" onclick="ADMIN.sendMessage()">Gönder 🚀</button>
+                <button class="admin-btn btn-success" style="padding:14px 30px;font-size:15px;width:100%;margin-bottom:30px;" onclick="ADMIN.sendMessage()">Gönder 🚀</button>
+                
+                <h3 style="margin:0 0 15px 0;color:#2B3674;border-top:2px solid #F4F7FE;padding-top:20px;">📨 Gönderilen Mesaj Geçmişi</h3>
+                <table class="admin-table">
+                    <thead><tr><th>Tarih</th><th>Alıcı</th><th>Mesaj Özeti</th><th>İşlemler</th></tr></thead>
+                    <tbody>
+                        ${notificationsData.length > 0 ? notificationsData.map(n => `
+                            <tr>
+                                <td style="font-size:12px;color:var(--text-muted);">${new Date(n.date).toLocaleDateString()} <br> ${new Date(n.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
+                                <td><span class="status-badge" style="background:rgba(117,81,255,0.1);color:#7551FF;">${n.targetType === 'all' ? '🌍 Herkes' : n.targetType === 'group' ? '📁 ' + n.target : '👤 ' + n.target}</span></td>
+                                <td style="max-width:200px;">
+                                    <strong>${n.title}</strong>
+                                    <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${n.body}</div>
+                                </td>
+                                <td>
+                                    <button class="admin-btn btn-danger" onclick="ADMIN.deleteMessage('${n.id}', '${n.firebaseKey}')" style="padding:6px 12px;font-size:12px;">🗑️ Sil / Geri Çek</button>
+                                </td>
+                            </tr>
+                        `).join('') : '<tr><td colspan="4" style="text-align:center;padding:20px;">Henüz mesaj gönderilmedi.</td></tr>'}
+                    </tbody>
+                </table>
             </div>
         `;
     }
@@ -414,7 +449,9 @@ const ADMIN = (() => {
         const body = document.getElementById('msg-body').value.trim();
         if (!title || !body) { alert('Başlık ve mesaj gerekli!'); return; }
 
+        const msgId = 'msg-' + Date.now();
         const msgObj = {
+            id: msgId,
             title: title,
             body: body,
             date: new Date().toISOString(),
@@ -424,10 +461,8 @@ const ADMIN = (() => {
         };
 
         try {
-            // Save notification to Firebase notifications collection
-            await DB.push('notifications', msgObj);
+            await DB.update('notifications/' + msgId, msgObj);
 
-            // Also push to individual user inboxes for backward compatibility
             let targetUsers = [];
             if (targetType === 'all') {
                 targetUsers = usersData.filter(u => u.role !== 'admin');
@@ -439,7 +474,7 @@ const ADMIN = (() => {
 
             for (const user of targetUsers) {
                 const inbox = user.data.inbox || [];
-                inbox.push({ ...msgObj, id: 'msg-' + Date.now(), read: false });
+                inbox.push({ ...msgObj, read: false });
                 await DB.update('users/' + user.username, {
                     'data/inbox': inbox
                 });
@@ -448,7 +483,30 @@ const ADMIN = (() => {
             alert(`Mesaj ${targetUsers.length} kişiye gönderildi! 🚀`);
             document.getElementById('msg-title').value = '';
             document.getElementById('msg-body').value = '';
+            fetchAllUsers(); // Refresh messages list
         } catch (e) { alert('Firebase hatası: ' + e.message); }
+    }
+
+    async function deleteMessage(msgId, firebaseKey) {
+        if (!confirm('Bu mesajı silmek / tüm öğrencilerden geri çekmek istediğinize emin misiniz?')) return;
+        try {
+            // Delete from notifications history
+            await DB.remove('notifications/' + (firebaseKey || msgId));
+
+            // Also remove from all users' inboxes (Geri Çekme)
+            let students = usersData.filter(u => u.role !== 'admin');
+            for (const user of students) {
+                if (user.data.inbox && user.data.inbox.length > 0) {
+                    const newInbox = user.data.inbox.filter(m => m.id !== msgId && m.firebaseKey !== firebaseKey);
+                    if (newInbox.length !== user.data.inbox.length) {
+                        await DB.update('users/' + user.username, { 'data/inbox': newInbox });
+                    }
+                }
+            }
+
+            alert('Mesaj başarıyla silindi ve kullanıcılardan geri çekildi! 🗑️');
+            fetchAllUsers();
+        } catch (e) { alert('Hata: ' + e.message); }
     }
 
     // ===== 4. QUESTIONS CMS =====
@@ -676,7 +734,7 @@ const ADMIN = (() => {
         fetchAllUsers, getUsersData, switchTab, renderCurrentTab,
         showAddUserModal, addUser, editUser, saveEditUser, showPassword,
         toggleBan, deleteUser, viewUserDetails,
-        onMsgTypeChange, sendMessage,
+        onMsgTypeChange, sendMessage, deleteMessage,
         editTable, addElement, removeElement, saveTable,
         changeAdminPw, setAdminTheme,
         openModal, closeModal,
