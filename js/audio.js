@@ -60,7 +60,7 @@ const AUDIO = (() => {
         try {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-            
+
             osc.type = type;
             osc.frequency.setValueAtTime(freq, ctx.currentTime);
 

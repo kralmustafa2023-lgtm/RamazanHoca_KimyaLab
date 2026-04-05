@@ -25,9 +25,8 @@ const AI = (() => {
 
     function renderAIUI() {
         const vip = typeof AUTH !== 'undefined' && AUTH.isVIP && AUTH.isVIP();
-        const aiTitle = vip ? '✨ Nova Plus' : 'Nova';
-        const aiAvatar = `<img src="images/nova-logo.png" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">`;
-        const aiFabEmoji = `<img src="images/nova-logo.png" style="width:42px;height:42px;object-fit:contain;">`;
+        const aiAvatar = vip ? '👑' : '💡';
+        const aiFabEmoji = vip ? '🌟' : '🤖';
         const aiPlaceholder = vip ? 'Patron, bana bir şey sor...' : "Nova'ya bir şey sor...";
         const aiSubtitle = vip ? 'VIP Kişisel Asistan' : 'Çevrimiçi';
         const fabClass = vip ? 'ai-fab ai-fab-vip' : 'ai-fab';
