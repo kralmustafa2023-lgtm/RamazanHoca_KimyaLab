@@ -2,7 +2,7 @@ const AI = (() => {
     // ⚠️ DEVELOPER: API KEY OBFUSCATED TO PREVENT LEAKS
     // Using string reversal evades all automated Vercel/GitHub leak scanners.
     const API_KEY = 'P9mbdXri8VQJIYpUflfmylgMYF3bydGWAHHLVtIxMkKg0z8X7XHO_ksg'.split('').reverse().join('');
-    const MODEL = 'llama-3.3-70b-versatile';
+    const MODEL = 'deepseek-r1-distill-llama-70b';
 
     // VIP Nova Plus — GPT-OSS 120B (en büyük ve en akıllı ücretsiz model)
     const VIP_API_KEY = 'bxJ5IOAvbAvMAEwUaAYJeu2HYF3bydGWaULtHNoIKV60k8soe0nm_ksg'.split('').reverse().join('');
