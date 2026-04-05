@@ -11,7 +11,7 @@ const AUDIO = (() => {
     // Aggressive Init: Can be called safely multiple times
     function init() {
         if (!enabled) return;
-        
+
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!ctx && AudioContext) {
@@ -63,13 +63,13 @@ const AUDIO = (() => {
             
             osc.type = type;
             osc.frequency.setValueAtTime(freq, ctx.currentTime);
-            
-            gain.gain.setValueAtTime(vol * 1.8, ctx.currentTime); 
+
+            gain.gain.setValueAtTime(vol * 1.8, ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
             osc.connect(gain);
             gain.connect(ctx.destination);
-            
+
             osc.start();
             osc.stop(ctx.currentTime + duration);
         } catch (e) {
