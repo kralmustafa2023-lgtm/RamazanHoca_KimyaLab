@@ -25,6 +25,7 @@ const AI = (() => {
 
     function renderAIUI() {
         const vip = typeof AUTH !== 'undefined' && AUTH.isVIP && AUTH.isVIP();
+        const aiTitle = vip ? '✨ Nova Plus' : 'Nova';
         const aiAvatar = vip ? '👑' : '💡';
         const aiFabEmoji = vip ? '🌟' : '🤖';
         const aiPlaceholder = vip ? 'Patron, bana bir şey sor...' : "Nova'ya bir şey sor...";
