@@ -10,17 +10,21 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #FF4081, #7C4DFF);
+    background: rgba(255, 255, 255, 0.05); /* Şeffaf arka plan */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 28px;
-    box-shadow: 0 10px 25px rgba(124, 77, 255, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     z-index: 9999;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0;
+    overflow: hidden;
 }
 
 body:not(.has-sidebar) .ai-fab,
@@ -336,8 +340,9 @@ body:not(.has-sidebar) .ai-panel {
 
 /* VIP Floating Button — Gold */
 .ai-fab-vip {
-    background: linear-gradient(135deg, #FFD700, #FF8C00) !important;
-    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 140, 0, 0.3) !important;
+    background: rgba(255, 215, 0, 0.08) !important;
+    border: 1px solid rgba(255, 215, 0, 0.3) !important;
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2) !important;
     animation: vipFabGlow 2s ease-in-out infinite;
 }
 .ai-fab-vip::before {
