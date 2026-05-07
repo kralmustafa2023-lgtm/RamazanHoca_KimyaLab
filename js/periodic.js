@@ -1492,15 +1492,32 @@ const PERIODIC = (() => {
                 <div style="font-size:80px;font-weight:900;color:${c.text};text-shadow:0 10px 20px rgba(0,0,0,0.3);margin:10px 0;line-height:1;">${el.s}</div>
                 <div style="font-size:26px;font-weight:800;color:${c.text};">${el.name}</div>
             </div>
-            <div style="padding:20px;">
-                <div style="display:flex;justify-content:space-between;background:var(--bg-secondary);padding:15px;border-radius:16px;margin-bottom:15px;border:1px solid rgba(0,0,0,0.05);">
-                    <div style="text-align:center; flex:1;"><div style="font-size:10px;color:var(--text-muted);font-weight:700;">GRUP</div><div style="font-size:16px;font-weight:800;color:var(--text-primary);">${el.grp}</div></div>
-                    <div style="width:1px;background:rgba(0,0,0,0.1);"></div>
-                    <div style="text-align:center; flex:1;"><div style="font-size:10px;color:var(--text-muted);font-weight:700;">PERİYOT</div><div style="font-size:16px;font-weight:800;color:var(--text-primary);">${el.per}</div></div>
-                    <div style="width:1px;background:rgba(0,0,0,0.1);"></div>
-                    <div style="text-align:center; flex:1;"><div style="font-size:10px;color:var(--text-muted);font-weight:700;">KÜTLE</div><div style="font-size:16px;font-weight:800;color:var(--text-primary);">${el.mass}</div></div>
+            <div style="padding:22px;">
+                <div style="display:flex;justify-content:space-between;background:var(--bg-secondary);padding:15px;border-radius:16px;margin-bottom:18px;border:1px solid rgba(0,0,0,0.05); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="text-align:center; flex:1;"><div style="font-size:10px;color:var(--text-muted);font-weight:800;letter-spacing:1px;">GRUP</div><div style="font-size:18px;font-weight:800;color:var(--text-primary); margin-top:4px;">${el.grp}</div></div>
+                    <div style="width:1px;background:rgba(0,0,0,0.08);margin:0 10px;"></div>
+                    <div style="text-align:center; flex:1;"><div style="font-size:10px;color:var(--text-muted);font-weight:800;letter-spacing:1px;">PERİYOT</div><div style="font-size:18px;font-weight:800;color:var(--text-primary); margin-top:4px;">${el.per}</div></div>
+                    <div style="width:1px;background:rgba(0,0,0,0.08);margin:0 10px;"></div>
+                    <div style="text-align:center; flex:1;"><div style="font-size:10px;color:var(--text-muted);font-weight:800;letter-spacing:1px;">KÜTLE</div><div style="font-size:18px;font-weight:800;color:var(--text-primary); margin-top:4px;">${el.mass}</div></div>
                 </div>
-                <button onclick="document.getElementById('pt-detail-overlay').remove()" style="width:100%;padding:14px;border-radius:14px;background:${c.bg};color:${c.text};border:none;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 4px 15px ${c.bg}66;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">Kapat</button>
+                
+                <div style="background:var(--bg-secondary);border-radius:16px;padding:20px;margin-bottom:20px;border-left:5px solid ${c.bg};position:relative;text-align:left;box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                    <div style="position:absolute;top:-12px;left:16px;background:${c.bg};color:${c.text};padding:4px 14px;border-radius:20px;font-size:11px;font-weight:800;box-shadow:0 4px 10px ${c.bg}66;letter-spacing:0.5px;">Ramazan Hoca Notu 📝</div>
+                    <p style="font-size:14px;color:var(--text-secondary);line-height:1.7;margin:8px 0 0 0;font-weight:500;">
+                        <b>${el.name} (${el.s})</b>, periyodik tablonun <b>${el.per}. periyot</b> ve <b>${el.grp}. grubunda</b> yer alan bir <b>${c.label.toLowerCase()}</b> elementidir. Atom numarası ${el.n} olup, kütle numarası yaklaşık ${Math.round(el.mass)}'dir.
+                    </p>
+                </div>
+                
+                <div style="display:flex;gap:12px;">
+                    <button onclick="APP.speak('${el.name} elementi. Atom numarası ${el.n}. Bir ${c.label}.'); this.innerHTML='🔊 Okunuyor...'; setTimeout(() => this.innerHTML='🔊 Sesli Dinle', 3000);"
+                            style="flex:1;padding:14px;border-radius:14px;background:linear-gradient(135deg, ${c.bg}, ${c.bg}ee);color:${c.text};border:none;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 6px 15px ${c.bg}55;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px ${c.bg}77';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 6px 15px ${c.bg}55';">
+                        🔊 Sesli Dinle
+                    </button>
+                    <button onclick="document.getElementById('pt-detail-overlay').remove()" 
+                            style="flex:1;padding:14px;border-radius:14px;background:var(--bg-primary);color:var(--text-primary);border:2px solid rgba(0,0,0,0.05);font-weight:800;font-size:14px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.background='var(--bg-secondary)';" onmouseout="this.style.transform='none'; this.style.background='var(--bg-primary)';">
+                        Kapat
+                    </button>
+                </div>
             </div>
         </div>`;
 
