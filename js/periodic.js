@@ -1320,11 +1320,15 @@ const PERIODIC = (() => {
 ];
 
     let currentFilter = 'all';
+    let searchQuery = '';
 
     function getFilteredElements() {
         return ELEMENTS.map(el => {
-            const isMatch = currentFilter === 'all' || el.cat === currentFilter;
-            return { ...el, dimmed: !isMatch };
+            const matchCat = currentFilter === 'all' || el.cat === currentFilter;
+            const q = searchQuery.toLowerCase();
+            const matchSearch = !q || el.name.toLowerCase().includes(q) || el.s.toLowerCase().includes(q) || String(el.n).includes(q);
+            
+            return { ...el, dimmed: !(matchCat && matchSearch) };
         });
     }
 
@@ -1332,6 +1336,7 @@ const PERIODIC = (() => {
         const container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = buildHTML();
+        attachEvents(container);
         
         // Add staggered entrance animation
         setTimeout(() => {
@@ -1343,6 +1348,30 @@ const PERIODIC = (() => {
                 }, index * 5); // very fast stagger
             });
         }, 50);
+    }
+
+    function attachEvents(container) {
+        const input = container.querySelector('#pt-search-input');
+        if (input) {
+            input.value = searchQuery;
+            input.focus();
+        }
+    }
+
+    function onSearch(val) {
+        searchQuery = val;
+        const container = document.getElementById('pt-root');
+        if (container) {
+            container.innerHTML = buildHTML();
+            attachEvents(container);
+            
+            const cells = container.querySelectorAll('.pt-cell');
+            cells.forEach((cell) => {
+                cell.style.transition = 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)';
+                cell.style.opacity = cell.dataset.dimmed === 'true' ? '0.15' : '1';
+                cell.style.transform = cell.dataset.dimmed === 'true' ? 'translateZ(-20px) scale(0.95)' : 'translateZ(0) scale(1)';
+            });
+        }
     }
 
     function buildHTML() {
@@ -1368,12 +1397,12 @@ const PERIODIC = (() => {
 
         // Lanthanide & Actinide placeholders in the main table
         const placeholders = `
-            <div class="pt-cell-placeholder" style="grid-column: 3; grid-row: 6; background: #FAB005; color: #1a1a1a;">
-                <div style="font-size: 9px; font-weight: 800; opacity: 0.7;">57-71</div>
+            <div class="pt-cell-placeholder" style="grid-column: 3; grid-row: 6; background: rgba(250, 176, 5, 0.2); color: #FAB005; border-color: #FAB005;">
+                <div style="font-size: 9px; font-weight: 800; opacity: 0.9;">57-71</div>
                 <div style="font-size: 20px; font-weight: 900; margin-top: 5px;">La-Lu</div>
             </div>
-            <div class="pt-cell-placeholder" style="grid-column: 3; grid-row: 7; background: #FF922B; color: #fff;">
-                <div style="font-size: 9px; font-weight: 800; opacity: 0.7;">89-103</div>
+            <div class="pt-cell-placeholder" style="grid-column: 3; grid-row: 7; background: rgba(255, 146, 43, 0.2); color: #FF922B; border-color: #FF922B;">
+                <div style="font-size: 9px; font-weight: 800; opacity: 0.9;">89-103</div>
                 <div style="font-size: 20px; font-weight: 900; margin-top: 5px;">Ac-Lr</div>
             </div>
             <!-- Empty space for table gap -->
@@ -1382,31 +1411,38 @@ const PERIODIC = (() => {
 
         return `
         <div class="pt-screen" style="max-width: 1400px; padding: 20px;">
-            <div class="pt-header-3d" style="background: linear-gradient(135deg, rgba(26,41,128,0.8), rgba(38,208,206,0.8)); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; margin-bottom: 30px; color: white; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.2);">
-                <h2 style="font-size: 32px; font-weight: 800; margin-bottom: 10px; text-shadow: 0 4px 15px rgba(0,0,0,0.3);">⚛️ Gerçek 3D Periyodik Tablo</h2>
-                <p style="font-size: 15px; opacity: 0.9;">Tüm 118 element gerçek yerlerinde. İncelemek için elemente tıklayın.</p>
+            <div class="pt-header-3d" style="background: linear-gradient(135deg, rgba(26,41,128,0.85), rgba(38,208,206,0.85)); backdrop-filter: blur(16px); padding: 40px 30px; border-radius: 24px; margin-bottom: 35px; color: white; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.25); position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.25);">
+                <h2 style="font-size: 36px; font-weight: 900; margin-bottom: 12px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); letter-spacing: -0.5px;">⚛️ 3D İnteraktif Periyodik Tablo</h2>
+                <p style="font-size: 16px; opacity: 0.9; font-weight: 500;">Tüm 118 element gerçek yerlerinde. Detayları ve 3D kartını görmek için elemente tıkla.</p>
+                
+                <div class="pt-search-wrapper">
+                    <input class="pt-search-input" id="pt-search-input" type="text"
+                           placeholder="Element ara... (İsim, sembol, numara)"
+                           oninput="PERIODIC.onSearch(this.value)">
+                </div>
+
                 <div style="position: absolute; right: -20px; top: -50px; font-size: 200px; opacity: 0.05; pointer-events: none;">🧪</div>
                 <div style="position: absolute; left: -20px; bottom: -50px; font-size: 150px; opacity: 0.05; pointer-events: none;">🔬</div>
             </div>
 
-            <div class="pt-legend" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 40px; background: var(--bg-card); padding: 15px; border-radius: 20px; box-shadow: var(--shadow-sm);">
+            <div class="pt-legend" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 40px; background: var(--bg-card); padding: 20px; border-radius: 24px; box-shadow: var(--shadow-sm); border: 1px solid rgba(255,255,255,0.5);">
                 <div class="pt-legend-item ${currentFilter==='all'?'pt-legend-active':''}"
                      onclick="PERIODIC.setFilter('all')"
-                     style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; background:var(--bg-secondary);color:var(--text-primary);border:2px solid ${currentFilter==='all'?'var(--teal)':'transparent'}; box-shadow: ${currentFilter==='all'?'0 4px 10px rgba(0,191,165,0.3)':'none'};">
+                     style="background: ${currentFilter==='all'?'linear-gradient(135deg, var(--teal), var(--purple))':'var(--bg-secondary)'}; color: ${currentFilter==='all'?'white':'var(--text-primary)'}; box-shadow: ${currentFilter==='all'?'0 6px 20px rgba(0,191,165,0.4)':'none'}; border: 2px solid ${currentFilter==='all'?'transparent':'var(--bg-secondary)'};">
                     🔬 Tümü
                 </div>
                 ${legendHTML}
             </div>
 
             <div class="pt-3d-wrapper" style="perspective: 1200px; padding-bottom: 40px;">
-                <div class="pt-table-grid" style="display: grid; grid-template-columns: repeat(18, minmax(0, 1fr)); gap: 4px; transform-style: preserve-3d; transition: transform 0.5s ease; position: relative;">
+                <div class="pt-table-grid" style="display: grid; grid-template-columns: repeat(18, minmax(0, 1fr)); gap: 5px; transform-style: preserve-3d; transition: transform 0.5s ease; position: relative;">
                     ${placeholders}
                     ${cardsHTML}
                 </div>
             </div>
             
-            <div style="text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 20px;">
-                Tasarım: Ramazan Hoca'nın Kimya Sınıfı
+            <div style="text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 20px; font-weight: 600;">
+                ✨ Ramazan Hoca'nın Kimya Sınıfı Özel Tasarım
             </div>
         </div>`;
     }
@@ -1417,6 +1453,7 @@ const PERIODIC = (() => {
         const container = document.getElementById('pt-root');
         if (container) {
             container.innerHTML = buildHTML();
+            attachEvents(container);
             
             // Re-trigger animation
             const cells = container.querySelectorAll('.pt-cell');
@@ -1474,5 +1511,5 @@ const PERIODIC = (() => {
         }, 10);
     }
 
-    return { render, setFilter, showDetail };
+    return { render, setFilter, showDetail, onSearch };
 })();
