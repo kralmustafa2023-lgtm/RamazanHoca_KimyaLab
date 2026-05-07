@@ -1870,53 +1870,13 @@ const APP = (() => {
     // ============ PERIODIC LAB ============
     function renderPeriodicLab() {
         const container = document.getElementById('main-content');
-        
-        let html = `
-            <div class="lab-screen" style="padding:20px; max-width: 1200px; margin: 0 auto;">
-                <div class="screen-header" style="position:relative; z-index:1; padding: 40px 30px; border-radius: 24px; background: linear-gradient(135deg, #1A2980 0%, #26D0CE 100%); color:white; overflow:hidden; margin-bottom: 40px; box-shadow: var(--shadow-lg);">
-                    <div style="position:absolute; top:0;left:0; right:0;bottom:0; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2240%22 stroke=%22rgba(255,255,255,0.1)%22 stroke-width=%221%22 fill=%22none%22/><circle cx=%2250%22 cy=%2250%22 r=%2220%22 stroke=%22rgba(255,255,255,0.2)%22 stroke-width=%222%22 fill=%22none%22/></svg>') center center / cover; opacity: 0.4; animation: spin 25s linear infinite;"></div>
-                    <div style="position:relative; z-index:2; text-align:center;">
-                        <h2 style="font-size:38px; font-weight:800; margin-bottom:10px; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">🔬 İnteraktif Kimya Laboratuvarı</h2>
-                        <p style="font-size:18px; opacity:0.9;">Tüm elementleri ve kökleri keşfet, detaylarını incele.</p>
-                    </div>
-                </div>`;
+        container.innerHTML = '<div id="pt-root"></div>';
 
-        if (typeof TABLES !== 'undefined') {
-            Object.keys(TABLES).forEach(key => {
-                const table = TABLES[key];
-                html += `
-                <div class="lab-section" style="margin-bottom: 50px; animation: fadeIn 0.5s ease;">
-                    <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px; border-bottom: 2px solid ${table.color}33; padding-bottom:15px;">
-                        <div style="font-size:40px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">${table.icon}</div>
-                        <div>
-                            <h3 style="font-size:24px; font-weight:700; color:var(--text-primary);">${table.name}</h3>
-                            <p style="font-size:14px; color:var(--text-muted); font-weight:500;">${table.subtitle} — Toplam ${table.items.length} Element/Kök</p>
-                        </div>
-                    </div>
-                    <div class="periodic-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:18px;">
-                        ${table.items.map(el => `
-                            <div class="lab-card" style="background:var(--bg-card); cursor:pointer; padding:20px 10px; border-radius:20px; box-shadow:var(--shadow-md); text-align:center; transition:var(--transition); border: 1px solid rgba(255,255,255,0.4); position:relative; overflow:hidden;"
-                                 onmouseover="this.style.transform='scale(1.05) translateY(-8px)'; this.style.boxShadow='0 10px 25px ${table.color}44'; this.style.borderColor='${table.color}';"
-                                 onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-md)'; this.style.borderColor='rgba(255,255,255,0.4)';"
-                                 onclick="APP.showBigElementCard('${el.symbol.replace(/'/g, "\\'")}')">
-                                <div style="position:absolute; top:8px; left:12px; font-size:10px; font-weight:800; color:var(--text-muted);">${el.number || ''}</div>
-                                <div style="font-size:38px; font-weight:900; color:${table.color}; margin: 8px 0; line-height:1;">${el.symbol}</div>
-                                <div style="font-size:14px; font-weight:700; color:var(--text-primary); margin-top:5px;">${el.name}</div>
-                                ${el.charge ? `<div style="font-size:11px; margin-top:8px; color:white; background:${table.color}; opacity:0.8; display:inline-block; padding:2px 8px; border-radius:6px; font-weight:700;">${el.charge}</div>` : ''}
-                                ${el.charges ? `<div style="font-size:11px; margin-top:8px; color:white; background:${table.color}; opacity:0.8; display:inline-block; padding:2px 8px; border-radius:6px; font-weight:700;">${el.charges[0]}...</div>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>`;
-            });
+        if (typeof PERIODIC !== 'undefined') {
+            PERIODIC.render('pt-root');
+        } else {
+            container.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted)">⚠️ Periyodik tablo modülü yüklenemedi.</div>';
         }
-
-        html += `</div>`;
-        container.innerHTML = html;
-
-        // Add 3d perspective effect to cards
-        const cards = container.querySelectorAll('.lab-card');
-        Animations.staggeredEntrance(Array.from(cards), 30);
     }
     
     function showBigElementCard(symbol) {

@@ -68,11 +68,20 @@ const DB = {
 };
 
 // ===== SEED DEFAULT USERS =====
+async function hashPassword(password) {
+    const msgUint8 = new TextEncoder().encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 async function seedDefaultUsers() {
+    const adminPw = await hashPassword('KimyaAdmin123');
+    const vipPw = await hashPassword('Mstfuygur2011');
     const defaults = [
         {
             username: 'RamazanHoca',
-            password: 'KimyaAdmin123',
+            password: adminPw,
             displayName: 'Ramazan Hoca',
             role: 'admin',
             email: '',
@@ -82,7 +91,7 @@ async function seedDefaultUsers() {
         },
         {
             username: 'Mstfuygur',
-            password: 'Mstfuygur2011',
+            password: vipPw,
             displayName: 'Mstfuygur',
             role: 'vip',
             email: '',

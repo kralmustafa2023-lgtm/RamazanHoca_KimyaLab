@@ -24,7 +24,8 @@ const AUTH = (() => {
                 return { success: false, message: 'Kullanıcı bulunamadı.' };
             }
 
-            if (user.password !== password) {
+            const hashedPw = await hashPassword(password);
+            if (user.password !== password && user.password !== hashedPw) {
                 return { success: false, message: 'Şifre hatalı!' };
             }
 
@@ -66,7 +67,8 @@ const AUTH = (() => {
         try {
             const user = await DB.get('users/' + username);
             if (!user) return { success: false, message: 'Kullanıcı bulunamadı.' };
-            if (user.password !== password) return { success: false, message: 'Şifre hatalı!' };
+            const hashedPw = await hashPassword(password);
+            if (user.password !== password && user.password !== hashedPw) return { success: false, message: 'Şifre hatalı!' };
             if (user.role !== 'admin' && user.role !== 'ogretmen') return { success: false, message: 'Bu hesap yönetici değil!' };
 
             sessionStorage.setItem('isTeacher', 'true');
@@ -92,9 +94,10 @@ const AUTH = (() => {
                 if (emailUsed) return { success: false, message: 'Bu e-posta adresi zaten kayıtlı!' };
             }
 
+            const hashedPw = await hashPassword(password);
             await DB.set('users/' + username, {
                 username: username,
-                password: password,
+                password: hashedPw,
                 email: email.toLowerCase().trim(),
                 displayName: displayName || username,
                 role: 'student',
@@ -119,7 +122,8 @@ const AUTH = (() => {
                 return { success: false, message: 'Kullanıcı adı ve e-posta eşleşmiyor!' };
             }
 
-            await DB.update('users/' + username, { password: newPassword });
+            const hashedPw = await hashPassword(newPassword);
+            await DB.update('users/' + username, { password: hashedPw });
             return { success: true, message: 'Şifren başarıyla değiştirildi! Yeni şifrenle giriş yapabilirsin.' };
         } catch (e) {
             return { success: false, message: 'Şifre sıfırlama hatası. (' + e.message + ')' };

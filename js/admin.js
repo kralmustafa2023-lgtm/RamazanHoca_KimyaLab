@@ -153,7 +153,7 @@ const ADMIN = (() => {
                     <div style="display:flex;gap:6px;flex-wrap:wrap;">
                         <button class="admin-btn btn-edit" onclick="ADMIN.viewUserDetails('${u.username}')">Detay</button>
                         <button class="admin-btn btn-edit" onclick="ADMIN.editUser('${u.username}')">✏️</button>
-                        <button class="admin-btn btn-edit" onclick="ADMIN.showPassword('${u.username}')">🔑</button>
+                        <button class="admin-btn btn-edit" onclick="ADMIN.showPassword('${u.username}')">🔑 Sıfırla</button>
                         ${u.banned ? 
                             `<button class="admin-btn btn-success" onclick="ADMIN.toggleBan('${u.username}',false)">Aç</button>` :
                             `<button class="admin-btn btn-danger" onclick="ADMIN.toggleBan('${u.username}',true)">Kapat</button>`
@@ -229,9 +229,10 @@ const ADMIN = (() => {
             const existing = await DB.get('users/' + username);
             if (existing) { alert('Bu kullanıcı adı zaten mevcut!'); return; }
 
+            const hashedPw = await hashPassword(password);
             await DB.set('users/' + username, {
                 username: username,
-                password: password,
+                password: hashedPw,
                 email: email || '',
                 displayName: displayName || username,
                 role: 'student',
@@ -261,7 +262,7 @@ const ADMIN = (() => {
         const displayName = document.getElementById('edit-displayname').value.trim();
         const group = document.getElementById('edit-group').value.trim();
         const updates = {};
-        if (password) updates.password = password;
+        if (password) updates.password = await hashPassword(password);
         if (displayName) updates.displayName = displayName;
         updates.group = group || null;
 
@@ -274,10 +275,14 @@ const ADMIN = (() => {
     }
 
     async function showPassword(username) {
+        const newPw = prompt(`${username} adlı kullanıcının yeni şifresini belirleyin (Boş bırakırsanız iptal olur):`);
+        if (!newPw) return;
         try {
             const doc = await DB.get('users/' + username);
             if (doc) {
-                alert(`🔑 ${username} şifresi: ${doc.password}`);
+                const hashedPw = await hashPassword(newPw);
+                await DB.update('users/' + username, { password: hashedPw });
+                alert(`✅ ${username} şifresi başarıyla güncellendi!`);
             } else {
                 alert('Kullanıcı bulunamadı.');
             }
@@ -463,21 +468,22 @@ const ADMIN = (() => {
         try {
             await DB.update('notifications/' + msgId, msgObj);
 
+            const freshUsersRaw = await DB.get('users') || {};
+            const freshUsers = Object.keys(freshUsersRaw).map(k => ({ ...freshUsersRaw[k], firebaseKey: k }));
+
             let targetUsers = [];
             if (targetType === 'all') {
-                targetUsers = usersData.filter(u => u.role !== 'admin');
+                targetUsers = freshUsers.filter(u => u.role !== 'admin');
             } else if (targetType === 'group') {
-                targetUsers = usersData.filter(u => u.group === target);
+                targetUsers = freshUsers.filter(u => u.group === target);
             } else {
-                targetUsers = usersData.filter(u => u.username === target);
+                targetUsers = freshUsers.filter(u => u.username === target);
             }
 
             for (const user of targetUsers) {
-                const inbox = user.data.inbox || [];
+                const inbox = (user.data && user.data.inbox) ? user.data.inbox : [];
                 inbox.push({ ...msgObj, read: false });
-                await DB.update('users/' + user.username, {
-                    'data/inbox': inbox
-                });
+                await DB.set('users/' + user.username + '/data/inbox', inbox);
             }
 
             alert(`Mesaj ${targetUsers.length} kişiye gönderildi! 🚀`);
@@ -631,9 +637,11 @@ const ADMIN = (() => {
             if (adminUsers.length === 0) { alert('Admin bulunamadı.'); return; }
 
             const doc = await DB.get('users/' + adminUsers[0].username);
-            if (doc && doc.password === oldPw) {
+            const hashedOldPw = await hashPassword(oldPw);
+            if (doc && (doc.password === oldPw || doc.password === hashedOldPw)) {
+                const hashedNewPw = await hashPassword(newPw);
                 for (const admin of adminUsers) {
-                    await DB.update('users/' + admin.username, { password: newPw });
+                    await DB.update('users/' + admin.username, { password: hashedNewPw });
                 }
                 alert('Şifre değiştirildi! ✅');
             } else {

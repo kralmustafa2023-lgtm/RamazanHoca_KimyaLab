@@ -1,12 +1,11 @@
-# RAMAZAN HOCA KIMYALAB - TEKNIK DURAK (ÖĞRETİCİ REHBER)
+m# RAMAZAN HOCA KIMYALAB - TEKNIK DURAK (ÖĞRETİCİ REHBER)
 =====================================================
-
+include <stdio.h>
+                                     kı cı
 Hocam, bu proje senin yazılım dünyasına giriş anahtarın olsun! İşte KimyaLab'ın 
 temel yapı taşları ve bu işi öğrenmenin en kral yolu:
-
-1. TEMEL KAVRAMLAR (Sözlük)
---------------------------
-*   HTML (İskelet): Sitenin "neyi" var? (Butonlar, yazılar, listeler).
+HTMLvı-----------------------
+*   HTML (İskelet):  "neyi" var? (Butonlar, yazılar, listeler).
     Örn: <button>Giriş Yap</button> (Ekrana sadece bir düğme koyar).
 
 *   CSS (Kıyafet/Boya): Site "nasıl" görünüyor? (Renkler, hizalar, parlama efekti).
